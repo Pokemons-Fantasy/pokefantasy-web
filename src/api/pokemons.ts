@@ -5,7 +5,52 @@ export interface Pokemon {
   id: number;
 }
 
+export interface AvailablePokemon {
+  id: number;
+  name: string;
+  spriteUrl: string;
+}
+
+export interface ClosedListEntry {
+  id: string;
+  pokemonId: number;
+  pokemonName: string;
+  nominatedBy: string;
+  sprite: string;
+}
+
+export interface DraftStatus {
+  id: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  turnOrder: string[];
+  currentTurn: string;
+  currentRound: number;
+}
+
 export const getPokemons = async (): Promise<Pokemon[]> => {
   const { data } = await apiClient.get<Pokemon[]>('/v1/pokemons');
   return data;
+};
+
+export const getAvailablePokemons = async (): Promise<AvailablePokemon[]> => {
+  const { data } = await apiClient.get<AvailablePokemon[]>('/v1/pokemons/available');
+  return data;
+};
+
+export const nominatePokemon = async (pokemonName: string): Promise<void> => {
+  await apiClient.post('/v1/closed-list/nominate', { pokemonName });
+};
+
+export const getClosedList = async (): Promise<ClosedListEntry[]> => {
+  const { data } = await apiClient.get<ClosedListEntry[]>('/v1/closed-list');
+  return data;
+};
+
+export const getDraftStatus = async (): Promise<DraftStatus | null> => {
+  try {
+    const { data } = await apiClient.get<DraftStatus>('/v1/draft');
+    return data;
+  } catch {
+    return null;
+  }
 };

@@ -103,3 +103,94 @@ body {
   cursor: pointer;
   margin-left: 1rem;
 }
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.home-card {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.home-card:hover { border-color: #e94560; }
+.home-card.disabled { opacity: 0.5; cursor: default; }
+.home-card.disabled:hover { border-color: transparent; }
+.home-card h3 { color: #e94560; }
+.home-card-cta { color: #aaa; font-size: 0.85rem; margin-top: auto; }
+
+.pool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.pool-counter { color: #aaa; margin-top: 0.25rem; }
+
+.draft-active-badge {
+  background: #e94560;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #16213e;
+  color: #eee;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.pokemon-card {
+  background: #16213e;
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, opacity 0.15s;
+  position: relative;
+}
+
+.pokemon-card:hover:not(.nominated) { border-color: #e94560; }
+.pokemon-card.nominated { opacity: 0.55; cursor: default; }
+.pokemon-card.own { border-color: #6bffb8; opacity: 1; }
+.pokemon-card.own:hover { border-color: #6bffb8; }
+
+.pokemon-sprite { width: 80px; height: 80px; image-rendering: pixelated; }
+.pokemon-name { font-size: 0.75rem; text-align: center; text-transform: capitalize; }
+
+.own-badge, .taken-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.own-badge { background: #6bffb8; color: #111; }
+.taken-badge { background: #444; color: #aaa; }
