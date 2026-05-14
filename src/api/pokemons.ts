@@ -19,12 +19,21 @@ export interface ClosedListEntry {
   sprite: string;
 }
 
+export interface DraftPick {
+  username: string;
+  pokemonName: string;
+  pokemonId: number;
+  round: number;
+  pickedAt: string;
+}
+
 export interface DraftStatus {
   id: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
   turnOrder: string[];
-  currentTurn: string;
+  currentTurn: string | null;
   currentRound: number;
+  picks: DraftPick[];
 }
 
 export const getPokemons = async (): Promise<Pokemon[]> => {
@@ -37,24 +46,28 @@ export const getAvailablePokemons = async (): Promise<AvailablePokemon[]> => {
   return data;
 };
 
-export const nominatePokemon = async (pokemonName: string): Promise<void> => {
-  await apiClient.post('/v1/closed-list/nominate', { pokemonName });
+export const nominatePokemon = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/closed-list/nominate`, { pokemonName });
 };
 
-export const denominatePokemon = async (pokemonName: string): Promise<void> => {
-  await apiClient.delete(`/v1/closed-list/nominate/${pokemonName}`);
+export const denominatePokemon = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.delete(`/v1/leagues/${leagueId}/closed-list/nominate/${pokemonName}`);
 };
 
-export const getClosedList = async (): Promise<ClosedListEntry[]> => {
-  const { data } = await apiClient.get<ClosedListEntry[]>('/v1/closed-list');
+export const getClosedList = async (leagueId: string): Promise<ClosedListEntry[]> => {
+  const { data } = await apiClient.get<ClosedListEntry[]>(`/v1/leagues/${leagueId}/closed-list`);
   return data;
 };
 
-export const getDraftStatus = async (): Promise<DraftStatus | null> => {
+export const getDraftStatus = async (leagueId: string): Promise<DraftStatus | null> => {
   try {
-    const { data } = await apiClient.get<DraftStatus>('/v1/draft');
+    const { data } = await apiClient.get<DraftStatus>(`/v1/leagues/${leagueId}/draft`);
     return data;
   } catch {
     return null;
   }
+};
+
+export const draftPick = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/draft/pick`, { pokemonName });
 };

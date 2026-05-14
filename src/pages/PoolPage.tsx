@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
   getAvailablePokemons,
@@ -13,6 +13,7 @@ import {
 const MAX_NOMINATIONS = 16;
 
 export default function PoolPage() {
+  const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
@@ -26,14 +27,16 @@ export default function PoolPage() {
   });
 
   const { data: closedList = [] } = useQuery({
-    queryKey: ['closed-list'],
-    queryFn: getClosedList,
+    queryKey: ['closed-list', leagueId],
+    queryFn: () => getClosedList(leagueId!),
+    enabled: !!leagueId,
   });
 
   const { data: draftStatus } = useQuery({
-    queryKey: ['draft-status'],
-    queryFn: getDraftStatus,
+    queryKey: ['draft-status', leagueId],
+    queryFn: () => getDraftStatus(leagueId!),
     refetchInterval: 10000,
+    enabled: !!leagueId,
   });
 
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
@@ -42,10 +45,10 @@ export default function PoolPage() {
   const canNominate = !isDraftActive && myNominations.length < MAX_NOMINATIONS;
 
   const { mutate: nominate, isPending } = useMutation({
-    mutationFn: nominatePokemon,
+    mutationFn: (pokemonName: string) => nominatePokemon(leagueId!, pokemonName),
     onSuccess: () => {
       setError('');
-      queryClient.invalidateQueries({ queryKey: ['closed-list'] });
+      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
     onError: (err: Error) => {
       setError(err.message ?? 'Error al nominar');
@@ -53,10 +56,10 @@ export default function PoolPage() {
   });
 
   const { mutate: denominate } = useMutation({
-    mutationFn: denominatePokemon,
+    mutationFn: (pokemonName: string) => denominatePokemon(leagueId!, pokemonName),
     onSuccess: () => {
       setError('');
-      queryClient.invalidateQueries({ queryKey: ['closed-list'] });
+      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
     onError: (err: Error) => {
       setError(err.message ?? 'Error al desnominar');
@@ -70,7 +73,7 @@ export default function PoolPage() {
   return (
     <div className="home-container">
       <header>
-        <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+        <h1 style={{ cursor: 'pointer' }} onClick={() => navigate(`/leagues/${leagueId}`)}>
           PokeFantasy
         </h1>
         <div>
