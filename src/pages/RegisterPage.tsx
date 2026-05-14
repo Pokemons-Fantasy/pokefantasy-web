@@ -14,30 +14,36 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="auth-container">
-      <h1>PokeFantasy</h1>
-      <h2>Crear cuenta</h2>
-      <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
-        <input
-          placeholder="Usuario"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Registrando...' : 'Registrarse'}
-        </button>
-      </form>
-      {mutation.isError && <p className="error">El usuario ya existe o ha habido un error</p>}
-      {mutation.isSuccess && <p className="success">¡Cuenta creada! Redirigiendo...</p>}
-      <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <h1>PokeFantasy</h1>
+          <p>Crea tu cuenta para jugar</p>
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+          <input
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+          <button className="btn-submit" type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Creando cuenta...' : 'Registrarse'}
+          </button>
+        </form>
+        {mutation.isError && <p className="error">El usuario ya existe o ha habido un error</p>}
+        {mutation.isSuccess && <p className="success">¡Cuenta creada! Redirigiendo...</p>}
+        <p className="auth-footer">¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
+      </div>
     </div>
   );
 }

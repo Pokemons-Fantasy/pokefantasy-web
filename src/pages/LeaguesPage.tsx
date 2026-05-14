@@ -23,41 +23,51 @@ export default function LeaguesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-leagues'] });
       setShowModal(false);
+      setError('');
     },
     onError: (err: Error) => setError(err.message ?? 'Error al crear liga'),
   });
 
   return (
-    <div className="home-container">
-      <header>
-        <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>PokeFantasy</h1>
-        <div>
-          <span>Hola, <strong>{username}</strong></span>
-          <button onClick={logout}>Cerrar sesión</button>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <div className="page-header-inner">
+          <span className="logo" onClick={() => navigate('/')}>PokeFantasy</span>
+          <div className="header-right">
+            <span className="header-user">Hola, <strong>{username}</strong></span>
+            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
+          </div>
         </div>
       </header>
 
-      <main>
-        <div className="pool-header">
-          <h2>Mis ligas</h2>
-          <button className="btn-primary" onClick={() => setShowModal(true)}>Crear liga</button>
+      <main className="page-content">
+        <div className="section-header">
+          <div>
+            <h1 className="page-title">Mis ligas</h1>
+            <p className="page-subtitle">{leagues.length} {leagues.length === 1 ? 'liga' : 'ligas'}</p>
+          </div>
+          <button className="btn-primary" onClick={() => setShowModal(true)}>+ Crear liga</button>
         </div>
 
-        {error && <p className="error">{error}</p>}
-        {isLoading && <p>Cargando ligas...</p>}
+        {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
+        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
 
-        <div className="home-cards">
+        <div className="cards-grid">
           {leagues.map((league) => (
-            <div key={league.id} className="home-card" onClick={() => navigate(`/leagues/${league.id}`)}>
+            <div key={league.id} className="card" onClick={() => navigate(`/leagues/${league.id}`)}>
               <h3>{league.name}</h3>
               <p>{league.memberCount} {league.memberCount === 1 ? 'jugador' : 'jugadores'}</p>
-              <span className="home-card-cta">Entrar</span>
+              <span className="card-cta">Entrar →</span>
             </div>
           ))}
-          {!isLoading && leagues.length === 0 && (
-            <p style={{ color: '#aaa' }}>No estás en ninguna liga. ¡Crea una!</p>
-          )}
         </div>
+
+        {!isLoading && leagues.length === 0 && (
+          <div className="empty-state">
+            <p>No estás en ninguna liga todavía.</p>
+            <p style={{ marginTop: '0.5rem' }}>Crea una o pide a alguien que te añada.</p>
+          </div>
+        )}
       </main>
 
       {showModal && (

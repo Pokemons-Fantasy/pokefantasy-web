@@ -19,29 +19,35 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="auth-container">
-      <h1>PokeFantasy</h1>
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
-        <input
-          placeholder="Usuario"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
-      {mutation.isError && <p className="error">Usuario o contraseña incorrectos</p>}
-      <p>¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <h1>PokeFantasy</h1>
+          <p>Inicia sesión para continuar</p>
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+          <input
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+          <button className="btn-submit" type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+        {mutation.isError && <p className="error">Usuario o contraseña incorrectos</p>}
+        <p className="auth-footer">¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
+      </div>
     </div>
   );
 }

@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus, draftPick } from '../api/pokemons';
-import { getClosedList } from '../api/pokemons';
+import { getDraftStatus, draftPick, getClosedList } from '../api/pokemons';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -45,92 +44,122 @@ export default function DraftPage() {
     onError: (err: Error) => setError(err.message ?? 'Error al hacer pick'),
   });
 
+  const statusLabel = !draft ? '—'
+    : draft.status === 'COMPLETED' ? 'Completado'
+    : draft.status === 'IN_PROGRESS' ? 'En progreso'
+    : 'Pendiente';
+
+  const statusClass = !draft ? 'muted'
+    : draft.status === 'COMPLETED' ? 'muted'
+    : draft.status === 'IN_PROGRESS' ? 'green'
+    : 'muted';
+
   return (
-    <div className="home-container">
-      <header>
-        <h1 style={{ cursor: 'pointer' }} onClick={() => navigate(`/leagues/${leagueId}`)}>
-          PokeFantasy
-        </h1>
-        <div>
-          <span>Hola, <strong>{username}</strong></span>
-          <button onClick={logout}>Cerrar sesión</button>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <div className="page-header-inner">
+          <span className="logo" onClick={() => navigate(`/leagues/${leagueId}`)}>PokeFantasy</span>
+          <div className="header-right">
+            <span className="header-user">Hola, <strong>{username}</strong></span>
+            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
+          </div>
         </div>
       </header>
 
-      <main>
-        <div className="pool-header">
-          <h2>Draft</h2>
-          {draft && (
-            <div>
-              <span style={{ color: '#6bffb8', fontWeight: 600 }}>
-                {draft.status === 'COMPLETED'
-                  ? 'Completado'
-                  : draft.status === 'IN_PROGRESS'
-                  ? `Turno: ${draft.currentTurn} (Ronda ${draft.currentRound})`
-                  : 'Pendiente'}
-              </span>
-            </div>
-          )}
-        </div>
+      <main className="page-content">
+        <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>Draft</h1>
 
-        {isLoading && <p>Cargando draft...</p>}
-        {!isLoading && !draft && <p style={{ color: '#aaa' }}>No hay draft activo en esta liga.</p>}
-
-        {error && <p className="error">{error}</p>}
-
-        {draft && draft.status === 'IN_PROGRESS' && (
-          <>
-            {isMyTurn ? (
-              <>
-                <p style={{ color: '#6bffb8', marginBottom: '0.5rem' }}>¡Es tu turno! Elige un pokémon del pool:</p>
-                <input
-                  className="search-input"
-                  type="text"
-                  placeholder="Buscar en el pool..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <div className="pokemon-grid">
-                  {filtered.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="pokemon-card"
-                      style={{ cursor: picking ? 'not-allowed' : 'pointer' }}
-                      onClick={() => { if (!picking) pick(entry.pokemonName); }}
-                    >
-                      <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
-                      <span className="pokemon-name">{entry.pokemonName}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p style={{ color: '#aaa' }}>Esperando el turno de <strong>{draft.currentTurn}</strong>...</p>
-            )}
-          </>
+        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
+        {!isLoading && !draft && (
+          <div className="empty-state">
+            <p>No hay draft activo en esta liga.</p>
+            <p style={{ marginTop: '0.4rem' }}>El admin debe iniciarlo desde el panel.</p>
+          </div>
         )}
 
-        {draft && draft.picks && draft.picks.length > 0 && (
-          <div style={{ marginTop: '2rem' }}>
-            <h3>Picks realizados</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
-              <thead>
-                <tr style={{ color: '#aaa', textAlign: 'left', borderBottom: '1px solid #333' }}>
-                  <th style={{ padding: '0.4rem 0.75rem' }}>Ronda</th>
-                  <th style={{ padding: '0.4rem 0.75rem' }}>Jugador</th>
-                  <th style={{ padding: '0.4rem 0.75rem' }}>Pokémon</th>
-                </tr>
-              </thead>
-              <tbody>
-                {draft.picks.map((pick, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #222' }}>
-                    <td style={{ padding: '0.4rem 0.75rem' }}>{pick.round}</td>
-                    <td style={{ padding: '0.4rem 0.75rem' }}>{pick.username}</td>
-                    <td style={{ padding: '0.4rem 0.75rem' }}>{pick.pokemonName}</td>
-                  </tr>
+        {draft && (
+          <div className="draft-status-bar">
+            <div>
+              <div className="draft-stat-label">Estado</div>
+              <div className={`draft-stat-value ${statusClass}`}>{statusLabel}</div>
+            </div>
+            {draft.status === 'IN_PROGRESS' && (
+              <div>
+                <div className="draft-stat-label">Turno actual</div>
+                <div className="draft-stat-value accent">{draft.currentTurn}</div>
+              </div>
+            )}
+            {draft.status === 'IN_PROGRESS' && (
+              <div>
+                <div className="draft-stat-label">Ronda</div>
+                <div className="draft-stat-value">{draft.currentRound}</div>
+              </div>
+            )}
+            <div>
+              <div className="draft-stat-label">Picks totales</div>
+              <div className="draft-stat-value">{draft.picks?.length ?? 0}</div>
+            </div>
+          </div>
+        )}
+
+        {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
+
+        {draft?.status === 'IN_PROGRESS' && (
+          isMyTurn ? (
+            <>
+              <div className="my-turn-banner">
+                ⚡ ¡Es tu turno! Elige un pokémon del pool
+              </div>
+              <input
+                className="search-input"
+                type="text"
+                placeholder="Buscar en el pool..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="pokemon-grid">
+                {filtered.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className={`pokemon-card ${picking ? 'nominated' : ''}`}
+                    onClick={() => { if (!picking) pick(entry.pokemonName); }}
+                  >
+                    <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
+                    <span className="pokemon-name">{entry.pokemonName}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
+          ) : (
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
+              Esperando el turno de <strong style={{ color: 'var(--accent)' }}>{draft.currentTurn}</strong>...
+            </p>
+          )
+        )}
+
+        {draft && (draft.picks?.length ?? 0) > 0 && (
+          <div style={{ marginTop: '2.5rem' }}>
+            <p className="section-label">Historial de picks</p>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+              <table className="picks-table">
+                <thead>
+                  <tr>
+                    <th>Ronda</th>
+                    <th>Jugador</th>
+                    <th>Pokémon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {draft.picks!.map((p, i) => (
+                    <tr key={i}>
+                      <td style={{ color: 'var(--text-3)' }}>{p.round}</td>
+                      <td style={{ fontWeight: 600 }}>{p.username}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{p.pokemonName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

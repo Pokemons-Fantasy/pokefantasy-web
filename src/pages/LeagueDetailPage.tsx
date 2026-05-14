@@ -33,27 +33,51 @@ export default function LeagueDetailPage() {
     onError: (err: Error) => setError(err.message ?? 'Error al añadir miembro'),
   });
 
-  if (isLoading) return <div className="home-container"><p>Cargando liga...</p></div>;
-  if (!league) return <div className="home-container"><p>Liga no encontrada</p></div>;
+  if (isLoading) {
+    return (
+      <div className="page-wrapper">
+        <header className="page-header">
+          <div className="page-header-inner">
+            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          </div>
+        </header>
+        <main className="page-content">
+          <p style={{ color: 'var(--text-3)' }}>Cargando...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!league) {
+    return (
+      <div className="page-wrapper">
+        <main className="page-content">
+          <p className="error">Liga no encontrada</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="home-container">
-      <header>
-        <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('/leagues')}>PokeFantasy</h1>
-        <div>
-          <span>Hola, <strong>{username}</strong></span>
-          <button onClick={logout}>Cerrar sesión</button>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <div className="page-header-inner">
+          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          <div className="header-right">
+            <span className="header-user">Hola, <strong>{username}</strong></span>
+            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
+          </div>
         </div>
       </header>
 
-      <main>
-        <div className="pool-header">
+      <main className="page-content">
+        <div className="section-header">
           <div>
-            <h2>{league.name}</h2>
-            <p style={{ color: '#aaa' }}>Creada por <strong>{league.createdBy}</strong></p>
+            <h1 className="page-title">{league.name}</h1>
+            <p className="page-subtitle">Creada por {league.createdBy}</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="btn-primary" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
               Pool
             </button>
             <button className="btn-primary" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>
@@ -62,24 +86,32 @@ export default function LeagueDetailPage() {
           </div>
         </div>
 
-        <h3 style={{ marginTop: '1.5rem' }}>Jugadores ({league.members.length})</h3>
-        <div className="home-cards" style={{ marginTop: '0.75rem' }}>
+        <p className="section-label">Jugadores ({league.members.length})</p>
+        <div className="members-list">
           {league.members.map((m) => (
-            <div key={m.username} className="home-card" style={{ cursor: 'default' }}>
-              <h3>{m.username}</h3>
-              <p>{m.leagueRole === 'ADMIN' ? 'Admin' : 'Jugador'}</p>
+            <div key={m.username} className="member-row">
+              <div className="member-avatar">{m.username[0]}</div>
+              <div className="member-info">
+                <div className="member-name">{m.username}</div>
+                <div className={`member-role ${m.leagueRole === 'ADMIN' ? 'member-role-admin' : ''}`}>
+                  {m.leagueRole === 'ADMIN' ? 'Admin' : 'Jugador'}
+                </div>
+              </div>
+              {m.leagueRole === 'ADMIN' && (
+                <span className="badge badge-yellow">Admin</span>
+              )}
             </div>
           ))}
         </div>
 
         {isAdmin && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <h3>Añadir jugador</h3>
-            {error && <p className="error">{error}</p>}
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <>
+            <hr className="divider" />
+            <p className="section-label">Añadir jugador</p>
+            {error && <p className="error" style={{ marginBottom: '0.75rem' }}>{error}</p>}
+            <div className="inline-form">
               <input
                 className="search-input"
-                style={{ flex: 1, marginBottom: 0 }}
                 type="text"
                 placeholder="Nombre de usuario"
                 value={newMember}
@@ -91,10 +123,10 @@ export default function LeagueDetailPage() {
                 disabled={adding || !newMember.trim()}
                 onClick={() => add(newMember.trim())}
               >
-                Añadir
+                {adding ? 'Añadiendo...' : 'Añadir'}
               </button>
             </div>
-          </div>
+          </>
         )}
       </main>
     </div>
