@@ -7,6 +7,7 @@ import {
   getClosedList,
   getDraftStatus,
   nominatePokemon,
+  denominatePokemon,
 } from '../api/pokemons';
 
 const MAX_NOMINATIONS = 16;
@@ -48,6 +49,17 @@ export default function PoolPage() {
     },
     onError: (err: Error) => {
       setError(err.message ?? 'Error al nominar');
+    },
+  });
+
+  const { mutate: denominate } = useMutation({
+    mutationFn: denominatePokemon,
+    onSuccess: () => {
+      setError('');
+      queryClient.invalidateQueries({ queryKey: ['closed-list'] });
+    },
+    onError: (err: Error) => {
+      setError(err.message ?? 'Error al desnominar');
     },
   });
 
@@ -105,13 +117,18 @@ export default function PoolPage() {
               key={pokemon.id}
               className={`pokemon-card ${isNominated ? 'nominated' : ''} ${isOwn ? 'own' : ''}`}
               onClick={() => {
-                if (!isNominated && canNominate && !isPending) {
+                if (isDraftActive || isPending) return;
+                if (isOwn) {
+                  denominate(pokemon.name);
+                } else if (!isNominated && canNominate) {
                   nominate(pokemon.name);
                 }
               }}
               title={
-                isNominated
-                  ? 'Ya nominado'
+                isOwn
+                  ? 'Clic para quitar'
+                  : isNominated
+                  ? 'Ya nominado por otro jugador'
                   : !canNominate
                   ? isDraftActive
                     ? 'Draft activo'

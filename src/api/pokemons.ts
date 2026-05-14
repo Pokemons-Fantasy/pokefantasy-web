@@ -41,6 +41,10 @@ export const nominatePokemon = async (pokemonName: string): Promise<void> => {
   await apiClient.post('/v1/closed-list/nominate', { pokemonName });
 };
 
+export const denominatePokemon = async (pokemonName: string): Promise<void> => {
+  await apiClient.delete(`/v1/closed-list/nominate/${pokemonName}`);
+};
+
 export const getClosedList = async (): Promise<ClosedListEntry[]> => {
   const { data } = await apiClient.get<ClosedListEntry[]>('/v1/closed-list');
   return data;
