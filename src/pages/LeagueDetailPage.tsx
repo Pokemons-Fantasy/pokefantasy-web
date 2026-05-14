@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getLeagueDetail, addMember } from '../api/leagues';
+import { getDraftStatus, startDraft } from '../api/pokemons';
 
 export default function LeagueDetailPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -12,6 +13,8 @@ export default function LeagueDetailPage() {
   const queryClient = useQueryClient();
   const [newMember, setNewMember] = useState('');
   const [error, setError] = useState('');
+  const [draftError, setDraftError] = useState('');
+  const [turnOrder, setTurnOrder] = useState<string[]>([]);
 
   const { data: league, isLoading } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -19,9 +22,23 @@ export default function LeagueDetailPage() {
     enabled: !!leagueId,
   });
 
+  const { data: draft } = useQuery({
+    queryKey: ['draft-status', leagueId],
+    queryFn: () => getDraftStatus(leagueId!),
+    enabled: !!leagueId,
+  });
+
+  useEffect(() => {
+    if (league && turnOrder.length === 0) {
+      setTurnOrder(league.members.map((m) => m.username));
+    }
+  }, [league]);
+
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
+
+  const draftActive = draft && (draft.status === 'IN_PROGRESS' || draft.status === 'COMPLETED');
 
   const { mutate: add, isPending: adding } = useMutation({
     mutationFn: (target: string) => addMember(leagueId!, target),
@@ -32,6 +49,33 @@ export default function LeagueDetailPage() {
     },
     onError: (err: Error) => setError(err.message ?? 'Error al añadir miembro'),
   });
+
+  const { mutate: initDraft, isPending: startingDraft } = useMutation({
+    mutationFn: () => startDraft(leagueId!, turnOrder),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      navigate(`/leagues/${leagueId}/draft`);
+    },
+    onError: (err: Error) => setDraftError(err.message ?? 'Error al iniciar draft'),
+  });
+
+  const moveUp = (i: number) => {
+    if (i === 0) return;
+    setTurnOrder((prev) => {
+      const next = [...prev];
+      [next[i - 1], next[i]] = [next[i], next[i - 1]];
+      return next;
+    });
+  };
+
+  const moveDown = (i: number) => {
+    setTurnOrder((prev) => {
+      if (i === prev.length - 1) return prev;
+      const next = [...prev];
+      [next[i], next[i + 1]] = [next[i + 1], next[i]];
+      return next;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -76,7 +120,16 @@ export default function LeagueDetailPage() {
             <h1 className="page-title">{league.name}</h1>
             <p className="page-subtitle">Creada por {league.createdBy}</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {draft && (
+              <span className={`badge ${
+                draft.status === 'IN_PROGRESS' ? 'badge-green' :
+                draft.status === 'COMPLETED'   ? 'badge-gray'  : 'badge-yellow'
+              }`}>
+                {draft.status === 'IN_PROGRESS' ? 'Draft activo' :
+                 draft.status === 'COMPLETED'   ? 'Draft completado' : 'Draft pendiente'}
+              </span>
+            )}
             <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
               Pool
             </button>
@@ -103,6 +156,53 @@ export default function LeagueDetailPage() {
             </div>
           ))}
         </div>
+
+        {isAdmin && !draftActive && (
+          <>
+            <hr className="divider" />
+            <p className="section-label">Iniciar draft</p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)', marginBottom: '1rem' }}>
+              Ordena los jugadores para definir el orden de turnos.
+            </p>
+
+            <div className="turn-order-list">
+              {turnOrder.map((player, i) => (
+                <div key={player} className="turn-order-item">
+                  <span className="turn-order-num">{i + 1}</span>
+                  <div className="member-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem' }}>
+                    {player[0]}
+                  </div>
+                  <span className="turn-order-name">{player}</span>
+                  <div className="turn-order-arrows">
+                    <button
+                      className="arrow-btn"
+                      onClick={() => moveUp(i)}
+                      disabled={i === 0}
+                      title="Subir"
+                    >↑</button>
+                    <button
+                      className="arrow-btn"
+                      onClick={() => moveDown(i)}
+                      disabled={i === turnOrder.length - 1}
+                      title="Bajar"
+                    >↓</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {draftError && <p className="error" style={{ marginTop: '0.75rem' }}>{draftError}</p>}
+
+            <button
+              className="btn-primary"
+              style={{ marginTop: '1rem' }}
+              disabled={startingDraft || turnOrder.length === 0}
+              onClick={() => initDraft()}
+            >
+              {startingDraft ? 'Iniciando...' : '⚡ Iniciar draft'}
+            </button>
+          </>
+        )}
 
         {isAdmin && (
           <>
