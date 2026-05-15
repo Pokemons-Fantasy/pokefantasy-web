@@ -227,6 +227,34 @@ body {
 }
 .btn-secondary:hover { border-color: var(--border-hover); }
 
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.btn-back:hover { color: var(--text-2); }
+
+.btn-danger {
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--red);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btn-danger:hover { border-color: var(--red); background: rgba(248, 113, 113, 0.15); }
+.btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
 /* ─── CARDS ─── */
 
 .cards-grid {

@@ -29,7 +29,7 @@ export interface DraftPick {
 
 export interface DraftStatus {
   id: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   turnOrder: string[];
   currentTurn: string | null;
   currentRound: number;
@@ -74,4 +74,8 @@ export const draftPick = async (leagueId: string, pokemonName: string): Promise<
 
 export const startDraft = async (leagueId: string, turnOrder: string[]): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/draft/start`, { turnOrder });
+};
+
+export const cancelDraft = async (leagueId: string): Promise<void> => {
+  await apiClient.delete(`/v1/leagues/${leagueId}/draft`);
 };

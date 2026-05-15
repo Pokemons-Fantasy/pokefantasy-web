@@ -106,7 +106,10 @@ export default function LeagueDetailPage() {
     <div className="page-wrapper">
       <header className="page-header">
         <div className="page-header-inner">
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="btn-back" onClick={() => navigate('/leagues')}>← Mis ligas</button>
+            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          </div>
           <div className="header-right">
             <span className="header-user">Hola, <strong>{username}</strong></span>
             <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>

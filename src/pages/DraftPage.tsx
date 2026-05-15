@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus, draftPick, getClosedList } from '../api/pokemons';
+import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
+import { getLeagueDetail } from '../api/leagues';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -12,6 +13,7 @@ export default function DraftPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -25,6 +27,16 @@ export default function DraftPage() {
     queryFn: () => getClosedList(leagueId!),
     enabled: !!leagueId,
   });
+
+  const { data: league } = useQuery({
+    queryKey: ['league-detail', leagueId],
+    queryFn: () => getLeagueDetail(leagueId!),
+    enabled: !!leagueId,
+  });
+
+  const isAdmin = league?.members.some(
+    (m) => m.username === username && m.leagueRole === 'ADMIN'
+  );
 
   const pickedNames = new Set(draft?.picks?.map((p) => p.pokemonName) ?? []);
   const availablePool = pool.filter((p) => !pickedNames.has(p.pokemonName));
@@ -44,9 +56,23 @@ export default function DraftPage() {
     onError: (err: Error) => setError(err.message ?? 'Error al hacer pick'),
   });
 
+  const { mutate: cancel, isPending: cancelling } = useMutation({
+    mutationFn: () => cancelDraft(leagueId!),
+    onSuccess: () => {
+      setShowCancelModal(false);
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
+    },
+    onError: (err: Error) => {
+      setShowCancelModal(false);
+      setError(err.message ?? 'Error al cancelar el draft');
+    },
+  });
+
   const statusLabel = !draft ? '—'
     : draft.status === 'COMPLETED' ? 'Completado'
     : draft.status === 'IN_PROGRESS' ? 'En progreso'
+    : draft.status === 'CANCELLED' ? 'Cancelado'
     : 'Pendiente';
 
   const statusClass = !draft ? 'muted'
@@ -58,7 +84,12 @@ export default function DraftPage() {
     <div className="page-wrapper">
       <header className="page-header">
         <div className="page-header-inner">
-          <span className="logo" onClick={() => navigate(`/leagues/${leagueId}`)}>PokeFantasy</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>
+              ← Liga
+            </button>
+            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          </div>
           <div className="header-right">
             <span className="header-user">Hola, <strong>{username}</strong></span>
             <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
@@ -67,7 +98,14 @@ export default function DraftPage() {
       </header>
 
       <main className="page-content">
-        <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>Draft</h1>
+        <div className="section-header">
+          <h1 className="page-title">Draft</h1>
+          {isAdmin && draft?.status === 'IN_PROGRESS' && (
+            <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
+              Cancelar draft
+            </button>
+          )}
+        </div>
 
         {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
         {!isLoading && !draft && (
@@ -163,6 +201,25 @@ export default function DraftPage() {
           </div>
         )}
       </main>
+
+      {showCancelModal && (
+        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>¿Cancelar el draft?</h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
+              El draft se cancelará y podrás iniciar uno nuevo. Los picks ya realizados no se revierten.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-ghost" onClick={() => setShowCancelModal(false)}>
+                Volver
+              </button>
+              <button className="btn-danger" disabled={cancelling} onClick={() => cancel()}>
+                {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
