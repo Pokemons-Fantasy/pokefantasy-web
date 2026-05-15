@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getLeagueDetail, addMember } from '../api/leagues';
+import { getLeagueDetail, addMember, removeMember } from '../api/leagues';
 import { getDraftStatus, startDraft } from '../api/pokemons';
 
 export default function LeagueDetailPage() {
@@ -15,6 +15,7 @@ export default function LeagueDetailPage() {
   const [error, setError] = useState('');
   const [draftError, setDraftError] = useState('');
   const [turnOrder, setTurnOrder] = useState<string[]>([]);
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
 
   const { data: league, isLoading } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -38,6 +39,9 @@ export default function LeagueDetailPage() {
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
 
+  const adminCount = league?.members.filter((m) => m.leagueRole === 'ADMIN').length ?? 0;
+  const isLastAdmin = isAdmin && adminCount === 1;
+
   const draftActive = draft && (draft.status === 'IN_PROGRESS' || draft.status === 'COMPLETED');
 
   const { mutate: add, isPending: adding } = useMutation({
@@ -48,6 +52,20 @@ export default function LeagueDetailPage() {
       setError('');
     },
     onError: (err: Error) => setError(err.message ?? 'Error al añadir miembro'),
+  });
+
+  const { mutate: remove, isPending: removing } = useMutation({
+    mutationFn: (target: string) => removeMember(leagueId!, target),
+    onSuccess: (_data, target) => {
+      setConfirmRemove(null);
+      if (target === username) {
+        navigate('/leagues');
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
+        setTurnOrder((prev) => prev.filter((u) => u !== target));
+      }
+    },
+    onError: () => setConfirmRemove(null),
   });
 
   const { mutate: initDraft, isPending: startingDraft } = useMutation({
@@ -156,6 +174,26 @@ export default function LeagueDetailPage() {
               {m.leagueRole === 'ADMIN' && (
                 <span className="badge badge-yellow">Admin</span>
               )}
+              {m.username === username && (
+                <button
+                  className="btn-danger"
+                  style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+                  disabled={isLastAdmin}
+                  title={isLastAdmin ? 'No puedes salir si eres el único admin' : 'Salir de la liga'}
+                  onClick={() => setConfirmRemove(m.username)}
+                >
+                  Salir
+                </button>
+              )}
+              {isAdmin && m.username !== username && (
+                <button
+                  className="btn-danger"
+                  style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+                  onClick={() => setConfirmRemove(m.username)}
+                >
+                  Expulsar
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -232,6 +270,29 @@ export default function LeagueDetailPage() {
           </>
         )}
       </main>
+
+      {confirmRemove && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>
+              {confirmRemove === username ? '¿Salir de la liga?' : `¿Expulsar a ${confirmRemove}?`}
+            </h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
+              {confirmRemove === username
+                ? 'Perderás todos tus picks del draft. Esta acción no se puede deshacer.'
+                : `${confirmRemove} será eliminado de la liga y perderá todos sus picks del draft.`}
+            </p>
+            <div className="modal-actions">
+              <button className="btn-ghost" onClick={() => setConfirmRemove(null)} disabled={removing}>
+                Cancelar
+              </button>
+              <button className="btn-danger" onClick={() => remove(confirmRemove)} disabled={removing}>
+                {removing ? 'Eliminando...' : confirmRemove === username ? 'Salir' : 'Expulsar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
