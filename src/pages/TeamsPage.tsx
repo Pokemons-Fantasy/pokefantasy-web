@@ -48,7 +48,9 @@ export default function TeamsPage() {
   const teams = draft
     ? draft.turnOrder.map((player) => ({
         username: player,
-        picks: (draft.picks ?? []).filter((p) => p.username === player),
+        picks: (draft.picks ?? [])
+          .filter((p) => p.username === player)
+          .sort((a, b) => a.pokemonId - b.pokemonId),
       }))
     : [];
 

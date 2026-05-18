@@ -588,6 +588,39 @@ body {
   font-weight: 600;
 }
 
+/* ─── GEN TABS ─── */
+
+.gen-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
+}
+.gen-tabs::-webkit-scrollbar { display: none; }
+
+.gen-tab {
+  flex-shrink: 0;
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.gen-tab:hover { border-color: var(--border-hover); color: var(--text); }
+.gen-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 /* ─── TURN ORDER ─── */
 
 .turn-order-list { display: flex; flex-direction: column; gap: 0.4rem; }
