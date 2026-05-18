@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus, getBench, swapWithBench, BenchEntry } from '../api/pokemons';
+import { getDraftStatus, getBench, swapWithBench } from '../api/pokemons';
+import type { BenchEntry } from '../api/pokemons';
 
 function spriteUrl(pokemonId: number) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
