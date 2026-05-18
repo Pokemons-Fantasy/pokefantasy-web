@@ -1,13 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus } from '../api/pokemons';
+import { getDraftStatus, getBench, swapWithBench, BenchEntry } from '../api/pokemons';
+
+function spriteUrl(pokemonId: number) {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+}
 
 export default function TeamsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [selectedBench, setSelectedBench] = useState<BenchEntry | null>(null);
+  const [swapError, setSwapError] = useState('');
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -16,12 +25,45 @@ export default function TeamsPage() {
     staleTime: 30_000,
   });
 
+  const { data: bench = [] } = useQuery({
+    queryKey: ['bench', leagueId],
+    queryFn: () => getBench(leagueId!),
+    enabled: !!leagueId && draft?.status === 'COMPLETED',
+    staleTime: 30_000,
+  });
+
+  const { mutate: doSwap, isPending: swapping } = useMutation({
+    mutationFn: ({ give, take }: { give: string; take: string }) =>
+      swapWithBench(leagueId!, give, take),
+    onSuccess: () => {
+      setSelectedBench(null);
+      setSwapError('');
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
+    },
+    onError: (err: Error) => setSwapError(err.message ?? 'Error al intercambiar'),
+  });
+
   const teams = draft
     ? draft.turnOrder.map((player) => ({
         username: player,
         picks: (draft.picks ?? []).filter((p) => p.username === player),
       }))
     : [];
+
+  const myTeam = teams.find((t) => t.username === username);
+  const isDraftCompleted = draft?.status === 'COMPLETED';
+
+  function handleBenchClick(entry: BenchEntry) {
+    if (!isDraftCompleted) return;
+    setSwapError('');
+    setSelectedBench((prev) => (prev?.pokemonName === entry.pokemonName ? null : entry));
+  }
+
+  function handleMyPokemonClick(pokemonName: string) {
+    if (!selectedBench || swapping) return;
+    doSwap({ give: pokemonName, take: selectedBench.pokemonName });
+  }
 
   return (
     <div className="page-wrapper">
@@ -51,42 +93,112 @@ export default function TeamsPage() {
           </div>
         )}
 
+        {selectedBench && (
+          <div className="my-turn-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>
+              Intercambiando <strong style={{ textTransform: 'capitalize' }}>{selectedBench.pokemonName}</strong> — elige el pokémon de tu equipo que quieres dar
+            </span>
+            <button
+              className="btn-ghost"
+              style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+              onClick={() => { setSelectedBench(null); setSwapError(''); }}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+
+        {swapError && <p className="error" style={{ marginBottom: '1rem' }}>{swapError}</p>}
+
         {draft && teams.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginTop: '1.5rem' }}>
-            {teams.map((team) => (
-              <div key={team.username}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <div className="member-avatar">{team.username[0]}</div>
-                  <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
-                  <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                    {team.picks.length}/10
-                  </span>
-                  {team.username === username && (
-                    <span className="badge badge-green">Tú</span>
+            {teams.map((team) => {
+              const isMe = team.username === username;
+              const selectableMode = !!selectedBench && isMe;
+
+              return (
+                <div key={team.username}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div className="member-avatar">{team.username[0]}</div>
+                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
+                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
+                      {team.picks.length}/10
+                    </span>
+                    {isMe && <span className="badge badge-green">Tú</span>}
+                    {selectableMode && (
+                      <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}>
+                        ← elige cuál das
+                      </span>
+                    )}
+                  </div>
+
+                  {team.picks.length === 0 ? (
+                    <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Sin picks aún</p>
+                  ) : (
+                    <div className="pokemon-grid">
+                      {team.picks.map((pick) => (
+                        <div
+                          key={pick.pokemonName}
+                          className={`pokemon-card${selectableMode ? ' nominated' : ''}`}
+                          style={selectableMode ? { cursor: 'pointer' } : undefined}
+                          onClick={() => selectableMode && handleMyPokemonClick(pick.pokemonName)}
+                        >
+                          <img
+                            src={spriteUrl(pick.pokemonId)}
+                            alt={pick.pokemonName}
+                            className="pokemon-sprite"
+                            loading="lazy"
+                          />
+                          <span className="pokemon-name">{pick.pokemonName}</span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {team.picks.length === 0 ? (
-                  <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', paddingLeft: '0.25rem' }}>
-                    Sin picks aún
+        {isDraftCompleted && (
+          <div style={{ marginTop: '3rem' }}>
+            <hr className="divider" />
+            <p className="section-label">Banca</p>
+            {bench.length === 0 ? (
+              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
+                No quedan pokémons en la banca.
+              </p>
+            ) : (
+              <>
+                {myTeam && myTeam.picks.length > 0 && (
+                  <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                    Haz click en un pokémon de la banca para intercambiarlo con uno de tu equipo.
                   </p>
-                ) : (
-                  <div className="pokemon-grid">
-                    {team.picks.map((pick) => (
-                      <div key={pick.pokemonName} className="pokemon-card">
+                )}
+                <div className="pokemon-grid">
+                  {bench.map((entry) => {
+                    const isSelected = selectedBench?.pokemonName === entry.pokemonName;
+                    const canSwap = !!(myTeam && myTeam.picks.length > 0);
+                    return (
+                      <div
+                        key={entry.pokemonName}
+                        className={`pokemon-card${isSelected ? ' nominated' : ''}`}
+                        style={{ cursor: canSwap ? 'pointer' : 'default' }}
+                        onClick={() => canSwap && handleBenchClick(entry)}
+                      >
                         <img
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pick.pokemonId}.png`}
-                          alt={pick.pokemonName}
+                          src={spriteUrl(entry.pokemonId)}
+                          alt={entry.pokemonName}
                           className="pokemon-sprite"
                           loading="lazy"
                         />
-                        <span className="pokemon-name">{pick.pokemonName}</span>
+                        <span className="pokemon-name">{entry.pokemonName}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         )}
       </main>

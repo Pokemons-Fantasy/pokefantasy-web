@@ -79,3 +79,22 @@ export const startDraft = async (leagueId: string, turnOrder: string[]): Promise
 export const cancelDraft = async (leagueId: string): Promise<void> => {
   await apiClient.delete(`/v1/leagues/${leagueId}/draft`);
 };
+
+export interface BenchEntry {
+  pokemonId: number;
+  pokemonName: string;
+  sprite: string;
+}
+
+export const getBench = async (leagueId: string): Promise<BenchEntry[]> => {
+  const { data } = await apiClient.get<BenchEntry[]>(`/v1/leagues/${leagueId}/bench`);
+  return data;
+};
+
+export const swapWithBench = async (
+  leagueId: string,
+  pokemonToGive: string,
+  pokemonToTake: string
+): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/bench/swap`, { pokemonToGive, pokemonToTake });
+};
