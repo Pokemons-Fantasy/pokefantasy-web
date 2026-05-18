@@ -53,7 +53,10 @@ export default function DraftPage() {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => setError(err.message ?? 'Error al hacer pick'),
+    onError: (err: Error) => {
+      setError(err.message ?? 'Error al hacer pick');
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+    },
   });
 
   const { mutate: cancel, isPending: cancelling } = useMutation({
