@@ -141,7 +141,7 @@ export default function LeagueDetailPage() {
             <h1 className="page-title">{league.name}</h1>
             <p className="page-subtitle">Creada por {league.createdBy}</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="section-actions">
             {draft && (
               <span className={`badge ${
                 draft.status === 'IN_PROGRESS' ? 'badge-green' :

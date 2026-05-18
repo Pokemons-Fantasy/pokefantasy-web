@@ -666,3 +666,108 @@ body {
 }
 .arrow-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .arrow-btn:disabled { opacity: 0.25; cursor: default; }
+
+/* ─── SECTION ACTIONS ─── */
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ─── PICKS TABLE CONTAINER ─── */
+
+.picks-table-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* ─── RESPONSIVE ─── */
+
+@media (max-width: 640px) {
+  /* Layout */
+  .page-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  /* Header: hide username text to save space */
+  .header-user {
+    display: none;
+  }
+
+  /* Typography */
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  /* Section header stacks vertically */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Section action buttons fill row and wrap */
+  .section-actions {
+    width: 100%;
+  }
+
+  /* Cards grid: fit 2 columns on narrow screens */
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  /* Pokemon grid: tighter cards */
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.4rem;
+  }
+
+  .pokemon-sprite {
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Member row: allow action button to wrap */
+  .member-row {
+    flex-wrap: wrap;
+  }
+
+  /* Draft status bar: tighter gap */
+  .draft-status-bar {
+    gap: 1.25rem;
+    padding: 0.875rem 1rem;
+  }
+
+  /* Inline form stacks vertically */
+  .inline-form {
+    flex-direction: column;
+  }
+  .inline-form .btn-primary,
+  .inline-form .btn-ghost,
+  .inline-form .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Picks table: horizontal scroll instead of clipping */
+  .picks-table-container {
+    overflow-x: auto;
+  }
+  .picks-table {
+    min-width: 300px;
+  }
+
+  /* Nomination counter row wraps */
+  .nom-row {
+    flex-wrap: wrap;
+  }
+
+  /* Modal fits small screens */
+  .modal {
+    padding: 1.5rem;
+  }
+}
