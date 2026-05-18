@@ -13,7 +13,7 @@ import type { AvailablePokemon } from '../api/pokemons';
 
 const MAX_NOMINATIONS = 16;
 
-type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'mega';
+type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'forms';
 
 const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] = [
   { label: 'Todos',    key: 'all' },
@@ -26,12 +26,12 @@ const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] 
   { label: 'Gen VII', key: 'gen7', min: 722, max: 809  },
   { label: 'Gen VIII',key: 'gen8', min: 810, max: 905  },
   { label: 'Gen IX',  key: 'gen9', min: 906, max: 1025 },
-  { label: 'Mega',    key: 'mega' },
+  { label: 'Formas',  key: 'forms' },
 ];
 
 function matchesGen(p: AvailablePokemon, gen: GenFilter): boolean {
   if (gen === 'all') return true;
-  if (gen === 'mega') return p.id >= 10000 || p.name.includes('-mega');
+  if (gen === 'forms') return p.id >= 10000;
   const tab = GEN_TABS.find((t) => t.key === gen);
   if (!tab || tab.min === undefined || tab.max === undefined) return false;
   return p.id >= tab.min && p.id <= tab.max && p.id < 10000;
