@@ -103,11 +103,18 @@ export default function DraftPage() {
       <main className="page-content">
         <div className="section-header">
           <h1 className="page-title">Draft</h1>
-          {isAdmin && draft?.status === 'IN_PROGRESS' && (
-            <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
-              Cancelar draft
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {(draft?.picks?.length ?? 0) > 0 && (
+              <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/teams`)}>
+                Ver equipos
+              </button>
+            )}
+            {isAdmin && draft?.status === 'IN_PROGRESS' && (
+              <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
+                Cancelar draft
+              </button>
+            )}
+          </div>
         </div>
 
         {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}

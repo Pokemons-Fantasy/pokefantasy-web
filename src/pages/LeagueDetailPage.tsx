@@ -154,9 +154,14 @@ export default function LeagueDetailPage() {
             <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
               Pool
             </button>
-            <button className="btn-primary" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>
+            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>
               Draft
             </button>
+            {(draft?.picks?.length ?? 0) > 0 && (
+              <button className="btn-primary" onClick={() => navigate(`/leagues/${leagueId}/teams`)}>
+                Equipos
+              </button>
+            )}
           </div>
         </div>
 

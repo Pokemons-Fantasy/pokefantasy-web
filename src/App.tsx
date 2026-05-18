@@ -7,6 +7,7 @@ import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
 import LeagueDetailPage from './pages/LeagueDetailPage';
 import DraftPage from './pages/DraftPage';
+import TeamsPage from './pages/TeamsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/leagues/:leagueId" element={<LeagueDetailPage />} />
             <Route path="/leagues/:leagueId/pool" element={<PoolPage />} />
             <Route path="/leagues/:leagueId/draft" element={<DraftPage />} />
+            <Route path="/leagues/:leagueId/teams" element={<TeamsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
