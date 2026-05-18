@@ -103,7 +103,7 @@ export default function DraftPage() {
       <main className="page-content">
         <div className="section-header">
           <h1 className="page-title">Draft</h1>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="section-actions">
             {(draft?.picks?.length ?? 0) > 0 && (
               <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/teams`)}>
                 Ver equipos
@@ -188,7 +188,7 @@ export default function DraftPage() {
         {draft && (draft.picks?.length ?? 0) > 0 && (
           <div style={{ marginTop: '2.5rem' }}>
             <p className="section-label">Historial de picks</p>
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+            <div className="picks-table-container">
               <table className="picks-table">
                 <thead>
                   <tr>
