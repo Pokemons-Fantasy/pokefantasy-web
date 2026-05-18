@@ -9,8 +9,33 @@ import {
   nominatePokemon,
   denominatePokemon,
 } from '../api/pokemons';
+import type { AvailablePokemon } from '../api/pokemons';
 
 const MAX_NOMINATIONS = 16;
+
+type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'mega';
+
+const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] = [
+  { label: 'Todos',    key: 'all' },
+  { label: 'Gen I',   key: 'gen1', min: 1,   max: 151  },
+  { label: 'Gen II',  key: 'gen2', min: 152, max: 251  },
+  { label: 'Gen III', key: 'gen3', min: 252, max: 386  },
+  { label: 'Gen IV',  key: 'gen4', min: 387, max: 493  },
+  { label: 'Gen V',   key: 'gen5', min: 494, max: 649  },
+  { label: 'Gen VI',  key: 'gen6', min: 650, max: 721  },
+  { label: 'Gen VII', key: 'gen7', min: 722, max: 809  },
+  { label: 'Gen VIII',key: 'gen8', min: 810, max: 905  },
+  { label: 'Gen IX',  key: 'gen9', min: 906, max: 1025 },
+  { label: 'Mega',    key: 'mega' },
+];
+
+function matchesGen(p: AvailablePokemon, gen: GenFilter): boolean {
+  if (gen === 'all') return true;
+  if (gen === 'mega') return p.id >= 10000 || p.name.includes('-mega');
+  const tab = GEN_TABS.find((t) => t.key === gen);
+  if (!tab || tab.min === undefined || tab.max === undefined) return false;
+  return p.id >= tab.min && p.id <= tab.max && p.id < 10000;
+}
 
 export default function PoolPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -19,6 +44,7 @@ export default function PoolPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [genFilter, setGenFilter] = useState<GenFilter>('all');
   const [error, setError] = useState('');
 
   const { data: available = [], isLoading: loadingPokemons } = useQuery({
@@ -63,9 +89,9 @@ export default function PoolPage() {
     onError: (err: Error) => setError(err.message ?? 'Error al desnominar'),
   });
 
-  const filtered = available.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = available
+    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((p) => matchesGen(p, genFilter));
 
   return (
     <div className="page-wrapper">
@@ -103,6 +129,18 @@ export default function PoolPage() {
         </div>
 
         {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
+
+        <div className="gen-tabs">
+          {GEN_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className={`gen-tab${genFilter === tab.key ? ' active' : ''}`}
+              onClick={() => setGenFilter(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         <input
           className="search-input"
