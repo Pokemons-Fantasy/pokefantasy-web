@@ -49,6 +49,11 @@ export const removeMember = async (leagueId: string, username: string): Promise<
 export interface LeagueSettings {
   coinsPerWin: number;
   coinsPerLoss: number;
+  priceTierS: number;
+  priceTierA: number;
+  priceTierB: number;
+  priceTierC: number;
+  priceTierD: number;
 }
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
