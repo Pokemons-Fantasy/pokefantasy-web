@@ -162,6 +162,11 @@ export default function LeagueDetailPage() {
                 Equipos
               </button>
             )}
+            {draft?.status === 'COMPLETED' && (
+              <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
+                ⚙️ Configuración
+              </button>
+            )}
           </div>
         </div>
 

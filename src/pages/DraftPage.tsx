@@ -109,6 +109,11 @@ export default function DraftPage() {
                 Ver equipos
               </button>
             )}
+            {draft?.status === 'COMPLETED' && (
+              <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
+                ⚙️ Configuración
+              </button>
+            )}
             {isAdmin && draft?.status === 'IN_PROGRESS' && (
               <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
                 Cancelar draft
