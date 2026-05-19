@@ -43,3 +43,22 @@ export const getLeagueDetail = async (leagueId: string): Promise<LeagueDetail> =
 export const removeMember = async (leagueId: string, username: string): Promise<void> => {
   await apiClient.delete(`/v1/leagues/${leagueId}/members/${username}`);
 };
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+
+export interface LeagueSettings {
+  coinsPerWin: number;
+  coinsPerLoss: number;
+}
+
+export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
+  const { data } = await apiClient.get<LeagueSettings>(`/v1/leagues/${leagueId}/settings`);
+  return data;
+};
+
+export const updateLeagueSettings = async (
+  leagueId: string,
+  settings: LeagueSettings
+): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/settings`, settings);
+};

@@ -1129,6 +1129,40 @@ body {
 
 .league-card-dot.active { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
 
+/* ─── CONFIG FORM ─── */
+
+.config-form {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.config-field .search-input {
+  margin-bottom: 0;
+}
+
+.config-field input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.config-hint {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
 /* ─── RESPONSIVE ─── */
 
 @media (max-width: 640px) {
