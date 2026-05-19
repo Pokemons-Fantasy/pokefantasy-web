@@ -50,22 +50,36 @@ export default function LeaguesPage() {
         </div>
 
         {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
 
-        <div className="cards-grid">
-          {leagues.map((league) => (
-            <div key={league.id} className="card" onClick={() => navigate(`/leagues/${league.id}`)}>
-              <h3>{league.name}</h3>
-              <p>{league.memberCount} {league.memberCount === 1 ? 'jugador' : 'jugadores'}</p>
-              <span className="card-cta">Entrar →</span>
-            </div>
-          ))}
-        </div>
+        {isLoading && (
+          <div className="loading-text">
+            <span className="spinner" />
+            Cargando ligas...
+          </div>
+        )}
+
+        {!isLoading && (
+          <div className="cards-grid stagger">
+            {leagues.map((league) => (
+              <div key={league.id} className="card" onClick={() => navigate(`/leagues/${league.id}`)}>
+                <h3>{league.name}</h3>
+                <div className="league-card-meta">
+                  <span className={`league-card-dot${league.status === 'ACTIVE' ? ' active' : ''}`} />
+                  <p style={{ margin: 0 }}>
+                    {league.memberCount} {league.memberCount === 1 ? 'jugador' : 'jugadores'}
+                  </p>
+                </div>
+                <span className="card-cta">Entrar →</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {!isLoading && leagues.length === 0 && (
-          <div className="empty-state">
-            <p>No estás en ninguna liga todavía.</p>
-            <p style={{ marginTop: '0.5rem' }}>Crea una o pide a alguien que te añada.</p>
+          <div className="empty-state animate-in">
+            <span className="empty-state-icon">🏆</span>
+            <p style={{ color: 'var(--text-2)', fontWeight: 600 }}>Sin ligas todavía</p>
+            <p>Crea una liga o pide a alguien que te añada.</p>
           </div>
         )}
       </main>
