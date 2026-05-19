@@ -10,6 +10,7 @@ import {
   denominatePokemon,
 } from '../api/pokemons';
 import type { AvailablePokemon } from '../api/pokemons';
+import TierBadge from '../components/TierBadge';
 
 const MAX_NOMINATIONS = 16;
 
@@ -67,6 +68,7 @@ export default function PoolPage() {
 
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
   const nominatedNames = new Set(closedList.map((e) => e.pokemonName));
+  const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
   const isDraftActive = draftStatus && draftStatus.status !== 'PENDING';
   const canNominate = !isDraftActive && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
@@ -174,6 +176,7 @@ export default function PoolPage() {
               >
                 <img src={pokemon.spriteUrl} alt={pokemon.name} className="pokemon-sprite" />
                 <span className="pokemon-name">{pokemon.name}</span>
+                {isNominated && <TierBadge tier={tierByName.get(pokemon.name)} />}
                 {isOwn && <span className="pokemon-tag pokemon-tag-own">Tuyo</span>}
                 {isNominated && !isOwn && <span className="pokemon-tag pokemon-tag-taken">Tomado</span>}
               </div>
