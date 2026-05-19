@@ -155,7 +155,8 @@ export default function DraftPage() {
         {draft?.status === 'IN_PROGRESS' && (
           isMyTurn ? (
             <>
-              <div className="my-turn-banner">
+              <div className="my-turn-banner animate-in">
+                <span className="my-turn-dot" />
                 ⚡ ¡Es tu turno! Elige un pokémon del pool
               </div>
               <input
