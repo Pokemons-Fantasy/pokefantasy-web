@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
+import TierBadge from '../components/TierBadge';
 import { getLeagueDetail } from '../api/leagues';
 
 export default function DraftPage() {
@@ -180,6 +181,7 @@ export default function DraftPage() {
                   >
                     <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
                     <span className="pokemon-name">{entry.pokemonName}</span>
+                    <TierBadge tier={entry.tier} />
                   </div>
                 ))}
               </div>

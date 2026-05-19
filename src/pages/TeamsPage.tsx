@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus, getBench, swapWithBench } from '../api/pokemons';
+import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
 import type { BenchEntry } from '../api/pokemons';
+import TierBadge from '../components/TierBadge';
 
 function spriteUrl(pokemonId: number) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
@@ -32,6 +33,14 @@ export default function TeamsPage() {
     enabled: !!leagueId && draft?.status === 'COMPLETED',
     staleTime: 30_000,
   });
+
+  const { data: closedList = [] } = useQuery({
+    queryKey: ['closed-list', leagueId],
+    queryFn: () => getClosedList(leagueId!),
+    enabled: !!leagueId,
+    staleTime: 30_000,
+  });
+  const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
 
   const { mutate: doSwap, isPending: swapping } = useMutation({
     mutationFn: ({ give, take }: { give: string; take: string }) =>
@@ -153,6 +162,7 @@ export default function TeamsPage() {
                             loading="lazy"
                           />
                           <span className="pokemon-name">{pick.pokemonName}</span>
+                          <TierBadge tier={tierByName.get(pick.pokemonName)} />
                         </div>
                       ))}
                     </div>
@@ -196,6 +206,7 @@ export default function TeamsPage() {
                           loading="lazy"
                         />
                         <span className="pokemon-name">{entry.pokemonName}</span>
+                        <TierBadge tier={entry.tier} />
                       </div>
                     );
                   })}

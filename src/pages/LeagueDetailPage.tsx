@@ -72,6 +72,7 @@ export default function LeagueDetailPage() {
     mutationFn: () => startDraft(leagueId!, turnOrder),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
       navigate(`/leagues/${leagueId}/draft`);
     },
     onError: (err: Error) => setDraftError(err.message ?? 'Error al iniciar draft'),

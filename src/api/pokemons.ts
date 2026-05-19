@@ -11,12 +11,15 @@ export interface AvailablePokemon {
   spriteUrl: string;
 }
 
+export type Tier = 'S' | 'A' | 'B' | 'C' | 'D';
+
 export interface ClosedListEntry {
   id: string;
   pokemonId: number;
   pokemonName: string;
   nominatedBy: string;
   sprite: string;
+  tier?: Tier | null;
 }
 
 export interface DraftPick {
@@ -84,6 +87,7 @@ export interface BenchEntry {
   pokemonId: number;
   pokemonName: string;
   sprite: string;
+  tier?: Tier | null;
 }
 
 export const getBench = async (leagueId: string): Promise<BenchEntry[]> => {

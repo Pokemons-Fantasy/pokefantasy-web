@@ -560,6 +560,29 @@ body {
 .pokemon-tag-own   { background: rgba(52,211,153,0.18); color: var(--green); }
 .pokemon-tag-taken { background: var(--surface-2); color: var(--text-3); }
 
+/* ─── TIER BADGES ─── */
+.tier-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+.tier-badge-s { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+.tier-badge-a { background: rgba(251,191,36,0.15);  color: var(--accent); border: 1px solid rgba(251,191,36,0.35); }
+.tier-badge-b { background: rgba(52,211,153,0.15);  color: var(--green); border: 1px solid rgba(52,211,153,0.35); }
+.tier-badge-c { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.35); }
+.tier-badge-d { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+
 /* ─── DRAFT ─── */
 
 .draft-status-bar {
