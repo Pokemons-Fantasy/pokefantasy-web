@@ -15,15 +15,21 @@ export default function HomePage() {
 
   const activeLeagues = leagues.filter((l) => l.status === 'ACTIVE');
 
-  // Navigate directly to the draft if there is exactly one active league,
-  // otherwise go to the leagues list so the user can pick
+  // Navigate to draft: active league → directly to its draft page
+  // No active leagues yet → leagues list to continue setup
   const handleDraftNav = () => {
     if (activeLeagues.length === 1) {
       navigate(`/leagues/${activeLeagues[0].id}/draft`);
+    } else if (activeLeagues.length > 1) {
+      navigate('/leagues');
+    } else if (leagues.length === 1) {
+      navigate(`/leagues/${leagues[0].id}`);
     } else {
       navigate('/leagues');
     }
   };
+
+  const draftIsLive = activeLeagues.length > 0;
 
   return (
     <div className="page-wrapper">
@@ -49,7 +55,6 @@ export default function HomePage() {
             Nomina, draftea y compite con tus Pokémon favoritos en ligas privadas con amigos.
           </p>
 
-          {/* Pokéball decoration */}
           <svg className="hero-ball" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <circle cx="50" cy="50" r="48" fill="none" stroke="white" strokeWidth="1.5"/>
             <line x1="2" y1="50" x2="98" y2="50" stroke="white" strokeWidth="1.5"/>
@@ -79,39 +84,50 @@ export default function HomePage() {
         {/* Navigation cards */}
         <div className="nav-cards stagger">
 
-          {/* ── Mis ligas (yellow/gold — home base) ── */}
-          <button className="nav-card" onClick={() => navigate('/leagues')}>
-            <div className="nav-card-icon">🏆</div>
+          {/* ── Mis ligas ── always shown, gold accent */}
+          <button className="nav-card nav-card-gold" onClick={() => navigate('/leagues')}>
+            <div className="nav-card-icon nav-card-icon-gold">🏆</div>
             <h3>Mis ligas</h3>
             <p>Ver ligas activas, gestionar miembros y acceder al draft.</p>
             <span className="nav-card-arrow">Ver ligas <span>→</span></span>
           </button>
 
-          {/* ── Draft activo (green — live/urgent, only when relevant) ── */}
-          {activeLeagues.length > 0 && (
-            <button className="nav-card nav-card-live" onClick={handleDraftNav}>
-              {/* Pulsing live indicator */}
-              <span className="nav-card-live-dot" aria-hidden="true" />
+          {/* ── Draft / Setup ── shown when user has at least one league */}
+          {leagues.length > 0 && (
+            <button
+              className={`nav-card ${draftIsLive ? 'nav-card-live' : 'nav-card-setup'}`}
+              onClick={handleDraftNav}
+            >
+              {draftIsLive && <span className="nav-card-live-dot" aria-hidden="true" />}
 
-              <div className="nav-card-icon nav-card-icon-green">⚡</div>
+              <div className={`nav-card-icon ${draftIsLive ? 'nav-card-icon-green' : 'nav-card-icon-blue'}`}>
+                {draftIsLive ? '⚡' : '🎯'}
+              </div>
+
               <h3>
-                Draft activo
-                {activeLeagues.length > 1 && (
+                {draftIsLive ? 'Draft activo' : 'Continuar setup'}
+                {draftIsLive && activeLeagues.length > 1 && (
                   <span className="nav-card-count">{activeLeagues.length}</span>
                 )}
               </h3>
+
               <p>
-                {activeLeagues.length === 1
-                  ? <>Liga <strong style={{ color: 'var(--text)' }}>{activeLeagues[0].name}</strong> — draft en curso.</>
-                  : `${activeLeagues.length} ligas con draft en curso.`}
+                {draftIsLive
+                  ? activeLeagues.length === 1
+                    ? <><strong style={{ color: 'var(--text)' }}>{activeLeagues[0].name}</strong> — ir directamente al draft.</>
+                    : `${activeLeagues.length} ligas con draft en curso.`
+                  : leagues.length === 1
+                    ? <><strong style={{ color: 'var(--text)' }}>{leagues[0].name}</strong> — nominar Pokémon y arrancar.</>
+                    : 'Continúa preparando tus ligas.'}
               </p>
-              <span className="nav-card-arrow nav-card-arrow-green">
-                Ir al draft <span>→</span>
+
+              <span className={`nav-card-arrow ${draftIsLive ? 'nav-card-arrow-green' : 'nav-card-arrow-blue'}`}>
+                {draftIsLive ? 'Ir al draft' : 'Continuar'} <span>→</span>
               </span>
             </button>
           )}
 
-          {/* ── Cómo funciona (static/info) ── */}
+          {/* ── Cómo funciona ── static / info */}
           <div className="nav-card card-static" style={{ cursor: 'default' }}>
             <div className="nav-card-icon">📖</div>
             <h3>Cómo funciona</h3>
