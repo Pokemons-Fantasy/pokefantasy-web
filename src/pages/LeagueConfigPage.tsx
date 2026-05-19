@@ -19,6 +19,11 @@ export default function LeagueConfigPage() {
 
   const [coinsPerWin, setCoinsPerWin] = useState<number>(100);
   const [coinsPerLoss, setCoinsPerLoss] = useState<number>(50);
+  const [priceTierS, setPriceTierS] = useState<number>(0);
+  const [priceTierA, setPriceTierA] = useState<number>(0);
+  const [priceTierB, setPriceTierB] = useState<number>(0);
+  const [priceTierC, setPriceTierC] = useState<number>(0);
+  const [priceTierD, setPriceTierD] = useState<number>(0);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -45,6 +50,11 @@ export default function LeagueConfigPage() {
     if (settings) {
       setCoinsPerWin(settings.coinsPerWin);
       setCoinsPerLoss(settings.coinsPerLoss);
+      setPriceTierS(settings.priceTierS ?? 0);
+      setPriceTierA(settings.priceTierA ?? 0);
+      setPriceTierB(settings.priceTierB ?? 0);
+      setPriceTierC(settings.priceTierC ?? 0);
+      setPriceTierD(settings.priceTierD ?? 0);
     }
   }, [settings]);
 
@@ -73,7 +83,11 @@ export default function LeagueConfigPage() {
       setError('Los valores deben ser >= 0');
       return;
     }
-    save({ coinsPerWin, coinsPerLoss });
+    if (priceTierS < 0 || priceTierA < 0 || priceTierB < 0 || priceTierC < 0 || priceTierD < 0) {
+      setError('Los precios por tier deben ser >= 0');
+      return;
+    }
+    save({ coinsPerWin, coinsPerLoss, priceTierS, priceTierA, priceTierB, priceTierC, priceTierD });
   };
 
   return (
@@ -163,6 +177,34 @@ export default function LeagueConfigPage() {
                 <span className="config-hint">Premio de consolación tras una derrota.</span>
               </div>
 
+              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+              <p className="section-label" style={{ marginBottom: '1rem' }}>Precio por tier (monedas)</p>
+              <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
+                Coste en monedas de elegir un Pokémon de cada categoría.
+              </span>
+
+              {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
+                const valueMap = { S: priceTierS, A: priceTierA, B: priceTierB, C: priceTierC, D: priceTierD };
+                const setterMap = { S: setPriceTierS, A: setPriceTierA, B: setPriceTierB, C: setPriceTierC, D: setPriceTierD };
+                return (
+                  <div key={tier} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
+                      {tier}
+                    </span>
+                    <input
+                      className="search-input"
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={valueMap[tier]}
+                      onChange={(e) => setterMap[tier](Number(e.target.value))}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                );
+              })}
+
               {error && <p className="error">{error}</p>}
               {savedAt && !error && (
                 <p className="success">✓ Cambios guardados</p>
@@ -177,6 +219,11 @@ export default function LeagueConfigPage() {
                       if (settings) {
                         setCoinsPerWin(settings.coinsPerWin);
                         setCoinsPerLoss(settings.coinsPerLoss);
+                        setPriceTierS(settings.priceTierS ?? 0);
+                        setPriceTierA(settings.priceTierA ?? 0);
+                        setPriceTierB(settings.priceTierB ?? 0);
+                        setPriceTierC(settings.priceTierC ?? 0);
+                        setPriceTierD(settings.priceTierD ?? 0);
                         setError('');
                         setSavedAt(null);
                       }
