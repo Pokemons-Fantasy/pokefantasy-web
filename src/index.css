@@ -956,7 +956,12 @@ body {
   font-size: 0.975rem;
   font-weight: 700;
   letter-spacing: -0.2px;
+  color: var(--text);
 }
+
+.nav-card-gold h3  { color: var(--accent); }
+.nav-card-live h3  { color: var(--green); }
+.nav-card-setup h3 { color: var(--blue); }
 
 .nav-card p {
   font-size: 0.825rem;
