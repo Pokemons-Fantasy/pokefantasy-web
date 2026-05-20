@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
 import type { BenchEntry } from '../api/pokemons';
+import { getMyCoinBalance } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
 function spriteUrl(pokemonId: number) {
@@ -41,6 +42,13 @@ export default function TeamsPage() {
     staleTime: 30_000,
   });
   const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
+
+  const { data: myCoins } = useQuery({
+    queryKey: ['my-coins', leagueId],
+    queryFn: () => getMyCoinBalance(leagueId!),
+    enabled: !!leagueId && draft?.status === 'COMPLETED',
+    staleTime: 30_000,
+  });
 
   const { mutate: doSwap, isPending: swapping } = useMutation({
     mutationFn: ({ give, take }: { give: string; take: string }) =>
@@ -137,6 +145,9 @@ export default function TeamsPage() {
                       {team.picks.length}/10
                     </span>
                     {isMe && <span className="badge badge-green">Tú</span>}
+                    {isMe && myCoins !== undefined && (
+                      <span className="coin-badge">💰 {myCoins.coins}</span>
+                    )}
                     {selectableMode && (
                       <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}>
                         ← elige cuál das
@@ -206,7 +217,7 @@ export default function TeamsPage() {
                           loading="lazy"
                         />
                         <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={entry.tier} />
+                        <TierBadge tier={tierByName.get(entry.pokemonName)} />
                       </div>
                     );
                   })}
