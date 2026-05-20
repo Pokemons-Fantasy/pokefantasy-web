@@ -6,6 +6,7 @@ import { getLeagueDetail } from '../api/leagues';
 import {
   getSchedule,
   recordMatchResult,
+  getMyCoinBalance,
   type MatchDto,
   type JornadaDto,
 } from '../api/leagues';
@@ -32,6 +33,13 @@ export default function SchedulePage() {
     enabled: !!leagueId,
   });
 
+  const { data: myCoins } = useQuery({
+    queryKey: ['my-coins', leagueId],
+    queryFn: () => getMyCoinBalance(leagueId!),
+    enabled: !!leagueId,
+    staleTime: 30_000,
+  });
+
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
@@ -43,6 +51,7 @@ export default function SchedulePage() {
       setPendingMatch(null);
       setResultError('');
       queryClient.invalidateQueries({ queryKey: ['schedule', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
     },
     onError: (err: Error) => {
       setResultError(err.message ?? 'Error al registrar el resultado');
@@ -81,6 +90,9 @@ export default function SchedulePage() {
             <h1 className="page-title">📅 Calendario</h1>
             {league && <p className="page-subtitle">{league.name}</p>}
           </div>
+          {myCoins !== undefined && (
+            <span className="coin-badge coin-badge-lg">💰 {myCoins.coins} monedas</span>
+          )}
         </div>
 
         {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando calendario...</p>}

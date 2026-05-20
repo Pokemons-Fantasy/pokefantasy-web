@@ -68,6 +68,17 @@ export const updateLeagueSettings = async (
   await apiClient.put(`/v1/leagues/${leagueId}/settings`, settings);
 };
 
+// ── Coins ─────────────────────────────────────────────────────────────────────
+
+export interface CoinBalanceResponse {
+  coins: number;
+}
+
+export const getMyCoinBalance = async (leagueId: string): Promise<CoinBalanceResponse> => {
+  const { data } = await apiClient.get<CoinBalanceResponse>(`/v1/leagues/${leagueId}/my-coins`);
+  return data;
+};
+
 // ── Schedule ──────────────────────────────────────────────────────────────────
 
 export interface MatchDto {
