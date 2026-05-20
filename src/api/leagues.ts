@@ -67,3 +67,39 @@ export const updateLeagueSettings = async (
 ): Promise<void> => {
   await apiClient.put(`/v1/leagues/${leagueId}/settings`, settings);
 };
+
+// ── Schedule ──────────────────────────────────────────────────────────────────
+
+export interface MatchDto {
+  id: string;
+  player1: string;
+  player2: string;
+  winnerUsername?: string;
+  status: 'PENDING' | 'COMPLETED';
+}
+
+export interface JornadaDto {
+  roundNumber: number;
+  matches: MatchDto[];
+}
+
+export interface ScheduleResponse {
+  leagueId: string;
+  jornadas: JornadaDto[];
+}
+
+export const getSchedule = async (leagueId: string): Promise<ScheduleResponse | null> => {
+  const { data, status } = await apiClient.get<ScheduleResponse>(`/v1/leagues/${leagueId}/schedule`, {
+    validateStatus: (s) => s === 200 || s === 204,
+  });
+  if (status === 204) return null;
+  return data;
+};
+
+export const recordMatchResult = async (
+  leagueId: string,
+  matchId: string,
+  winnerUsername: string
+): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
+};
