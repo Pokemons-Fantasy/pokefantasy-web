@@ -206,7 +206,7 @@ export default function TeamsPage() {
                           loading="lazy"
                         />
                         <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={entry.tier} />
+                        <TierBadge tier={tierByName.get(entry.pokemonName)} />
                       </div>
                     );
                   })}
