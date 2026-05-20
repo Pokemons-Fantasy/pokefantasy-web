@@ -164,9 +164,14 @@ export default function LeagueDetailPage() {
               </button>
             )}
             {draft?.status === 'COMPLETED' && (
-              <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
-                ⚙️ Configuración
-              </button>
+              <>
+                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/schedule`)}>
+                  📅 Calendario
+                </button>
+                <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
+                  ⚙️ Configuración
+                </button>
+              </>
             )}
           </div>
         </div>

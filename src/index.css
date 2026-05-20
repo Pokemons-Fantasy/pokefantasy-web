@@ -1152,6 +1152,15 @@ body {
 
 .league-card-dot.active { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
 
+/* ─── SCHEDULE / JORNADAS ─── */
+
+.jornada-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
 /* ─── CONFIG FORM ─── */
 
 .config-form {
