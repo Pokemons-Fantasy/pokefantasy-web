@@ -119,3 +119,26 @@ export const setStealPrice = async (
 ): Promise<void> => {
   await apiClient.put(`/v1/leagues/${leagueId}/steal-price`, { pokemonName, newPrice });
 };
+
+export interface TierChange {
+  pokemonId: number;
+  pokemonName: string;
+  oldTier: Tier;
+  newTier: Tier;
+}
+
+export interface TierAdjustmentResponse {
+  changes: TierChange[];
+}
+
+export const assignTier = async (
+  leagueId: string,
+  entryId: string,
+  tier: Tier
+): Promise<TierAdjustmentResponse> => {
+  const { data } = await apiClient.put<TierAdjustmentResponse>(
+    `/v1/leagues/${leagueId}/closed-list/${entryId}/tier`,
+    { tier }
+  );
+  return data;
+};
