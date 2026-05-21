@@ -56,6 +56,11 @@ export interface LeagueSettings {
   priceTierD: number;
   seasonStartDate?: string; // ISO "YYYY-MM-DD"
   maxTeamSize?: number;     // default 20
+  tierPctS: number;         // % of pool → S tier (default 20)
+  tierPctA: number;         // % of pool → A tier (default 20)
+  tierPctB: number;         // % of pool → B tier (default 20)
+  tierPctC: number;         // % of pool → C tier (default 20)
+  tierPctD: number;         // % of pool → D tier (default 20)
 }
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
