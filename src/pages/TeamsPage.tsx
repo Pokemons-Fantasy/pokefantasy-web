@@ -130,6 +130,17 @@ export default function TeamsPage() {
           </div>
         )}
 
+        {swapWindowClosed && (
+          <div className="my-turn-banner" style={{
+            background: 'rgba(248,113,113,0.07)',
+            borderColor: 'rgba(248,113,113,0.25)',
+            color: '#f87171',
+            marginBottom: '0.75rem',
+          }}>
+            🔒 Intercambios cerrados hasta que se registren todos los resultados de la jornada
+          </div>
+        )}
+
         {selectedBench && (
           <div className="my-turn-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>

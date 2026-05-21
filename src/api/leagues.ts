@@ -54,6 +54,8 @@ export interface LeagueSettings {
   priceTierB: number;
   priceTierC: number;
   priceTierD: number;
+  seasonStartDate?: string; // ISO "YYYY-MM-DD"
+  maxTeamSize?: number;     // default 20
 }
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
@@ -92,9 +94,9 @@ export interface MatchDto {
 export interface JornadaDto {
   roundNumber: number;
   matches: MatchDto[];
-  startDate?: string;
-  stealDeadline?: string;
-  swapDeadline?: string;
+  startDate?: string;       // "YYYY-MM-DD"
+  stealDeadline?: string;   // ISO datetime "YYYY-MM-DDTHH:mm:ss"
+  swapDeadline?: string;    // ISO datetime "YYYY-MM-DDTHH:mm:ss"
 }
 
 export interface ScheduleResponse {
