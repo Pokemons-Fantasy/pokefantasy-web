@@ -74,6 +74,7 @@ export default function TeamsPage() {
       setSwapError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
     },
     onError: (err: Error) => setSwapError(err.message ?? 'Error al intercambiar'),
   });
@@ -155,6 +156,12 @@ export default function TeamsPage() {
           </div>
         )}
 
+        {swapWindowClosed && (
+          <div className="swap-closed-banner" style={{ marginBottom: '1rem' }}>
+            🔒 El plazo de intercambio con la banca está cerrado (hasta el viernes 16:00).
+          </div>
+        )}
+
         {swapError && <p className="error" style={{ marginBottom: '1rem' }}>{swapError}</p>}
 
         {draft && teams.length > 0 && (
@@ -229,12 +236,18 @@ export default function TeamsPage() {
                 <div className="pokemon-grid">
                   {bench.map((entry) => {
                     const isSelected = selectedBench?.pokemonName === entry.pokemonName;
-                    const canSwap = !!(myTeam && myTeam.picks.length > 0);
+                    const price = entry.price ?? 0;
+                    const canAfford = price === 0 || (myCoins !== undefined && myCoins.coins >= price);
+                    const canSwap = !!(myTeam && myTeam.picks.length > 0) && canAfford && !swapWindowClosed;
                     return (
                       <div
                         key={entry.pokemonName}
-                        className={`pokemon-card${isSelected ? ' nominated' : ''}`}
-                        style={{ cursor: canSwap ? 'pointer' : 'default' }}
+                        className={`pokemon-card${isSelected ? ' nominated' : ''}${!canAfford ? ' locked' : ''}`}
+                        style={{
+                          cursor: canSwap ? 'pointer' : 'default',
+                          opacity: !canAfford ? 0.45 : 1,
+                        }}
+                        title={!canAfford ? `Sin monedas (necesitas ${price})` : undefined}
                         onClick={() => canSwap && handleBenchClick(entry)}
                       >
                         <img
@@ -244,7 +257,19 @@ export default function TeamsPage() {
                           loading="lazy"
                         />
                         <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={tierByName.get(entry.pokemonName)} />
+                        <TierBadge tier={entry.tier ?? tierByName.get(entry.pokemonName)} />
+                        {price > 0 ? (
+                          <span
+                            className="coin-badge"
+                            style={{ marginTop: '0.25rem', fontSize: '0.75rem', background: canAfford ? 'var(--accent)' : '#6b7280' }}
+                          >
+                            💰 {price}
+                          </span>
+                        ) : (
+                          <span style={{ marginTop: '0.25rem', fontSize: '0.7rem', color: 'var(--text-2)' }}>
+                            Gratis
+                          </span>
+                        )}
                       </div>
                     );
                   })}
