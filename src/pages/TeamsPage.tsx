@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
 import type { BenchEntry } from '../api/pokemons';
-import { getMyCoinBalance } from '../api/leagues';
+import { getMyCoinBalance, getSchedule } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
 function spriteUrl(pokemonId: number) {
@@ -50,6 +50,22 @@ export default function TeamsPage() {
     staleTime: 30_000,
   });
 
+  const { data: schedule } = useQuery({
+    queryKey: ['schedule', leagueId],
+    queryFn: () => getSchedule(leagueId!),
+    enabled: !!leagueId && draft?.status === 'COMPLETED',
+    staleTime: 60_000,
+  });
+
+  // Derive swap window status from schedule client-side
+  const activeJornada = schedule?.jornadas?.find(
+    (j) => j.matches.some((m) => m.status === 'PENDING')
+  );
+  const swapWindowClosed = (() => {
+    if (!activeJornada?.swapDeadline) return false; // no dates = no restriction
+    return new Date() >= new Date(activeJornada.swapDeadline);
+  })();
+
   const { mutate: doSwap, isPending: swapping } = useMutation({
     mutationFn: ({ give, take }: { give: string; take: string }) =>
       swapWithBench(leagueId!, give, take),
@@ -58,6 +74,7 @@ export default function TeamsPage() {
       setSwapError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
     },
     onError: (err: Error) => setSwapError(err.message ?? 'Error al intercambiar'),
   });
@@ -125,6 +142,12 @@ export default function TeamsPage() {
             >
               Cancelar
             </button>
+          </div>
+        )}
+
+        {swapWindowClosed && (
+          <div className="swap-closed-banner" style={{ marginBottom: '1rem' }}>
+            🔒 El plazo de intercambio con la banca está cerrado (hasta el viernes 16:00).
           </div>
         )}
 
@@ -202,12 +225,18 @@ export default function TeamsPage() {
                 <div className="pokemon-grid">
                   {bench.map((entry) => {
                     const isSelected = selectedBench?.pokemonName === entry.pokemonName;
-                    const canSwap = !!(myTeam && myTeam.picks.length > 0);
+                    const price = entry.price ?? 0;
+                    const canAfford = price === 0 || (myCoins !== undefined && myCoins.coins >= price);
+                    const canSwap = !!(myTeam && myTeam.picks.length > 0) && canAfford && !swapWindowClosed;
                     return (
                       <div
                         key={entry.pokemonName}
-                        className={`pokemon-card${isSelected ? ' nominated' : ''}`}
-                        style={{ cursor: canSwap ? 'pointer' : 'default' }}
+                        className={`pokemon-card${isSelected ? ' nominated' : ''}${!canAfford ? ' locked' : ''}`}
+                        style={{
+                          cursor: canSwap ? 'pointer' : 'default',
+                          opacity: !canAfford ? 0.45 : 1,
+                        }}
+                        title={!canAfford ? `Sin monedas (necesitas ${price})` : undefined}
                         onClick={() => canSwap && handleBenchClick(entry)}
                       >
                         <img
@@ -217,7 +246,19 @@ export default function TeamsPage() {
                           loading="lazy"
                         />
                         <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={tierByName.get(entry.pokemonName)} />
+                        <TierBadge tier={entry.tier ?? tierByName.get(entry.pokemonName)} />
+                        {price > 0 ? (
+                          <span
+                            className="coin-badge"
+                            style={{ marginTop: '0.25rem', fontSize: '0.75rem', background: canAfford ? 'var(--accent)' : '#6b7280' }}
+                          >
+                            💰 {price}
+                          </span>
+                        ) : (
+                          <span style={{ marginTop: '0.25rem', fontSize: '0.7rem', color: 'var(--text-2)' }}>
+                            Gratis
+                          </span>
+                        )}
                       </div>
                     );
                   })}

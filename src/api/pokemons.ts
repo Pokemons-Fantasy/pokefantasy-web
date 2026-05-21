@@ -88,6 +88,7 @@ export interface BenchEntry {
   pokemonName: string;
   sprite: string;
   tier?: Tier | null;
+  price?: number;  // 0 = free
 }
 
 export const getBench = async (leagueId: string): Promise<BenchEntry[]> => {
