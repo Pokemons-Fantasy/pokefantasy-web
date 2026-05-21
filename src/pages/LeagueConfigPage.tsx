@@ -26,6 +26,11 @@ export default function LeagueConfigPage() {
   const [priceTierD, setPriceTierD] = useState<number>(0);
   const [seasonStartDate, setSeasonStartDate] = useState<string>('');
   const [maxTeamSize, setMaxTeamSize] = useState<number>(20);
+  const [tierPctS, setTierPctS] = useState<number>(20);
+  const [tierPctA, setTierPctA] = useState<number>(20);
+  const [tierPctB, setTierPctB] = useState<number>(20);
+  const [tierPctC, setTierPctC] = useState<number>(20);
+  const [tierPctD, setTierPctD] = useState<number>(20);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -59,14 +64,22 @@ export default function LeagueConfigPage() {
       setPriceTierD(settings.priceTierD ?? 0);
       setSeasonStartDate(settings.seasonStartDate ?? '');
       setMaxTeamSize(settings.maxTeamSize ?? 20);
+      setTierPctS(settings.tierPctS ?? 20);
+      setTierPctA(settings.tierPctA ?? 20);
+      setTierPctB(settings.tierPctB ?? 20);
+      setTierPctC(settings.tierPctC ?? 20);
+      setTierPctD(settings.tierPctD ?? 20);
     }
   }, [settings]);
 
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
-  const draftCompleted = draft?.status === 'COMPLETED';
-  const canEdit = isAdmin && draftCompleted;
+  const draftInProgress = draft?.status === 'IN_PROGRESS';
+  const canEdit = isAdmin && !draftInProgress;
+
+  const tierSum = tierPctS + tierPctA + tierPctB + tierPctC + tierPctD;
+  const tierSumOk = tierSum === 100;
 
   const { mutate: save, isPending: saving } = useMutation({
     mutationFn: (payload: LeagueSettings) => updateLeagueSettings(leagueId!, payload),
@@ -95,6 +108,10 @@ export default function LeagueConfigPage() {
       setError('El tamaño máximo del equipo debe ser >= 10');
       return;
     }
+    if (!tierSumOk) {
+      setError(`Los porcentajes de tier deben sumar 100 (suma actual: ${tierSum}%)`);
+      return;
+    }
     save({
       coinsPerWin,
       coinsPerLoss,
@@ -105,6 +122,11 @@ export default function LeagueConfigPage() {
       priceTierD,
       seasonStartDate: seasonStartDate || undefined,
       maxTeamSize,
+      tierPctS,
+      tierPctA,
+      tierPctB,
+      tierPctC,
+      tierPctD,
     });
   };
 
@@ -135,20 +157,7 @@ export default function LeagueConfigPage() {
 
         {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
 
-        {!isLoading && !draftCompleted && (
-          <div className="empty-state">
-            <span className="empty-state-icon">⏳</span>
-            <p>La configuración estará disponible cuando termine el draft.</p>
-            <p style={{ marginTop: '0.4rem' }}>
-              Estado actual del draft:{' '}
-              <strong style={{ color: 'var(--text-2)' }}>
-                {draft?.status ?? 'sin iniciar'}
-              </strong>
-            </p>
-          </div>
-        )}
-
-        {!isLoading && draftCompleted && (
+        {!isLoading && (
           <>
             {!isAdmin && (
               <div className="my-turn-banner" style={{
@@ -157,6 +166,15 @@ export default function LeagueConfigPage() {
                 color: 'var(--blue)',
               }}>
                 Solo el admin puede modificar estos valores. Vista de solo lectura.
+              </div>
+            )}
+            {isAdmin && draftInProgress && (
+              <div className="my-turn-banner" style={{
+                background: 'rgba(251,191,36,0.07)',
+                borderColor: 'rgba(251,191,36,0.25)',
+                color: 'var(--yellow, #f59e0b)',
+              }}>
+                El draft está en curso. No se puede modificar la configuración hasta que termine o se cancele.
               </div>
             )}
 
@@ -224,6 +242,50 @@ export default function LeagueConfigPage() {
               })}
 
               <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+              <p className="section-label" style={{ marginBottom: '0.35rem' }}>Distribución de tiers al inicio del draft</p>
+              <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
+                Porcentaje del pool que se asigna a cada tier. La suma debe ser exactamente 100%.
+                Se aplica cuando se inicia el draft.
+              </span>
+
+              {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
+                const pctMap = { S: tierPctS, A: tierPctA, B: tierPctB, C: tierPctC, D: tierPctD };
+                const setPctMap = { S: setTierPctS, A: setTierPctA, B: setTierPctB, C: setTierPctC, D: setTierPctD };
+                return (
+                  <div key={`pct-${tier}`} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
+                      {tier}
+                    </span>
+                    <input
+                      className="search-input"
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={pctMap[tier]}
+                      onChange={(e) => setPctMap[tier](Number(e.target.value))}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    />
+                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem', minWidth: 20 }}>%</span>
+                  </div>
+                );
+              })}
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginTop: '0.5rem',
+                marginBottom: '0.25rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: tierSumOk ? 'var(--green)' : 'var(--red)',
+              }}>
+                {tierSumOk ? '✓' : '✗'} Suma: {tierSum}% {tierSumOk ? '— correcto' : '(debe ser 100%)'}
+              </div>
+
+              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
               <p className="section-label" style={{ marginBottom: '1rem' }}>Calendario de temporada</p>
 
               <div className="config-field">
@@ -283,6 +345,11 @@ export default function LeagueConfigPage() {
                         setPriceTierD(settings.priceTierD ?? 0);
                         setSeasonStartDate(settings.seasonStartDate ?? '');
                         setMaxTeamSize(settings.maxTeamSize ?? 20);
+                        setTierPctS(settings.tierPctS ?? 20);
+                        setTierPctA(settings.tierPctA ?? 20);
+                        setTierPctB(settings.tierPctB ?? 20);
+                        setTierPctC(settings.tierPctC ?? 20);
+                        setTierPctD(settings.tierPctD ?? 20);
                         setError('');
                         setSavedAt(null);
                       }
@@ -294,7 +361,7 @@ export default function LeagueConfigPage() {
                   <button
                     type="submit"
                     className="btn-primary"
-                    disabled={saving}
+                    disabled={saving || !tierSumOk}
                   >
                     {saving ? 'Guardando...' : 'Guardar'}
                   </button>
