@@ -28,6 +28,10 @@ export interface DraftPick {
   pokemonId: number;
   round: number;
   pickedAt: string;
+  /** Custom steal price set by owner. null/undefined = use priceTierX default. */
+  customStealPrice?: number | null;
+  /** Round number of jornada when stolen. null/undefined = not locked. */
+  lockedUntilRound?: number | null;
 }
 
 export interface DraftStatus {
@@ -102,4 +106,16 @@ export const swapWithBench = async (
   pokemonToTake: string
 ): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/bench/swap`, { pokemonToGive, pokemonToTake });
+};
+
+export const stealPokemon = async (leagueId: string, targetPokemonName: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/steal`, { targetPokemonName });
+};
+
+export const setStealPrice = async (
+  leagueId: string,
+  pokemonName: string,
+  newPrice: number
+): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/steal-price`, { pokemonName, newPrice });
 };
