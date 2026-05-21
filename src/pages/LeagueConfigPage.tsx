@@ -24,6 +24,8 @@ export default function LeagueConfigPage() {
   const [priceTierB, setPriceTierB] = useState<number>(0);
   const [priceTierC, setPriceTierC] = useState<number>(0);
   const [priceTierD, setPriceTierD] = useState<number>(0);
+  const [seasonStartDate, setSeasonStartDate] = useState<string>('');
+  const [maxTeamSize, setMaxTeamSize] = useState<number>(20);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -55,6 +57,8 @@ export default function LeagueConfigPage() {
       setPriceTierB(settings.priceTierB ?? 0);
       setPriceTierC(settings.priceTierC ?? 0);
       setPriceTierD(settings.priceTierD ?? 0);
+      setSeasonStartDate(settings.seasonStartDate ?? '');
+      setMaxTeamSize(settings.maxTeamSize ?? 20);
     }
   }, [settings]);
 
@@ -87,7 +91,21 @@ export default function LeagueConfigPage() {
       setError('Los precios por tier deben ser >= 0');
       return;
     }
-    save({ coinsPerWin, coinsPerLoss, priceTierS, priceTierA, priceTierB, priceTierC, priceTierD });
+    if (maxTeamSize < 10) {
+      setError('El tamaño máximo del equipo debe ser >= 10');
+      return;
+    }
+    save({
+      coinsPerWin,
+      coinsPerLoss,
+      priceTierS,
+      priceTierA,
+      priceTierB,
+      priceTierC,
+      priceTierD,
+      seasonStartDate: seasonStartDate || undefined,
+      maxTeamSize,
+    });
   };
 
   return (
@@ -205,6 +223,45 @@ export default function LeagueConfigPage() {
                 );
               })}
 
+              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+              <p className="section-label" style={{ marginBottom: '1rem' }}>Calendario de temporada</p>
+
+              <div className="config-field">
+                <label className="section-label" htmlFor="seasonStartDate">
+                  Fecha del primer fin de semana
+                </label>
+                <input
+                  id="seasonStartDate"
+                  className="search-input"
+                  type="date"
+                  value={seasonStartDate}
+                  onChange={(e) => setSeasonStartDate(e.target.value)}
+                  disabled={!canEdit || saving}
+                />
+                <span className="config-hint">
+                  Sábado de la jornada 1. El sistema asigna automáticamente una semana por jornada.
+                </span>
+              </div>
+
+              <div className="config-field">
+                <label className="section-label" htmlFor="maxTeamSize">
+                  Tamaño máximo del equipo
+                </label>
+                <input
+                  id="maxTeamSize"
+                  className="search-input"
+                  type="number"
+                  min={10}
+                  step={1}
+                  value={maxTeamSize}
+                  onChange={(e) => setMaxTeamSize(Number(e.target.value))}
+                  disabled={!canEdit || saving}
+                />
+                <span className="config-hint">
+                  Máximo de Pokémon que puede tener un jugador post-draft (mínimo 10, por defecto 20).
+                </span>
+              </div>
+
               {error && <p className="error">{error}</p>}
               {savedAt && !error && (
                 <p className="success">✓ Cambios guardados</p>
@@ -224,6 +281,8 @@ export default function LeagueConfigPage() {
                         setPriceTierB(settings.priceTierB ?? 0);
                         setPriceTierC(settings.priceTierC ?? 0);
                         setPriceTierD(settings.priceTierD ?? 0);
+                        setSeasonStartDate(settings.seasonStartDate ?? '');
+                        setMaxTeamSize(settings.maxTeamSize ?? 20);
                         setError('');
                         setSavedAt(null);
                       }

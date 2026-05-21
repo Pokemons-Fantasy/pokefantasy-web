@@ -67,6 +67,21 @@ export default function SchedulePage() {
     return `Jornada ${j.roundNumber} · ${vuelta}`;
   }
 
+  /** Compute swap window status for a jornada client-side. */
+  function swapWindowStatus(j: JornadaDto): 'open' | 'closed' | 'no-dates' | 'completed' {
+    const allDone = j.matches.every((m) => m.status === 'COMPLETED');
+    if (allDone) return 'completed';
+    if (!j.swapDeadline) return 'no-dates';
+    const now = new Date();
+    const deadline = new Date(j.swapDeadline);
+    return now < deadline ? 'open' : 'closed';
+  }
+
+  // Active jornada = first with at least one PENDING match
+  const activeJornada = schedule?.jornadas?.find(
+    (j) => j.matches.some((m) => m.status === 'PENDING')
+  );
+
   return (
     <div className="page-wrapper">
       <header className="page-header">
@@ -113,28 +128,92 @@ export default function SchedulePage() {
 
         {!isLoading && schedule && schedule.jornadas.length > 0 && (
           <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {schedule.jornadas.map((jornada) => (
-              <div key={jornada.roundNumber} className="jornada-card">
-                <p className="section-label" style={{ marginBottom: '0.75rem' }}>
-                  {jornadaLabel(jornada)}
-                </p>
+            {schedule.jornadas.map((jornada) => {
+              const isActive = jornada.roundNumber === activeJornada?.roundNumber;
+              const windowStatus = isActive ? swapWindowStatus(jornada) : null;
 
-                {jornada.matches.length === 0 && (
-                  <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>Sin partidos esta jornada.</p>
-                )}
+              return (
+                <div key={jornada.roundNumber} className="jornada-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                    <p className="section-label" style={{ margin: 0 }}>
+                      {jornadaLabel(jornada)}
+                    </p>
+                    {jornada.startDate && (
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-3)',
+                        background: 'var(--surface-2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        padding: '0.1rem 0.4rem',
+                      }}>
+                        📅 {jornada.startDate}
+                      </span>
+                    )}
+                    {windowStatus === 'open' && (
+                      <span style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#4ade80',
+                        background: 'rgba(74,222,128,0.1)',
+                        border: '1px solid rgba(74,222,128,0.3)',
+                        borderRadius: '4px',
+                        padding: '0.1rem 0.45rem',
+                      }}>
+                        🟢 Swap abierto
+                      </span>
+                    )}
+                    {windowStatus === 'closed' && (
+                      <span style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#f87171',
+                        background: 'rgba(248,113,113,0.1)',
+                        border: '1px solid rgba(248,113,113,0.3)',
+                        borderRadius: '4px',
+                        padding: '0.1rem 0.45rem',
+                      }}>
+                        🔴 Swap cerrado
+                      </span>
+                    )}
+                    {windowStatus === 'no-dates' && (
+                      <span style={{
+                        fontSize: '0.72rem',
+                        color: 'var(--text-3)',
+                        background: 'var(--surface-2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        padding: '0.1rem 0.45rem',
+                      }}>
+                        🟡 Sin fechas
+                      </span>
+                    )}
+                  </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {jornada.matches.map((match) => (
-                    <MatchRow
-                      key={match.id}
-                      match={match}
-                      isAdmin={!!isAdmin}
-                      onRecord={() => { setPendingMatch(match); setResultError(''); }}
-                    />
-                  ))}
+                  {isActive && jornada.swapDeadline && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '0.6rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                      <span>🗡️ Robo hasta: <strong style={{ color: 'var(--text-2)' }}>{formatDeadline(jornada.stealDeadline)}</strong></span>
+                      <span>🔄 Swap hasta: <strong style={{ color: 'var(--text-2)' }}>{formatDeadline(jornada.swapDeadline)}</strong></span>
+                    </div>
+                  )}
+
+                  {jornada.matches.length === 0 && (
+                    <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>Sin partidos esta jornada.</p>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {jornada.matches.map((match) => (
+                      <MatchRow
+                        key={match.id}
+                        match={match}
+                        isAdmin={!!isAdmin}
+                        onRecord={() => { setPendingMatch(match); setResultError(''); }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -176,6 +255,19 @@ export default function SchedulePage() {
       )}
     </div>
   );
+}
+
+function formatDeadline(iso?: string): string {
+  if (!iso) return '—';
+  // "2026-06-04T23:59:00" → "jue 04/06 23:59"
+  const d = new Date(iso);
+  const days = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  const day = days[d.getDay()];
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${dd}/${mm} ${hh}:${min}`;
 }
 
 function MatchRow({

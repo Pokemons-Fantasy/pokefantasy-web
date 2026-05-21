@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
 import type { BenchEntry } from '../api/pokemons';
-import { getMyCoinBalance } from '../api/leagues';
+import { getMyCoinBalance, getSchedule } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
 function spriteUrl(pokemonId: number) {
@@ -49,6 +49,22 @@ export default function TeamsPage() {
     enabled: !!leagueId && draft?.status === 'COMPLETED',
     staleTime: 30_000,
   });
+
+  const { data: schedule } = useQuery({
+    queryKey: ['schedule', leagueId],
+    queryFn: () => getSchedule(leagueId!),
+    enabled: !!leagueId && draft?.status === 'COMPLETED',
+    staleTime: 60_000,
+  });
+
+  // Derive swap window status from schedule client-side
+  const activeJornada = schedule?.jornadas?.find(
+    (j) => j.matches.some((m) => m.status === 'PENDING')
+  );
+  const swapWindowClosed = (() => {
+    if (!activeJornada?.swapDeadline) return false; // no dates = no restriction
+    return new Date() >= new Date(activeJornada.swapDeadline);
+  })();
 
   const { mutate: doSwap, isPending: swapping } = useMutation({
     mutationFn: ({ give, take }: { give: string; take: string }) =>
@@ -110,6 +126,17 @@ export default function TeamsPage() {
         {!isLoading && !draft && (
           <div className="empty-state">
             <p>No hay draft en esta liga.</p>
+          </div>
+        )}
+
+        {swapWindowClosed && (
+          <div className="my-turn-banner" style={{
+            background: 'rgba(248,113,113,0.07)',
+            borderColor: 'rgba(248,113,113,0.25)',
+            color: '#f87171',
+            marginBottom: '0.75rem',
+          }}>
+            🔒 Intercambios cerrados hasta que se registren todos los resultados de la jornada
           </div>
         )}
 
