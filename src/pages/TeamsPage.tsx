@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
 import type { BenchEntry } from '../api/pokemons';
-import { getMyCoinBalance, getSchedule } from '../api/leagues';
+import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
 function spriteUrl(pokemonId: number) {
@@ -49,6 +49,15 @@ export default function TeamsPage() {
     enabled: !!leagueId && draft?.status === 'COMPLETED',
     staleTime: 30_000,
   });
+
+  const { data: leagueSettings } = useQuery({
+    queryKey: ['league-settings', leagueId],
+    queryFn: () => getLeagueSettings(leagueId!),
+    enabled: !!leagueId,
+    staleTime: 120_000,
+  });
+
+  const maxTeamSize = leagueSettings?.maxTeamSize ?? 10;
 
   const { data: schedule } = useQuery({
     queryKey: ['schedule', leagueId],
@@ -176,7 +185,7 @@ export default function TeamsPage() {
                     <div className="member-avatar">{team.username[0]}</div>
                     <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
                     <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                      {team.picks.length}/10
+                      {team.picks.length}/{maxTeamSize}
                     </span>
                     {isMe && <span className="badge badge-green">Tú</span>}
                     {isMe && myCoins !== undefined && (
