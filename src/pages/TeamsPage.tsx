@@ -569,6 +569,8 @@ export default function TeamsPage() {
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
   const [setPriceError, setSetPriceError] = useState('');
 
+  const [ownTeamCollapsed, setOwnTeamCollapsed] = useState(false);
+
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -704,6 +706,114 @@ export default function TeamsPage() {
     setModalBench(entry);
   }
 
+  function renderPicks(team: { username: string; picks: DraftPick[] }, isMe: boolean) {
+    if (team.picks.length === 0) {
+      return <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Sin picks aún</p>;
+    }
+    return (
+      <div className="pokemon-grid">
+        {team.picks.map((pick) => {
+          const locked = isLocked(pick);
+          const sp = effectiveStealPrice(pick);
+          const canAffordSteal = myBalance >= sp;
+
+          if (isMe) {
+            // Own pokemon card
+            return (
+              <div key={pick.pokemonName} className="pokemon-card" style={{ cursor: 'default', position: 'relative' }}>
+                <img
+                  src={spriteUrl(pick.pokemonId)}
+                  alt={pick.pokemonName}
+                  className="pokemon-sprite"
+                  loading="lazy"
+                />
+                <span className="pokemon-name">{pick.pokemonName}</span>
+                <TierBadge tier={tierByName.get(pick.pokemonName)} />
+                {/* Steal price badge */}
+                {stealWindowOpen && (
+                  <>
+                    <span className="coin-badge" style={{
+                      marginTop: '0.25rem',
+                      fontSize: '0.68rem',
+                      background: 'rgba(251,191,36,0.1)',
+                      borderColor: 'rgba(251,191,36,0.25)',
+                    }}>
+                      🛡 {sp}
+                    </span>
+                    <button
+                      onClick={() => { setSetPriceError(''); setModalSetPrice(pick); }}
+                      title="Subir precio de robo"
+                      style={{
+                        marginTop: '0.2rem',
+                        padding: '0.15rem 0.4rem',
+                        fontSize: '0.65rem',
+                        background: 'rgba(99,102,241,0.15)',
+                        border: '1px solid rgba(99,102,241,0.3)',
+                        borderRadius: 4,
+                        color: '#a5b4fc',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ⬆ precio
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          } else {
+            // Rival pokemon card
+            const isClickable = stealWindowOpen && !locked && canAffordSteal;
+            return (
+              <div
+                key={pick.pokemonName}
+                className="pokemon-card"
+                style={{
+                  cursor: isClickable ? 'pointer' : 'default',
+                  opacity: stealWindowOpen && (locked || !canAffordSteal) ? 0.5 : 1,
+                }}
+                title={
+                  locked ? '🔒 Bloqueado hasta que finalice la jornada'
+                  : !canAffordSteal && stealWindowOpen ? `Sin monedas (necesitas ${sp})`
+                  : undefined
+                }
+                onClick={() => {
+                  if (isClickable) {
+                    setStealError('');
+                    setModalSteal(pick);
+                  }
+                }}
+              >
+                <img
+                  src={spriteUrl(pick.pokemonId)}
+                  alt={pick.pokemonName}
+                  className="pokemon-sprite"
+                  loading="lazy"
+                />
+                <span className="pokemon-name">{pick.pokemonName}</span>
+                <TierBadge tier={tierByName.get(pick.pokemonName)} />
+                {stealWindowOpen && (
+                  locked ? (
+                    <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
+                  ) : (
+                    <span className="coin-badge" style={{
+                      marginTop: '0.25rem',
+                      fontSize: '0.68rem',
+                      background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
+                      borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
+                      color: canAffordSteal ? '#f87171' : '#9ca3af',
+                    }}>
+                      💰 {sp}
+                    </span>
+                  )
+                )}
+              </div>
+            );
+          }
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="page-wrapper">
       <header className="page-header">
@@ -799,129 +909,43 @@ export default function TeamsPage() {
 
         {draft && teams.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginTop: '1.5rem' }}>
-            {teams.map((team) => {
-              const isMe = team.username === username;
-              return (
-                <div key={team.username}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div className="member-avatar">{team.username[0]}</div>
-                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
-                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                      {team.picks.length}/{maxTeamSize}
-                    </span>
-                    {isMe && <span className="badge badge-green">Tú</span>}
-                    {isMe && myCoins !== undefined && (
-                      <span className="coin-badge">💰 {myCoins.coins}</span>
-                    )}
-                  </div>
-
-                  {team.picks.length === 0 ? (
-                    <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Sin picks aún</p>
-                  ) : (
-                    <div className="pokemon-grid">
-                      {team.picks.map((pick) => {
-                        const locked = isLocked(pick);
-                        const sp = effectiveStealPrice(pick);
-                        const canAffordSteal = myBalance >= sp;
-
-                        if (isMe) {
-                          // Own pokemon card
-                          return (
-                            <div key={pick.pokemonName} className="pokemon-card" style={{ cursor: 'default', position: 'relative' }}>
-                              <img
-                                src={spriteUrl(pick.pokemonId)}
-                                alt={pick.pokemonName}
-                                className="pokemon-sprite"
-                                loading="lazy"
-                              />
-                              <span className="pokemon-name">{pick.pokemonName}</span>
-                              <TierBadge tier={tierByName.get(pick.pokemonName)} />
-                              {/* Steal price badge */}
-                              {stealWindowOpen && (
-                                <>
-                                  <span className="coin-badge" style={{
-                                    marginTop: '0.25rem',
-                                    fontSize: '0.68rem',
-                                    background: 'rgba(251,191,36,0.1)',
-                                    borderColor: 'rgba(251,191,36,0.25)',
-                                  }}>
-                                    🛡 {sp}
-                                  </span>
-                                  <button
-                                    onClick={() => { setSetPriceError(''); setModalSetPrice(pick); }}
-                                    title="Subir precio de robo"
-                                    style={{
-                                      marginTop: '0.2rem',
-                                      padding: '0.15rem 0.4rem',
-                                      fontSize: '0.65rem',
-                                      background: 'rgba(99,102,241,0.15)',
-                                      border: '1px solid rgba(99,102,241,0.3)',
-                                      borderRadius: 4,
-                                      color: '#a5b4fc',
-                                      cursor: 'pointer',
-                                    }}
-                                  >
-                                    ⬆ precio
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          );
-                        } else {
-                          // Rival pokemon card
-                          const isClickable = stealWindowOpen && !locked && canAffordSteal;
-                          return (
-                            <div
-                              key={pick.pokemonName}
-                              className="pokemon-card"
-                              style={{
-                                cursor: isClickable ? 'pointer' : 'default',
-                                opacity: stealWindowOpen && (locked || !canAffordSteal) ? 0.5 : 1,
-                              }}
-                              title={
-                                locked ? '🔒 Bloqueado hasta que finalice la jornada'
-                                : !canAffordSteal && stealWindowOpen ? `Sin monedas (necesitas ${sp})`
-                                : undefined
-                              }
-                              onClick={() => {
-                                if (isClickable) {
-                                  setStealError('');
-                                  setModalSteal(pick);
-                                }
-                              }}
-                            >
-                              <img
-                                src={spriteUrl(pick.pokemonId)}
-                                alt={pick.pokemonName}
-                                className="pokemon-sprite"
-                                loading="lazy"
-                              />
-                              <span className="pokemon-name">{pick.pokemonName}</span>
-                              <TierBadge tier={tierByName.get(pick.pokemonName)} />
-                              {stealWindowOpen && (
-                                locked ? (
-                                  <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
-                                ) : (
-                                  <span className="coin-badge" style={{
-                                    marginTop: '0.25rem',
-                                    fontSize: '0.68rem',
-                                    background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
-                                    borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
-                                    color: canAffordSteal ? '#f87171' : '#9ca3af',
-                                  }}>
-                                    💰 {sp}
-                                  </span>
-                                )
-                              )}
-                            </div>
-                          );
-                        }
-                      })}
-                    </div>
+            {myTeam && (
+              <div className="own-team-panel">
+                <div className="own-team-panel-header">
+                  <div className="member-avatar">{myTeam.username[0]}</div>
+                  <span style={{ fontWeight: 600, fontSize: '1rem' }}>Tu equipo</span>
+                  <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
+                    {myTeam.picks.length}/{maxTeamSize}
+                  </span>
+                  <span className="badge badge-green">Tú</span>
+                  {myCoins !== undefined && (
+                    <span className="coin-badge">💰 {myCoins.coins}</span>
                   )}
+                  <button
+                    className="btn-ghost own-team-collapse-btn"
+                    onClick={() => setOwnTeamCollapsed((c) => !c)}
+                  >
+                    {ownTeamCollapsed ? '▶ Mostrar' : '▼ Ocultar'}
+                  </button>
                 </div>
-              );
-            })}
+                {!ownTeamCollapsed && (
+                  <div className="own-team-panel-grid">{renderPicks(myTeam, true)}</div>
+                )}
+              </div>
+            )}
+
+            {teams.filter((team) => team.username !== username).map((team) => (
+              <div key={team.username}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div className="member-avatar">{team.username[0]}</div>
+                  <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
+                  <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
+                    {team.picks.length}/{maxTeamSize}
+                  </span>
+                </div>
+                {renderPicks(team, false)}
+              </div>
+            ))}
           </div>
         )}
 
