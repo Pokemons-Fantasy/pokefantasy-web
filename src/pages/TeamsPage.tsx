@@ -1036,17 +1036,12 @@ export default function TeamsPage() {
                                 loading="lazy"
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
-                              {canAdjustTiers && hasEntryId ? (
-                                <span
-                                  onClick={() => { setTierAdjustError(''); setModalTierAdjust(pick); }}
-                                  title="Ajustar tier"
-                                  style={{ cursor: 'pointer', display: 'contents' }}
-                                >
-                                  <TierBadge tier={pickTier} />
-                                </span>
-                              ) : (
-                                <TierBadge tier={pickTier} />
-                              )}
+                              <TierBadge
+                                tier={pickTier}
+                                onClick={canAdjustTiers && hasEntryId
+                                  ? () => { setTierAdjustError(''); setModalTierAdjust(pick); }
+                                  : undefined}
+                              />
                               {/* Steal price badge */}
                               {stealWindowOpen && (
                                 <>
@@ -1108,17 +1103,12 @@ export default function TeamsPage() {
                                 loading="lazy"
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
-                              {canAdjustTiers && hasEntryId ? (
-                                <span
-                                  onClick={(e) => { e.stopPropagation(); setTierAdjustError(''); setModalTierAdjust(pick); }}
-                                  title="Ajustar tier"
-                                  style={{ cursor: 'pointer', display: 'contents' }}
-                                >
-                                  <TierBadge tier={pickTier} />
-                                </span>
-                              ) : (
-                                <TierBadge tier={pickTier} />
-                              )}
+                              <TierBadge
+                                tier={pickTier}
+                                onClick={canAdjustTiers && hasEntryId
+                                  ? (e) => { e.stopPropagation(); setTierAdjustError(''); setModalTierAdjust(pick); }
+                                  : undefined}
+                              />
                               {stealWindowOpen && (
                                 locked ? (
                                   <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
