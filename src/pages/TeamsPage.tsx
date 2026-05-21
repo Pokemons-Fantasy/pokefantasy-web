@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, getBench, getClosedList, swapWithBench } from '../api/pokemons';
-import type { BenchEntry, DraftPick } from '../api/pokemons';
+import type { BenchEntry, DraftPick, Tier } from '../api/pokemons';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
@@ -17,7 +17,7 @@ interface SwapModalProps {
   benchEntry: BenchEntry;
   myPicks: DraftPick[];
   myBalance: number;
-  tierByName: Map<string, string | undefined>;
+  tierByName: Map<string, Tier | null | undefined>;
   swapping: boolean;
   error: string;
   onConfirm: (give: string) => void;
@@ -30,7 +30,7 @@ function SwapModal({
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const price = benchEntry.price ?? 0;
   const canAfford = price === 0 || myBalance >= price;
-  const tier = benchEntry.tier ?? tierByName.get(benchEntry.pokemonName);
+  const tier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
 
   return (
     <div
@@ -411,7 +411,7 @@ export default function TeamsPage() {
                     const price = entry.price ?? 0;
                     const canAfford = price === 0 || myBalance >= price;
                     const isClickable = !swapWindowClosed && !!(myTeam && myTeam.picks.length > 0);
-                    const tier = entry.tier ?? tierByName.get(entry.pokemonName);
+                    const tier = (entry.tier as Tier | undefined) ?? tierByName.get(entry.pokemonName);
 
                     return (
                       <div
