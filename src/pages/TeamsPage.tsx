@@ -836,7 +836,6 @@ export default function TeamsPage() {
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
                               <TierBadge tier={tierByName.get(pick.pokemonName)} />
->>>>>>> 0b55efd (feat: dedicated admin page for tier management)
                               {/* Steal price badge */}
                               {stealWindowOpen && (
                                 <>
@@ -898,16 +897,7 @@ export default function TeamsPage() {
                                 loading="lazy"
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
-<<<<<<< HEAD
-                              <TierBadge
-                                tier={pickTier}
-                                onClick={canAdjustTiers && hasEntryId
-                                  ? (e) => { e.stopPropagation(); setTierAdjustError(''); setModalTierAdjust(pick); }
-                                  : undefined}
-                              />
-=======
                               <TierBadge tier={tierByName.get(pick.pokemonName)} />
->>>>>>> 0b55efd (feat: dedicated admin page for tier management)
                               {stealWindowOpen && (
                                 locked ? (
                                   <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
