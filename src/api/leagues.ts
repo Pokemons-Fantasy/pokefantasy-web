@@ -92,6 +92,9 @@ export interface MatchDto {
 export interface JornadaDto {
   roundNumber: number;
   matches: MatchDto[];
+  startDate?: string;
+  stealDeadline?: string;
+  swapDeadline?: string;
 }
 
 export interface ScheduleResponse {
