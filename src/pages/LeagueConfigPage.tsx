@@ -87,6 +87,7 @@ export default function LeagueConfigPage() {
       setError('');
       setSavedAt(Date.now());
       queryClient.invalidateQueries({ queryKey: ['league-settings', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
     onError: (err: Error) => {
       setError(err.message ?? 'Error al guardar la configuración');
