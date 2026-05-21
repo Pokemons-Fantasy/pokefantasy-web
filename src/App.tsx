@@ -10,6 +10,7 @@ import DraftPage from './pages/DraftPage';
 import TeamsPage from './pages/TeamsPage';
 import LeagueConfigPage from './pages/LeagueConfigPage';
 import SchedulePage from './pages/SchedulePage';
+import TierManagementPage from './pages/TierManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/leagues/:leagueId/teams" element={<TeamsPage />} />
             <Route path="/leagues/:leagueId/config" element={<LeagueConfigPage />} />
             <Route path="/leagues/:leagueId/schedule" element={<SchedulePage />} />
+            <Route path="/leagues/:leagueId/tiers" element={<TierManagementPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

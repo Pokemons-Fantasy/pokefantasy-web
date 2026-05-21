@@ -171,6 +171,11 @@ export default function LeagueDetailPage() {
                 <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
                   ⚙️ Configuración
                 </button>
+                {isAdmin && (
+                  <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/tiers`)}>
+                    🔧 Gestionar tiers
+                  </button>
+                )}
               </>
             )}
           </div>

@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
-  getDraftStatus, getBench, getClosedList, swapWithBench, stealPokemon, setStealPrice, assignTier,
+  getDraftStatus, getBench, getClosedList, swapWithBench, stealPokemon, setStealPrice,
 } from '../api/pokemons';
-import type { BenchEntry, DraftPick, Tier, TierChange } from '../api/pokemons';
-import { getMyCoinBalance, getSchedule, getLeagueSettings, getLeagueDetail } from '../api/leagues';
+import type { BenchEntry, DraftPick, Tier } from '../api/pokemons';
+import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import type { LeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 
@@ -551,120 +551,6 @@ function SetPriceModal({
   );
 }
 
-// ── TierAdjust Modal ──────────────────────────────────────────────────────────
-
-const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
-
-interface TierAdjustModalProps {
-  pick: DraftPick;
-  currentTier: Tier | null | undefined;
-  entryId: string;
-  adjusting: boolean;
-  error: string;
-  onConfirm: (newTier: Tier) => void;
-  onClose: () => void;
-}
-
-function TierAdjustModal({ pick, currentTier, entryId: _entryId, adjusting, error, onConfirm, onClose }: TierAdjustModalProps) {
-  const [selected, setSelected] = useState<Tier | null>(null);
-
-  const steps = selected && currentTier
-    ? Math.abs(tierRank(selected) - tierRank(currentTier)) - 1
-    : null;
-
-  return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal animate-in-fast" style={{ maxWidth: 420 }}>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Ajustar tier</h2>
-          <button className="btn-ghost" style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }} onClick={onClose}>✕</button>
-        </div>
-
-        {/* Pokemon info */}
-        <div style={{
-          background: 'var(--surface-2)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: '1rem 1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1.25rem',
-        }}>
-          <img
-            src={spriteUrl(pick.pokemonId)}
-            alt={pick.pokemonName}
-            style={{ width: 80, height: 80, imageRendering: 'pixelated', display: 'block', flexShrink: 0 }}
-          />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem', textTransform: 'capitalize', marginBottom: '0.35rem' }}>
-              {pick.pokemonName}
-            </div>
-            {currentTier && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Tier actual: <strong>{currentTier}</strong>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Tier selector */}
-        <div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-2)', marginBottom: '0.6rem' }}>Nuevo tier:</div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {TIERS.filter((t) => t !== currentTier).map((t) => (
-              <button
-                key={t}
-                onClick={() => setSelected(t)}
-                style={{
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: 8,
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  border: selected === t ? '2px solid var(--accent)' : '1px solid var(--border)',
-                  background: selected === t ? 'var(--accent-subtle)' : 'var(--surface-2)',
-                  color: selected === t ? 'var(--accent)' : 'var(--text-2)',
-                }}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Cascade warning */}
-        {steps !== null && steps > 0 && (
-          <div style={{
-            padding: '0.6rem 0.9rem',
-            borderRadius: 8,
-            background: 'rgba(251,191,36,0.06)',
-            border: '1px solid rgba(251,191,36,0.25)',
-            fontSize: '0.82rem',
-            color: '#fbbf24',
-          }}>
-            ⚠ Esto desencadenará una cascada de {steps} {steps === 1 ? 'intercambio adicional' : 'intercambios adicionales'} para mantener los conteos de tier equilibrados.
-          </div>
-        )}
-
-        {error && <p className="error">{error}</p>}
-
-        <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose} disabled={adjusting}>Cancelar</button>
-          <button
-            className="btn-primary"
-            disabled={!selected || adjusting}
-            onClick={() => selected && onConfirm(selected)}
-          >
-            {adjusting ? 'Ajustando…' : `Confirmar →`}
-          </button>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function TeamsPage() {
@@ -683,9 +569,6 @@ export default function TeamsPage() {
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
   const [setPriceError, setSetPriceError] = useState('');
 
-  const [modalTierAdjust, setModalTierAdjust] = useState<DraftPick | null>(null);
-  const [tierAdjustError, setTierAdjustError] = useState('');
-  const [lastTierChanges, setLastTierChanges] = useState<TierChange[]>([]);
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -722,17 +605,6 @@ export default function TeamsPage() {
     enabled: !!leagueId,
     staleTime: 120_000,
   });
-
-  const { data: leagueDetail } = useQuery({
-    queryKey: ['league-detail', leagueId],
-    queryFn: () => getLeagueDetail(leagueId!),
-    enabled: !!leagueId,
-    staleTime: 120_000,
-  });
-
-  const isAdmin = leagueDetail?.members.some(
-    (m) => m.username === username && m.leagueRole === 'ADMIN'
-  ) ?? false;
 
   const maxTeamSize = leagueSettings?.maxTeamSize ?? 10;
 
@@ -807,19 +679,6 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
     },
     onError: (err: Error) => setSetPriceError(err.message ?? 'Error al establecer precio'),
-  });
-
-  const { mutate: doAdjustTier, isPending: adjustingTier } = useMutation({
-    mutationFn: ({ entryId, tier }: { entryId: string; tier: Tier }) =>
-      assignTier(leagueId!, entryId, tier),
-    onSuccess: (data) => {
-      setLastTierChanges(data.changes);
-      setModalTierAdjust(null);
-      setTierAdjustError('');
-      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
-      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
-    },
-    onError: (err: Error) => setTierAdjustError(err.message ?? 'Error al ajustar tier'),
   });
 
   // ── Data ────────────────────────────────────────────────────────────────────
@@ -905,24 +764,6 @@ export default function TeamsPage() {
         />
       )}
 
-      {/* Tier adjust modal */}
-      {modalTierAdjust && (() => {
-        const entryId = closedList.find(
-          (e) => e.pokemonName === modalTierAdjust.pokemonName
-        )?.id ?? '';
-        return (
-          <TierAdjustModal
-            pick={modalTierAdjust}
-            currentTier={tierByName.get(modalTierAdjust.pokemonName)}
-            entryId={entryId}
-            adjusting={adjustingTier}
-            error={tierAdjustError}
-            onConfirm={(tier) => entryId && doAdjustTier({ entryId, tier })}
-            onClose={() => { setModalTierAdjust(null); setTierAdjustError(''); }}
-          />
-        );
-      })()}
-
       <main className="page-content">
         <h1 className="page-title">Equipos</h1>
 
@@ -956,45 +797,6 @@ export default function TeamsPage() {
           </div>
         )}
 
-        {isAdmin && isDraftCompleted && (
-          <div className="my-turn-banner" style={{
-            background: 'rgba(139,92,246,0.07)',
-            borderColor: 'rgba(139,92,246,0.25)',
-            color: '#a78bfa',
-            marginBottom: '0.75rem',
-          }}>
-            🔧 Admin: haz click en el badge de tier de cualquier pokémon para ajustarlo
-          </div>
-        )}
-
-        {lastTierChanges.length > 0 && (
-          <div style={{
-            padding: '0.75rem 1rem',
-            borderRadius: 10,
-            background: 'rgba(52,211,153,0.06)',
-            border: '1px solid rgba(52,211,153,0.2)',
-            fontSize: '0.82rem',
-            marginBottom: '1rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.2rem',
-          }}>
-            <div style={{ fontWeight: 600, color: 'var(--green)', marginBottom: '0.25rem' }}>✓ Tiers actualizados</div>
-            {lastTierChanges.map((c) => (
-              <div key={c.pokemonId} style={{ color: 'var(--text-2)', textTransform: 'capitalize' }}>
-                {c.pokemonName}: {c.oldTier} → {c.newTier}
-              </div>
-            ))}
-            <button
-              className="btn-ghost"
-              style={{ alignSelf: 'flex-start', marginTop: '0.35rem', fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-              onClick={() => setLastTierChanges([])}
-            >
-              Cerrar
-            </button>
-          </div>
-        )}
-
         {draft && teams.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginTop: '1.5rem' }}>
             {teams.map((team) => {
@@ -1021,9 +823,6 @@ export default function TeamsPage() {
                         const locked = isLocked(pick);
                         const sp = effectiveStealPrice(pick);
                         const canAffordSteal = myBalance >= sp;
-                        const canAdjustTiers = isAdmin && isDraftCompleted;
-                        const pickTier = tierByName.get(pick.pokemonName);
-                        const hasEntryId = !!closedList.find((e) => e.pokemonName === pick.pokemonName)?.id;
 
                         if (isMe) {
                           // Own pokemon card
@@ -1036,12 +835,8 @@ export default function TeamsPage() {
                                 loading="lazy"
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
-                              <TierBadge
-                                tier={pickTier}
-                                onClick={canAdjustTiers && hasEntryId
-                                  ? () => { setTierAdjustError(''); setModalTierAdjust(pick); }
-                                  : undefined}
-                              />
+                              <TierBadge tier={tierByName.get(pick.pokemonName)} />
+>>>>>>> 0b55efd (feat: dedicated admin page for tier management)
                               {/* Steal price badge */}
                               {stealWindowOpen && (
                                 <>
@@ -1103,12 +898,16 @@ export default function TeamsPage() {
                                 loading="lazy"
                               />
                               <span className="pokemon-name">{pick.pokemonName}</span>
+<<<<<<< HEAD
                               <TierBadge
                                 tier={pickTier}
                                 onClick={canAdjustTiers && hasEntryId
                                   ? (e) => { e.stopPropagation(); setTierAdjustError(''); setModalTierAdjust(pick); }
                                   : undefined}
                               />
+=======
+                              <TierBadge tier={tierByName.get(pick.pokemonName)} />
+>>>>>>> 0b55efd (feat: dedicated admin page for tier management)
                               {stealWindowOpen && (
                                 locked ? (
                                   <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
