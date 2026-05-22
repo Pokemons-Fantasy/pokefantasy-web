@@ -642,19 +642,9 @@ export default function TeamsPage() {
     (t) => t.status === 'PENDING' && t.responder === username
   ).length;
 
-  const activeJornada = schedule?.jornadas?.find(
-    (j) => j.matches.some((m) => m.status === 'PENDING'),
-  );
-
-  // Una sola lógica para ambas ventanas — robo y swap se comportan igual.
-  const windowOpen = (deadline?: string): boolean => {
-    if (!activeJornada) return false;   // sin jornada activa → sin ventana
-    if (!deadline) return true;         // jornada sin fecha → sin restricción de tiempo
-    return new Date() < new Date(deadline);
-  };
-
-  const stealWindowOpen = windowOpen(activeJornada?.stealDeadline);
-  const swapWindowClosed = !windowOpen(activeJornada?.swapDeadline);
+  // El estado de las ventanas lo decide el backend (única fuente de verdad).
+  const stealWindowOpen = schedule?.stealWindowOpen ?? false;
+  const swapWindowClosed = !(schedule?.swapWindowOpen ?? false);
 
   // ── Steal helpers ───────────────────────────────────────────────────────────
 
