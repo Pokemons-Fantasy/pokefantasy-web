@@ -9,6 +9,9 @@ import type { BenchEntry, DraftPick, Tier } from '../api/pokemons';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import type { LeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
+import { getTrades } from '../api/trades';
+import ProposeTradeModal from '../components/ProposeTradeModal';
+import TradesModal from '../components/TradesModal';
 
 function spriteUrl(pokemonId: number) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
@@ -571,6 +574,9 @@ export default function TeamsPage() {
 
   const [ownTeamCollapsed, setOwnTeamCollapsed] = useState(false);
 
+  const [showTradesModal, setShowTradesModal] = useState(false);
+  const [modalProposeTrade, setModalProposeTrade] = useState<{ responder: string; responderPokemon: { name: string; id: number } } | null>(null);
+
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -616,6 +622,18 @@ export default function TeamsPage() {
     enabled: !!leagueId && draft?.status === 'COMPLETED',
     staleTime: 60_000,
   });
+
+  const { data: trades = [] } = useQuery({
+    queryKey: ['trades', leagueId],
+    queryFn: () => getTrades(leagueId!),
+    enabled: !!leagueId && draft?.status === 'COMPLETED',
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const pendingIncomingCount = trades.filter(
+    (t) => t.status === 'PENDING' && t.responder === username
+  ).length;
 
   const activeJornada = schedule?.jornadas?.find(
     (j) => j.matches.some((m) => m.status === 'PENDING'),
@@ -762,7 +780,9 @@ export default function TeamsPage() {
             );
           } else {
             // Rival pokemon card
-            const isClickable = stealWindowOpen && !locked && canAffordSteal;
+            const isStealable = stealWindowOpen && !locked && canAffordSteal;
+            const isTradeable = isDraftCompleted && !locked;
+            const isClickable = isStealable || isTradeable;
             return (
               <div
                 key={pick.pokemonName}
@@ -773,13 +793,18 @@ export default function TeamsPage() {
                 }}
                 title={
                   locked ? '🔒 Bloqueado hasta que finalice la jornada'
-                  : !canAffordSteal && stealWindowOpen ? `Sin monedas (necesitas ${sp})`
+                  : !canAffordSteal && stealWindowOpen ? `Sin monedas para robar (necesitas ${sp})`
                   : undefined
                 }
                 onClick={() => {
-                  if (isClickable) {
+                  if (isStealable) {
                     setStealError('');
                     setModalSteal(pick);
+                  } else if (isTradeable) {
+                    setModalProposeTrade({
+                      responder: team.username,
+                      responderPokemon: { name: pick.pokemonName, id: pick.pokemonId },
+                    });
                   }
                 }}
               >
@@ -806,6 +831,15 @@ export default function TeamsPage() {
                     </span>
                   )
                 )}
+                {!stealWindowOpen && isDraftCompleted && !locked && (
+                  <span style={{
+                    marginTop: '0.25rem',
+                    fontSize: '0.65rem',
+                    color: 'var(--text-3)',
+                  }}>
+                    ⇄ proponer
+                  </span>
+                )}
               </div>
             );
           }
@@ -826,6 +860,36 @@ export default function TeamsPage() {
           </div>
           <div className="header-right">
             <span className="header-user">Hola, <strong>{username}</strong></span>
+            {isDraftCompleted && (
+              <button
+                className="btn-ghost"
+                style={{ position: 'relative' }}
+                onClick={() => setShowTradesModal(true)}
+              >
+                Intercambios
+                {pendingIncomingCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      background: 'var(--accent)',
+                      color: '#fff',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      borderRadius: '50%',
+                      width: 18,
+                      height: 18,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {pendingIncomingCount}
+                  </span>
+                )}
+              </button>
+            )}
             <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
           </div>
         </div>
@@ -871,6 +935,26 @@ export default function TeamsPage() {
           error={setPriceError}
           onConfirm={(newPrice) => doSetPrice({ pokemonName: modalSetPrice.pokemonName, newPrice })}
           onClose={() => { setModalSetPrice(null); setSetPriceError(''); }}
+        />
+      )}
+
+      {/* Trades inbox modal */}
+      {showTradesModal && (
+        <TradesModal
+          leagueId={leagueId!}
+          currentUsername={username!}
+          onClose={() => setShowTradesModal(false)}
+        />
+      )}
+
+      {/* Propose trade modal */}
+      {modalProposeTrade && myTeam && (
+        <ProposeTradeModal
+          leagueId={leagueId!}
+          responder={modalProposeTrade.responder}
+          responderPokemon={modalProposeTrade.responderPokemon}
+          myTeam={myTeam.picks.map((p) => ({ name: p.pokemonName, id: p.pokemonId }))}
+          onClose={() => setModalProposeTrade(null)}
         />
       )}
 
