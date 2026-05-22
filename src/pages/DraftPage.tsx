@@ -193,7 +193,7 @@ export default function DraftPage() {
           )
         )}
 
-        {draft && (draft.picks?.length ?? 0) > 0 && (
+        {draft && ((draft.draftHistory ?? draft.picks)?.length ?? 0) > 0 && (
           <div style={{ marginTop: '2.5rem' }}>
             <p className="section-label">Historial de picks</p>
             <div className="picks-table-container">
@@ -206,7 +206,7 @@ export default function DraftPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {draft.picks!.map((p, i) => (
+                  {(draft.draftHistory ?? draft.picks).map((p, i) => (
                     <tr key={i}>
                       <td style={{ color: 'var(--text-3)' }}>{p.round}</td>
                       <td style={{ fontWeight: 600 }}>{p.username}</td>

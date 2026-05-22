@@ -107,6 +107,9 @@ export interface JornadaDto {
 export interface ScheduleResponse {
   leagueId: string;
   jornadas: JornadaDto[];
+  /** Estado de las ventanas calculado por el backend (única fuente de verdad). */
+  stealWindowOpen: boolean;
+  swapWindowOpen: boolean;
 }
 
 export const getSchedule = async (leagueId: string): Promise<ScheduleResponse | null> => {

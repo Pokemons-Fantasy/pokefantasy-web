@@ -41,6 +41,8 @@ export interface DraftStatus {
   currentTurn: string | null;
   currentRound: number;
   picks: DraftPick[];
+  /** Draft original: lo que eligió cada jugador, inmune a robos/swaps/trades. */
+  draftHistory?: DraftPick[];
 }
 
 export const getPokemons = async (): Promise<Pokemon[]> => {

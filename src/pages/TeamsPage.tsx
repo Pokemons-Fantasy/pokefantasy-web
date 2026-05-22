@@ -642,19 +642,9 @@ export default function TeamsPage() {
     (t) => t.status === 'PENDING' && t.responder === username
   ).length;
 
-  const activeJornada = schedule?.jornadas?.find(
-    (j) => j.matches.some((m) => m.status === 'PENDING'),
-  );
-
-  const swapWindowClosed = (() => {
-    if (!activeJornada?.swapDeadline) return false;
-    return new Date() >= new Date(activeJornada.swapDeadline);
-  })();
-
-  const stealWindowOpen = (() => {
-    if (!activeJornada?.stealDeadline) return false;
-    return new Date() < new Date(activeJornada.stealDeadline);
-  })();
+  // El estado de las ventanas lo decide el backend (única fuente de verdad).
+  const stealWindowOpen = schedule?.stealWindowOpen ?? false;
+  const swapWindowClosed = !(schedule?.swapWindowOpen ?? false);
 
   // ── Steal helpers ───────────────────────────────────────────────────────────
 
