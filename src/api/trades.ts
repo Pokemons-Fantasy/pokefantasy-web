@@ -47,3 +47,9 @@ export const respondToTrade = async (
 export const cancelTrade = async (leagueId: string, tradeId: string): Promise<void> => {
   await apiClient.delete(`/v1/leagues/${leagueId}/trades/${tradeId}`);
 };
+
+/** Trades PENDING en los que el usuario actual es el responder, de todas sus ligas. */
+export const getMyPendingTrades = async (): Promise<Trade[]> => {
+  const { data } = await apiClient.get<Trade[]>('/v1/user/trades/pending');
+  return data;
+};

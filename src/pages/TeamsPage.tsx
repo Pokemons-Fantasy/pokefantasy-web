@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
   getDraftStatus, getBench, getClosedList, swapWithBench, stealPokemon, setStealPrice,
@@ -576,6 +576,13 @@ export default function TeamsPage() {
 
   const [showTradesModal, setShowTradesModal] = useState(false);
   const [modalProposeTrade, setModalProposeTrade] = useState<{ responder: string; responderPokemon: { name: string; id: number } } | null>(null);
+
+  // Deep-link: al llegar desde el aviso de intercambios pendientes, abrir el modal.
+  const location = useLocation();
+  useEffect(() => {
+    const navState = location.state as { openTrades?: boolean } | null;
+    if (navState?.openTrades) setShowTradesModal(true);
+  }, [location.state]);
 
 
   const { data: draft, isLoading } = useQuery({
