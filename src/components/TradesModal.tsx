@@ -129,6 +129,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
     },
     onError: (err: unknown) => {
       setIncomingError(
@@ -143,6 +144,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
     onSuccess: () => {
       setIncomingError('');
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
     },
     onError: (err: unknown) => {
       setIncomingError(

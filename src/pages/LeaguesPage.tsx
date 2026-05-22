@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getMyLeagues, createLeague } from '../api/leagues';
 import CreateLeagueModal from '../components/CreateLeagueModal';
+import PendingTradesBanner from '../components/PendingTradesBanner';
 
 export default function LeaguesPage() {
   const username = useAuthStore((s) => s.username);
@@ -41,6 +42,8 @@ export default function LeaguesPage() {
       </header>
 
       <main className="page-content">
+        <PendingTradesBanner />
+
         <div className="section-header">
           <div>
             <h1 className="page-title">Mis ligas</h1>

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { getMyLeagues } from '../api/leagues';
+import PendingTradesBanner from '../components/PendingTradesBanner';
 
 export default function HomePage() {
   const username = useAuthStore((s) => s.username);
@@ -44,6 +45,8 @@ export default function HomePage() {
       </header>
 
       <main className="page-content">
+        <PendingTradesBanner />
+
         {/* Hero */}
         <section className="hero-section animate-in">
           <div className="hero-eyebrow">Pokémon Fantasy League</div>
