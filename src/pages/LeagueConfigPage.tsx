@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -81,6 +81,51 @@ export default function LeagueConfigPage() {
   const tierSum = tierPctS + tierPctA + tierPctB + tierPctC + tierPctD;
   const tierSumOk = tierSum === 100;
 
+  // ── Pending changes tracking ─────────────────────────────────────────────────
+  const pendingChanges = useMemo(() => {
+    if (!settings) return [];
+    type NumField = {
+      key: keyof LeagueSettings;
+      label: string;
+      current: number;
+      saved: number | undefined;
+    };
+    const numFields: NumField[] = [
+      { key: 'coinsPerWin',  label: 'Monedas por victoria', current: coinsPerWin,  saved: settings.coinsPerWin },
+      { key: 'coinsPerLoss', label: 'Monedas por derrota',  current: coinsPerLoss, saved: settings.coinsPerLoss },
+      { key: 'priceTierS',   label: 'Precio tier S',        current: priceTierS,   saved: settings.priceTierS ?? 0 },
+      { key: 'priceTierA',   label: 'Precio tier A',        current: priceTierA,   saved: settings.priceTierA ?? 0 },
+      { key: 'priceTierB',   label: 'Precio tier B',        current: priceTierB,   saved: settings.priceTierB ?? 0 },
+      { key: 'priceTierC',   label: 'Precio tier C',        current: priceTierC,   saved: settings.priceTierC ?? 0 },
+      { key: 'priceTierD',   label: 'Precio tier D',        current: priceTierD,   saved: settings.priceTierD ?? 0 },
+      { key: 'tierPctS',     label: '% tier S',             current: tierPctS,     saved: settings.tierPctS ?? 20 },
+      { key: 'tierPctA',     label: '% tier A',             current: tierPctA,     saved: settings.tierPctA ?? 20 },
+      { key: 'tierPctB',     label: '% tier B',             current: tierPctB,     saved: settings.tierPctB ?? 20 },
+      { key: 'tierPctC',     label: '% tier C',             current: tierPctC,     saved: settings.tierPctC ?? 20 },
+      { key: 'tierPctD',     label: '% tier D',             current: tierPctD,     saved: settings.tierPctD ?? 20 },
+      { key: 'maxTeamSize',  label: 'Tamaño max equipo',    current: maxTeamSize,  saved: settings.maxTeamSize ?? 20 },
+    ];
+
+    const changes: Array<{ label: string; old: number | string; new: number | string }> = numFields
+      .filter((f) => f.current !== f.saved)
+      .map((f) => ({ label: f.label, old: f.saved ?? 0, new: f.current }));
+
+    const savedDate = settings.seasonStartDate ?? '';
+    if (seasonStartDate !== savedDate) {
+      changes.push({ label: 'Fecha inicio temporada', old: savedDate || '—', new: seasonStartDate || '—' });
+    }
+
+    return changes;
+  }, [
+    settings, coinsPerWin, coinsPerLoss,
+    priceTierS, priceTierA, priceTierB, priceTierC, priceTierD,
+    tierPctS, tierPctA, tierPctB, tierPctC, tierPctD,
+    maxTeamSize, seasonStartDate,
+  ]);
+
+  const hasChanges = pendingChanges.length > 0;
+
+  // ── Mutations ────────────────────────────────────────────────────────────────
   const { mutate: save, isPending: saving } = useMutation({
     mutationFn: (payload: LeagueSettings) => updateLeagueSettings(leagueId!, payload),
     onSuccess: () => {
@@ -131,6 +176,27 @@ export default function LeagueConfigPage() {
     });
   };
 
+  const handleCancel = () => {
+    if (settings) {
+      setCoinsPerWin(settings.coinsPerWin);
+      setCoinsPerLoss(settings.coinsPerLoss);
+      setPriceTierS(settings.priceTierS ?? 0);
+      setPriceTierA(settings.priceTierA ?? 0);
+      setPriceTierB(settings.priceTierB ?? 0);
+      setPriceTierC(settings.priceTierC ?? 0);
+      setPriceTierD(settings.priceTierD ?? 0);
+      setSeasonStartDate(settings.seasonStartDate ?? '');
+      setMaxTeamSize(settings.maxTeamSize ?? 20);
+      setTierPctS(settings.tierPctS ?? 20);
+      setTierPctA(settings.tierPctA ?? 20);
+      setTierPctB(settings.tierPctB ?? 20);
+      setTierPctC(settings.tierPctC ?? 20);
+      setTierPctD(settings.tierPctD ?? 20);
+      setError('');
+      setSavedAt(null);
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <header className="page-header">
@@ -149,7 +215,7 @@ export default function LeagueConfigPage() {
       </header>
 
       <main className="page-content">
-        <div className="section-header">
+        <div className="section-header" style={{ marginBottom: '1.5rem' }}>
           <div>
             <h1 className="page-title">⚙️ Configuración de liga</h1>
             {league && <p className="page-subtitle">{league.name}</p>}
@@ -165,6 +231,7 @@ export default function LeagueConfigPage() {
                 background: 'rgba(129,140,248,0.07)',
                 borderColor: 'rgba(129,140,248,0.25)',
                 color: 'var(--blue)',
+                marginBottom: '1rem',
               }}>
                 Solo el admin puede modificar estos valores. Vista de solo lectura.
               </div>
@@ -174,201 +241,251 @@ export default function LeagueConfigPage() {
                 background: 'rgba(251,191,36,0.07)',
                 borderColor: 'rgba(251,191,36,0.25)',
                 color: 'var(--yellow, #f59e0b)',
+                marginBottom: '1rem',
               }}>
                 El draft está en curso. No se puede modificar la configuración hasta que termine o se cancele.
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="config-form animate-in">
-              <div className="config-field">
-                <label className="section-label" htmlFor="coinsPerWin">
-                  Monedas por victoria
-                </label>
-                <input
-                  id="coinsPerWin"
-                  className="search-input"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={coinsPerWin}
-                  onChange={(e) => setCoinsPerWin(Number(e.target.value))}
-                  disabled={!canEdit || saving}
-                />
-                <span className="config-hint">Lo que ganan los jugadores al ganar un combate.</span>
-              </div>
+            {/* ── Two-column layout ─────────────────────────────────────────── */}
+            <div className="settings-two-col">
 
-              <div className="config-field">
-                <label className="section-label" htmlFor="coinsPerLoss">
-                  Monedas por derrota
-                </label>
-                <input
-                  id="coinsPerLoss"
-                  className="search-input"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={coinsPerLoss}
-                  onChange={(e) => setCoinsPerLoss(Number(e.target.value))}
-                  disabled={!canEdit || saving}
-                />
-                <span className="config-hint">Premio de consolación tras una derrota.</span>
-              </div>
-
-              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-              <p className="section-label" style={{ marginBottom: '1rem' }}>Precio por tier (monedas)</p>
-              <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
-                Coste en monedas de elegir un Pokémon de cada categoría.
-              </span>
-
-              {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                const valueMap = { S: priceTierS, A: priceTierA, B: priceTierB, C: priceTierC, D: priceTierD };
-                const setterMap = { S: setPriceTierS, A: setPriceTierA, B: setPriceTierB, C: setPriceTierC, D: setPriceTierD };
-                return (
-                  <div key={tier} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-                    <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
-                      {tier}
-                    </span>
-                    <input
-                      className="search-input"
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={valueMap[tier]}
-                      onChange={(e) => setterMap[tier](Number(e.target.value))}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    />
-                  </div>
-                );
-              })}
-
-              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-              <p className="section-label" style={{ marginBottom: '0.35rem' }}>Distribución de tiers al inicio del draft</p>
-              <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
-                Porcentaje del pool que se asigna a cada tier. La suma debe ser exactamente 100%.
-                Se aplica cuando se inicia el draft.
-              </span>
-
-              {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                const pctMap = { S: tierPctS, A: tierPctA, B: tierPctB, C: tierPctC, D: tierPctD };
-                const setPctMap = { S: setTierPctS, A: setTierPctA, B: setTierPctB, C: setTierPctC, D: setTierPctD };
-                return (
-                  <div key={`pct-${tier}`} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-                    <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
-                      {tier}
-                    </span>
-                    <input
-                      className="search-input"
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={pctMap[tier]}
-                      onChange={(e) => setPctMap[tier](Number(e.target.value))}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    />
-                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem', minWidth: 20 }}>%</span>
-                  </div>
-                );
-              })}
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.25rem',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                color: tierSumOk ? 'var(--green)' : 'var(--red)',
-              }}>
-                {tierSumOk ? '✓' : '✗'} Suma: {tierSum}% {tierSumOk ? '— correcto' : '(debe ser 100%)'}
-              </div>
-
-              <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-              <p className="section-label" style={{ marginBottom: '1rem' }}>Calendario de temporada</p>
-
-              <div className="config-field">
-                <label className="section-label" htmlFor="seasonStartDate">
-                  Fecha del primer fin de semana
-                </label>
-                <input
-                  id="seasonStartDate"
-                  className="search-input"
-                  type="date"
-                  value={seasonStartDate}
-                  onChange={(e) => setSeasonStartDate(e.target.value)}
-                  disabled={!canEdit || saving}
-                />
-                <span className="config-hint">
-                  Sábado de la jornada 1. El sistema asigna automáticamente una semana por jornada.
-                </span>
-              </div>
-
-              <div className="config-field">
-                <label className="section-label" htmlFor="maxTeamSize">
-                  Tamaño máximo del equipo
-                </label>
-                <input
-                  id="maxTeamSize"
-                  className="search-input"
-                  type="number"
-                  min={10}
-                  step={1}
-                  value={maxTeamSize}
-                  onChange={(e) => setMaxTeamSize(Number(e.target.value))}
-                  disabled={!canEdit || saving}
-                />
-                <span className="config-hint">
-                  Máximo de Pokémon que puede tener un jugador post-draft (mínimo 10, por defecto 20).
-                </span>
-              </div>
-
-              {error && <p className="error">{error}</p>}
-              {savedAt && !error && (
-                <p className="success">✓ Cambios guardados</p>
-              )}
-
-              {canEdit && (
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => {
-                      if (settings) {
-                        setCoinsPerWin(settings.coinsPerWin);
-                        setCoinsPerLoss(settings.coinsPerLoss);
-                        setPriceTierS(settings.priceTierS ?? 0);
-                        setPriceTierA(settings.priceTierA ?? 0);
-                        setPriceTierB(settings.priceTierB ?? 0);
-                        setPriceTierC(settings.priceTierC ?? 0);
-                        setPriceTierD(settings.priceTierD ?? 0);
-                        setSeasonStartDate(settings.seasonStartDate ?? '');
-                        setMaxTeamSize(settings.maxTeamSize ?? 20);
-                        setTierPctS(settings.tierPctS ?? 20);
-                        setTierPctA(settings.tierPctA ?? 20);
-                        setTierPctB(settings.tierPctB ?? 20);
-                        setTierPctC(settings.tierPctC ?? 20);
-                        setTierPctD(settings.tierPctD ?? 20);
-                        setError('');
-                        setSavedAt(null);
-                      }
-                    }}
-                    disabled={saving}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    disabled={saving || !tierSumOk}
-                  >
-                    {saving ? 'Guardando...' : 'Guardar'}
-                  </button>
+              {/* Left column — form fields */}
+              <form
+                id="settings-form"
+                onSubmit={handleSubmit}
+                className="config-form animate-in"
+                style={{ maxWidth: 'none' }}
+              >
+                <div className="config-field">
+                  <label className="section-label" htmlFor="coinsPerWin">
+                    Monedas por victoria
+                  </label>
+                  <input
+                    id="coinsPerWin"
+                    className="search-input"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={coinsPerWin}
+                    onChange={(e) => setCoinsPerWin(Number(e.target.value))}
+                    disabled={!canEdit || saving}
+                  />
+                  <span className="config-hint">Lo que ganan los jugadores al ganar un combate.</span>
                 </div>
-              )}
-            </form>
+
+                <div className="config-field">
+                  <label className="section-label" htmlFor="coinsPerLoss">
+                    Monedas por derrota
+                  </label>
+                  <input
+                    id="coinsPerLoss"
+                    className="search-input"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={coinsPerLoss}
+                    onChange={(e) => setCoinsPerLoss(Number(e.target.value))}
+                    disabled={!canEdit || saving}
+                  />
+                  <span className="config-hint">Premio de consolación tras una derrota.</span>
+                </div>
+
+                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+                <p className="section-label" style={{ marginBottom: '1rem' }}>Precio por tier (monedas)</p>
+                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
+                  Coste en monedas de elegir un Pokémon de cada categoría.
+                </span>
+
+                {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
+                  const valueMap = { S: priceTierS, A: priceTierA, B: priceTierB, C: priceTierC, D: priceTierD };
+                  const setterMap = { S: setPriceTierS, A: setPriceTierA, B: setPriceTierB, C: setPriceTierC, D: setPriceTierD };
+                  return (
+                    <div key={tier} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
+                      <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
+                        {tier}
+                      </span>
+                      <input
+                        className="search-input"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={valueMap[tier]}
+                        onChange={(e) => setterMap[tier](Number(e.target.value))}
+                        disabled={!canEdit || saving}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  );
+                })}
+
+                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+                <p className="section-label" style={{ marginBottom: '0.35rem' }}>Distribución de tiers al inicio del draft</p>
+                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
+                  Porcentaje del pool que se asigna a cada tier. La suma debe ser exactamente 100%.
+                  Se aplica cuando se inicia el draft.
+                </span>
+
+                {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
+                  const pctMap = { S: tierPctS, A: tierPctA, B: tierPctB, C: tierPctC, D: tierPctD };
+                  const setPctMap = { S: setTierPctS, A: setTierPctA, B: setTierPctB, C: setTierPctC, D: setTierPctD };
+                  return (
+                    <div key={`pct-${tier}`} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
+                      <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
+                        {tier}
+                      </span>
+                      <input
+                        className="search-input"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={pctMap[tier]}
+                        onChange={(e) => setPctMap[tier](Number(e.target.value))}
+                        disabled={!canEdit || saving}
+                        style={{ flex: 1 }}
+                      />
+                      <span style={{ color: 'var(--text-3)', fontSize: '0.85rem', minWidth: 20 }}>%</span>
+                    </div>
+                  );
+                })}
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  color: tierSumOk ? 'var(--green)' : 'var(--red)',
+                }}>
+                  {tierSumOk ? '✓' : '✗'} Suma: {tierSum}% {tierSumOk ? '— correcto' : '(debe ser 100%)'}
+                </div>
+
+                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+                <p className="section-label" style={{ marginBottom: '1rem' }}>Calendario de temporada</p>
+
+                <div className="config-field">
+                  <label className="section-label" htmlFor="seasonStartDate">
+                    Fecha del primer fin de semana
+                  </label>
+                  <input
+                    id="seasonStartDate"
+                    className="search-input"
+                    type="date"
+                    value={seasonStartDate}
+                    onChange={(e) => setSeasonStartDate(e.target.value)}
+                    disabled={!canEdit || saving}
+                  />
+                  <span className="config-hint">
+                    Sábado de la jornada 1. El sistema asigna automáticamente una semana por jornada.
+                  </span>
+                </div>
+
+                <div className="config-field">
+                  <label className="section-label" htmlFor="maxTeamSize">
+                    Tamaño máximo del equipo
+                  </label>
+                  <input
+                    id="maxTeamSize"
+                    className="search-input"
+                    type="number"
+                    min={10}
+                    step={1}
+                    value={maxTeamSize}
+                    onChange={(e) => setMaxTeamSize(Number(e.target.value))}
+                    disabled={!canEdit || saving}
+                  />
+                  <span className="config-hint">
+                    Máximo de Pokémon que puede tener un jugador post-draft (mínimo 10, por defecto 20).
+                  </span>
+                </div>
+              </form>
+
+              {/* Right column — sticky sidebar */}
+              <div className="settings-sidebar">
+                {/* Unsaved changes indicator */}
+                {hasChanges && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem 0.9rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'rgba(251,191,36,0.07)',
+                    border: '1px solid rgba(251,191,36,0.3)',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: '#fbbf24',
+                  }}>
+                    <span style={{ fontSize: '0.6rem' }}>●</span>
+                    {pendingChanges.length} cambio{pendingChanges.length !== 1 ? 's' : ''} sin guardar
+                  </div>
+                )}
+
+                {/* Pending changes list */}
+                {pendingChanges.length > 0 && (
+                  <div style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.75rem 1rem',
+                  }}>
+                    <p className="section-label" style={{ marginBottom: '0.6rem' }}>Cambios pendientes</p>
+                    {pendingChanges.map((c) => (
+                      <div
+                        key={c.label}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          gap: '0.5rem',
+                          fontSize: '0.78rem',
+                          marginBottom: '0.3rem',
+                        }}
+                      >
+                        <span style={{ color: 'var(--text-2)' }}>{c.label}</span>
+                        <span style={{ whiteSpace: 'nowrap', color: 'var(--text-3)', fontFamily: 'var(--font-mono, monospace)' }}>
+                          {c.old} → <span style={{ color: 'var(--accent)' }}>{c.new}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error / success */}
+                {error && (
+                  <p className="error" style={{ margin: 0 }}>{error}</p>
+                )}
+                {savedAt && !hasChanges && !error && (
+                  <p className="success" style={{ margin: 0 }}>✓ Cambios guardados</p>
+                )}
+
+                {/* Action buttons */}
+                {canEdit && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <button
+                      type="submit"
+                      form="settings-form"
+                      className="btn-primary"
+                      disabled={saving || !tierSumOk}
+                    >
+                      {saving ? 'Guardando...' : 'Guardar cambios'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={handleCancel}
+                      disabled={saving}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </>
         )}
       </main>
