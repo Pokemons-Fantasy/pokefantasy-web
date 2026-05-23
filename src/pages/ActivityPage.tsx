@@ -39,6 +39,13 @@ function formatEvent(event: ActivityEvent): EventDisplay {
         icon: '↔',
         label: 'Banca',
       };
+    case 'BENCH_PURCHASE':
+      return {
+        text: `${actor} compró ${pokemon} de la banca por ${coins} monedas`,
+        color: '#f59e0b',
+        icon: '🛒',
+        label: 'Compra',
+      };
     case 'TRADE_COMPLETED':
       return {
         text: `${actor} y ${target} completaron un trade: ${pokemon} ↔ ${pokemon2}`,

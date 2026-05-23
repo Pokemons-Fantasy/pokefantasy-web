@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
-  getDraftStatus, getBench, getClosedList, swapWithBench, stealPokemon, setStealPrice,
+  getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice,
 } from '../api/pokemons';
 import type { BenchEntry, DraftPick, Tier } from '../api/pokemons';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
@@ -36,6 +36,157 @@ function priceForTier(settings: LeagueSettings | undefined, tier: Tier | null | 
   return map[tier] ?? 0;
 }
 
+// ── Bench Action Modal (choose: swap or buy) ──────────────────────────────────
+
+interface BenchActionModalProps {
+  benchEntry: BenchEntry;
+  myPicks: DraftPick[];
+  myBalance: number;
+  tierByName: Map<string, Tier | null | undefined>;
+  buying: boolean;
+  buyError: string;
+  onChooseSwap: () => void;
+  onBuyConfirm: () => void;
+  onClose: () => void;
+}
+
+function BenchActionModal({
+  benchEntry, myPicks, myBalance, tierByName,
+  buying, buyError, onChooseSwap, onBuyConfirm, onClose,
+}: BenchActionModalProps) {
+  const [view, setView] = useState<'choose' | 'buy'>('choose');
+
+  const price = benchEntry.price ?? 0;
+  const canAffordBuy = myBalance >= price;
+  const hasTeam = myPicks.length > 0;
+
+  const tier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal animate-in-fast" style={{ maxWidth: 480 }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.15rem' }}>
+            {view === 'choose' ? 'Banca' : 'Comprar de la banca'}
+          </h2>
+          <button
+            className="btn-ghost"
+            style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Pokemon header — always visible */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '1rem',
+          background: 'var(--surface-2)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '1rem 1.25rem', marginTop: '1rem',
+        }}>
+          <img
+            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${benchEntry.pokemonId}.png`}
+            alt={benchEntry.pokemonName}
+            style={{ width: 72, height: 72, imageRendering: 'pixelated' }}
+          />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', textTransform: 'capitalize' }}>
+              {benchEntry.pokemonName}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+              {tier && <TierBadge tier={tier} />}
+              <span style={{ color: 'var(--text-2)', fontSize: '0.82rem' }}>
+                Precio: <strong style={{ color: 'var(--text)' }}>💰 {price}</strong>
+              </span>
+            </div>
+            <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.15rem' }}>
+              Tu saldo: 💰 {myBalance}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Vista: elegir acción ── */}
+        {view === 'choose' && (
+          <div style={{ display: 'grid', gridTemplateColumns: hasTeam ? '1fr 1fr' : '1fr', gap: '0.75rem', marginTop: '1.25rem' }}>
+            {hasTeam && (
+              <button
+                className="btn-ghost"
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: '0.4rem', padding: '1rem', borderRadius: 10,
+                  border: '2px solid var(--border)', height: 'auto',
+                }}
+                onClick={onChooseSwap}
+              >
+                <span style={{ fontSize: '1.5rem' }}>🔄</span>
+                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Intercambiar</span>
+                <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
+                  Da uno de tus pokémon y recibe este
+                </span>
+              </button>
+            )}
+            <button
+              className="btn-ghost"
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '0.4rem', padding: '1rem', borderRadius: 10,
+                border: '2px solid var(--border)', height: 'auto',
+                opacity: canAffordBuy ? 1 : 0.5,
+              }}
+              onClick={() => canAffordBuy && setView('buy')}
+              disabled={!canAffordBuy}
+              title={!canAffordBuy ? `Necesitas ${price} monedas (tienes ${myBalance})` : undefined}
+            >
+              <span style={{ fontSize: '1.5rem' }}>🛒</span>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Comprar</span>
+              <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
+                Añade este pokémon por 💰 {price}
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* ── Vista: comprar — confirmación ── */}
+        {view === 'buy' && (
+          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{
+              background: 'var(--surface-2)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '1rem',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-2)' }}>Saldo actual</span>
+                <span style={{ fontWeight: 600 }}>💰 {myBalance}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-2)' }}>Coste</span>
+                <span style={{ color: '#f87171', fontWeight: 600 }}>−💰 {price}</span>
+              </div>
+              <div style={{
+                borderTop: '1px solid var(--border)', paddingTop: '0.5rem',
+                display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem',
+              }}>
+                <span style={{ fontWeight: 700 }}>Saldo tras compra</span>
+                <span style={{ color: 'var(--green)', fontWeight: 700 }}>💰 {myBalance - price}</span>
+              </div>
+            </div>
+            {buyError && <p className="error">{buyError}</p>}
+            <div className="modal-actions">
+              <button className="btn-ghost" onClick={() => setView('choose')} disabled={buying}>
+                ← Volver
+              </button>
+              <button className="btn-primary" onClick={onBuyConfirm} disabled={buying}>
+                {buying ? 'Comprando…' : 'Confirmar compra'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Swap Modal ────────────────────────────────────────────────────────────────
 
 interface SwapModalProps {
@@ -48,10 +199,11 @@ interface SwapModalProps {
   error: string;
   onConfirm: (give: string) => void;
   onClose: () => void;
+  onBack?: () => void;
 }
 
 function SwapModal({
-  benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, error, onConfirm, onClose,
+  benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, error, onConfirm, onClose, onBack,
 }: SwapModalProps) {
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
@@ -265,9 +417,15 @@ function SwapModal({
         {error && <p className="error">{error}</p>}
 
         <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose} disabled={swapping}>
-            Cancelar
-          </button>
+          {onBack ? (
+            <button className="btn-ghost" onClick={onBack} disabled={swapping}>
+              ← Volver
+            </button>
+          ) : (
+            <button className="btn-ghost" onClick={onClose} disabled={swapping}>
+              Cancelar
+            </button>
+          )}
           {canAffordBase && (
             <button
               className="btn-primary"
@@ -565,6 +723,8 @@ export default function TeamsPage() {
 
   const [modalBench, setModalBench] = useState<BenchEntry | null>(null);
   const [swapError, setSwapError] = useState('');
+  const [buyError, setBuyError] = useState('');
+  const [benchGoingToSwap, setBenchGoingToSwap] = useState(false);
 
   const [modalSteal, setModalSteal] = useState<DraftPick | null>(null);
   const [stealError, setStealError] = useState('');
@@ -698,6 +858,19 @@ export default function TeamsPage() {
     onError: (err: Error) => setSetPriceError(err.message ?? 'Error al establecer precio'),
   });
 
+  const { mutate: doBuy, isPending: buying } = useMutation({
+    mutationFn: (pokemonName: string) => buyFromBench(leagueId!, pokemonName),
+    onSuccess: () => {
+      setModalBench(null);
+      setBuyError('');
+      setBenchGoingToSwap(false);
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+    },
+    onError: (err: Error) => setBuyError(err.message ?? 'Error al comprar'),
+  });
+
   // ── Data ────────────────────────────────────────────────────────────────────
 
   const teams = draft
@@ -715,9 +888,11 @@ export default function TeamsPage() {
 
   function handleBenchCardClick(entry: BenchEntry) {
     if (!isDraftCompleted) return;
-    if (!myTeam || myTeam.picks.length === 0) return;
+    if (!myTeam) return;
     if (swapWindowClosed) return;
     setSwapError('');
+    setBuyError('');
+    setBenchGoingToSwap(false);
     setModalBench(entry);
   }
 
@@ -892,8 +1067,23 @@ export default function TeamsPage() {
         </div>
       </header>
 
-      {/* Swap confirmation modal */}
-      {modalBench && myTeam && (
+      {/* Bench action modal — choose swap or buy */}
+      {modalBench && myTeam && !benchGoingToSwap && (
+        <BenchActionModal
+          benchEntry={modalBench}
+          myPicks={myTeam.picks}
+          myBalance={myBalance}
+          tierByName={tierByName}
+          buying={buying}
+          buyError={buyError}
+          onChooseSwap={() => setBenchGoingToSwap(true)}
+          onBuyConfirm={() => doBuy(modalBench.pokemonName)}
+          onClose={() => { setModalBench(null); setBuyError(''); setBenchGoingToSwap(false); }}
+        />
+      )}
+
+      {/* Swap modal — shown after choosing Intercambiar */}
+      {modalBench && myTeam && benchGoingToSwap && (
         <SwapModal
           benchEntry={modalBench}
           myPicks={myTeam.picks}
@@ -903,7 +1093,8 @@ export default function TeamsPage() {
           swapping={swapping}
           error={swapError}
           onConfirm={(give) => doSwap({ give, take: modalBench.pokemonName })}
-          onClose={() => { setModalBench(null); setSwapError(''); }}
+          onClose={() => { setModalBench(null); setSwapError(''); setBenchGoingToSwap(false); }}
+          onBack={() => { setSwapError(''); setBenchGoingToSwap(false); }}
         />
       )}
 
@@ -1060,16 +1251,16 @@ export default function TeamsPage() {
               </p>
             ) : (
               <>
-                {!swapWindowClosed && myTeam && myTeam.picks.length > 0 && (
+                {!swapWindowClosed && myTeam && (
                   <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                    Haz click en un pokémon de la banca para ver el precio e intercambiarlo.
+                    Haz click en un pokémon de la banca para intercambiarlo o comprarlo.
                   </p>
                 )}
                 <div className="pokemon-grid">
                   {bench.map((entry) => {
                     const price = entry.price ?? 0;
                     const canAfford = price === 0 || myBalance >= price;
-                    const isClickable = !swapWindowClosed && !!(myTeam && myTeam.picks.length > 0);
+                    const isClickable = !swapWindowClosed && !!myTeam;
                     const tier = (entry.tier as Tier | undefined) ?? tierByName.get(entry.pokemonName);
 
                     return (
@@ -1083,8 +1274,8 @@ export default function TeamsPage() {
                         title={
                           swapWindowClosed
                             ? 'Intercambios cerrados'
-                            : !canAfford
-                            ? `Sin monedas (necesitas ${price})`
+                            : isClickable
+                            ? 'Intercambiar o comprar'
                             : undefined
                         }
                         onClick={() => isClickable && handleBenchCardClick(entry)}

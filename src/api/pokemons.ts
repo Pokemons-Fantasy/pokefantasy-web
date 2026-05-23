@@ -110,6 +110,10 @@ export const swapWithBench = async (
   await apiClient.post(`/v1/leagues/${leagueId}/bench/swap`, { pokemonToGive, pokemonToTake });
 };
 
+export const buyFromBench = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/bench/buy`, { pokemonName });
+};
+
 export const stealPokemon = async (leagueId: string, targetPokemonName: string): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/steal`, { targetPokemonName });
 };
