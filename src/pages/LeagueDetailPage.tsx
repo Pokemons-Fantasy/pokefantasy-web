@@ -168,6 +168,9 @@ export default function LeagueDetailPage() {
                 <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/schedule`)}>
                   📅 Calendario
                 </button>
+                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/activity`)}>
+                  ⚡ Actividad
+                </button>
                 <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
                   ⚙️ Configuración
                 </button>
