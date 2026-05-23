@@ -226,7 +226,6 @@ export default function ActivityPage() {
   });
 
   // Accumulate events when new pages load
-  const prevPage = page;
   if (data) {
     const incomingIds = new Set(data.events.map((e) => e.id));
     const dedupedExisting = allEvents.filter((e) => !incomingIds.has(e.id));
