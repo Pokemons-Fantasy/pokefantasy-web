@@ -977,6 +977,17 @@ export default function TeamsPage() {
           </div>
         )}
 
+        {!stealWindowOpen && (
+          <div className="my-turn-banner" style={{
+            background: 'rgba(248,113,113,0.07)',
+            borderColor: 'rgba(248,113,113,0.25)',
+            color: '#f87171',
+            marginBottom: '0.75rem',
+          }}>
+            🔒 Robos cerrados — la ventana abre el jueves de la semana de la jornada
+          </div>
+        )}
+
         {stealWindowOpen && (
           <div className="my-turn-banner" style={{
             background: 'rgba(251,191,36,0.07)',
