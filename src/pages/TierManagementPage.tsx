@@ -5,6 +5,8 @@ import { useAuthStore } from '../store/authStore';
 import { getClosedList, getDraftStatus, assignTier } from '../api/pokemons';
 import type { ClosedListEntry, Tier, TierChange } from '../api/pokemons';
 import { getLeagueDetail } from '../api/leagues';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
 
@@ -31,12 +33,11 @@ const TIER_COLORS: Record<Tier, { bg: string; border: string; text: string }> = 
 interface TierAdjustModalProps {
   entry: ClosedListEntry;
   adjusting: boolean;
-  error: string;
   onConfirm: (newTier: Tier) => void;
   onClose: () => void;
 }
 
-function TierAdjustModal({ entry, adjusting, error, onConfirm, onClose }: TierAdjustModalProps) {
+function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustModalProps) {
   const [selected, setSelected] = useState<Tier | null>(null);
   const currentTier = entry.tier!;
   const steps = selected ? Math.abs(tierRank(selected) - tierRank(currentTier)) - 1 : null;
@@ -139,8 +140,6 @@ function TierAdjustModal({ entry, adjusting, error, onConfirm, onClose }: TierAd
           </div>
         )}
 
-        {error && <p className="error">{error}</p>}
-
         <div className="modal-actions">
           <button className="btn-ghost" onClick={onClose} disabled={adjusting}>
             Cancelar
@@ -168,9 +167,9 @@ export default function TierManagementPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const addToast = useToastStore((s) => s.addToast);
   const [activeTab, setActiveTab] = useState<Tier>('S');
   const [modalEntry, setModalEntry] = useState<ClosedListEntry | null>(null);
-  const [adjustError, setAdjustError] = useState('');
   const [lastChanges, setLastChanges] = useState<TierChange[]>([]);
 
   const { data: closedList = [], isLoading: loadingList } = useQuery({
@@ -212,10 +211,10 @@ export default function TierManagementPage() {
     onSuccess: (data) => {
       setLastChanges(data.changes);
       setModalEntry(null);
-      setAdjustError('');
+      addToast('success', 'Tier ajustado');
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => setAdjustError(err.message ?? 'Error al ajustar tier'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al ajustar tier')),
   });
 
   const countByTier = (t: Tier) => closedList.filter((e) => e.tier === t).length;
@@ -243,9 +242,8 @@ export default function TierManagementPage() {
         <TierAdjustModal
           entry={modalEntry}
           adjusting={adjusting}
-          error={adjustError}
           onConfirm={(tier) => doAdjust({ entryId: modalEntry.id, tier })}
-          onClose={() => { setModalEntry(null); setAdjustError(''); }}
+          onClose={() => setModalEntry(null)}
         />
       )}
 
@@ -331,7 +329,7 @@ export default function TierManagementPage() {
                     key={entry.id}
                     className="pokemon-card"
                     style={{ cursor: 'pointer' }}
-                    onClick={() => { setAdjustError(''); setLastChanges([]); setModalEntry(entry); }}
+                    onClick={() => { setLastChanges([]); setModalEntry(entry); }}
                     title="Cambiar tier"
                   >
                     <img

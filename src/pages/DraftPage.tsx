@@ -5,6 +5,8 @@ import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
 import { getLeagueDetail } from '../api/leagues';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -12,8 +14,8 @@ export default function DraftPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
-  const [error, setError] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const { data: draft, isLoading } = useQuery({
@@ -50,12 +52,11 @@ export default function DraftPage() {
   const { mutate: pick, isPending: picking } = useMutation({
     mutationFn: (pokemonName: string) => draftPick(leagueId!, pokemonName),
     onSuccess: () => {
-      setError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => {
-      setError(err.message ?? 'Error al hacer pick');
+    onError: (err) => {
+      addToast('error', extractErrorMessage(err, 'Error al hacer pick'));
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
     },
   });
@@ -67,9 +68,9 @@ export default function DraftPage() {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
     },
-    onError: (err: Error) => {
+    onError: (err) => {
       setShowCancelModal(false);
-      setError(err.message ?? 'Error al cancelar el draft');
+      addToast('error', extractErrorMessage(err, 'Error al cancelar el draft'));
     },
   });
 
@@ -155,8 +156,6 @@ export default function DraftPage() {
             </div>
           </div>
         )}
-
-        {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
 
         {draft?.status === 'IN_PROGRESS' && (
           isMyTurn ? (

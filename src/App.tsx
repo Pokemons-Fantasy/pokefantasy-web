@@ -13,12 +13,14 @@ import SchedulePage from './pages/SchedulePage';
 import TierManagementPage from './pages/TierManagementPage';
 import ActivityPage from './pages/ActivityPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ToastContainer from './components/ToastContainer';
 
 const queryClient = new QueryClient();
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

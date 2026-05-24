@@ -10,6 +10,8 @@ import {
   type MatchDto,
   type JornadaDto,
 } from '../api/leagues';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function SchedulePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -18,8 +20,8 @@ export default function SchedulePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const addToast = useToastStore((s) => s.addToast);
   const [pendingMatch, setPendingMatch] = useState<MatchDto | null>(null);
-  const [resultError, setResultError] = useState('');
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -49,12 +51,12 @@ export default function SchedulePage() {
       recordMatchResult(leagueId!, matchId, winner),
     onSuccess: () => {
       setPendingMatch(null);
-      setResultError('');
+      addToast('success', 'Resultado guardado');
       queryClient.invalidateQueries({ queryKey: ['schedule', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
     },
-    onError: (err: Error) => {
-      setResultError(err.message ?? 'Error al registrar el resultado');
+    onError: (err) => {
+      addToast('error', extractErrorMessage(err, 'Error al registrar el resultado'));
     },
   });
 
@@ -207,7 +209,7 @@ export default function SchedulePage() {
                         key={match.id}
                         match={match}
                         isAdmin={!!isAdmin}
-                        onRecord={() => { setPendingMatch(match); setResultError(''); }}
+                        onRecord={() => setPendingMatch(match)}
                       />
                     ))}
                   </div>
@@ -226,11 +228,10 @@ export default function SchedulePage() {
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
               {pendingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {pendingMatch.player2}
             </p>
-            {resultError && <p className="error" style={{ marginBottom: '0.75rem' }}>{resultError}</p>}
             <div className="modal-actions">
               <button
                 className="btn-ghost"
-                onClick={() => { setPendingMatch(null); setResultError(''); }}
+                onClick={() => setPendingMatch(null)}
                 disabled={recording}
               >
                 Cancelar

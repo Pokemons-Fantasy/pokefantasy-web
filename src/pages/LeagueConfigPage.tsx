@@ -9,6 +9,8 @@ import {
   type LeagueSettings,
 } from '../api/leagues';
 import { getDraftStatus } from '../api/pokemons';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function LeagueConfigPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -16,6 +18,7 @@ export default function LeagueConfigPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
 
   const [coinsPerWin, setCoinsPerWin] = useState<number>(100);
   const [coinsPerLoss, setCoinsPerLoss] = useState<number>(50);
@@ -134,8 +137,8 @@ export default function LeagueConfigPage() {
       queryClient.invalidateQueries({ queryKey: ['league-settings', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => {
-      setError(err.message ?? 'Error al guardar la configuración');
+    onError: (err) => {
+      addToast('error', extractErrorMessage(err, 'Error al guardar la configuración'));
       setSavedAt(null);
     },
   });

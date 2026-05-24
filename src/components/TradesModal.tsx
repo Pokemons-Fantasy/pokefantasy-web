@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTrades, respondToTrade, cancelTrade } from '../api/trades';
 import type { Trade } from '../api/trades';
 import { spriteUrl } from '../utils/sprites';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 interface Props {
   leagueId: string;
@@ -102,8 +104,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export default function TradesModal({ leagueId, currentUsername, onClose }: Props) {
   const queryClient = useQueryClient();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [incomingError, setIncomingError] = useState('');
-  const [outgoingError, setOutgoingError] = useState('');
+  const addToast = useToastStore((s) => s.addToast);
 
   const { data: trades = [], isLoading } = useQuery({
     queryKey: ['trades', leagueId],
@@ -122,47 +123,32 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
   const { mutate: doAccept, isPending: accepting } = useMutation({
     mutationFn: (tradeId: string) => respondToTrade(leagueId, tradeId, true),
     onSuccess: () => {
-      setIncomingError('');
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
+      addToast('success', 'Intercambio aceptado');
     },
-    onError: (err: unknown) => {
-      setIncomingError(
-        (err as any)?.response?.data?.message ??
-          (err instanceof Error ? err.message : 'Error al aceptar')
-      );
-    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al aceptar')),
   });
 
   const { mutate: doReject, isPending: rejecting } = useMutation({
     mutationFn: (tradeId: string) => respondToTrade(leagueId, tradeId, false),
     onSuccess: () => {
-      setIncomingError('');
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
+      addToast('success', 'Intercambio rechazado');
     },
-    onError: (err: unknown) => {
-      setIncomingError(
-        (err as any)?.response?.data?.message ??
-          (err instanceof Error ? err.message : 'Error al rechazar')
-      );
-    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al rechazar')),
   });
 
   const { mutate: doCancel, isPending: cancelling } = useMutation({
     mutationFn: (tradeId: string) => cancelTrade(leagueId, tradeId),
     onSuccess: () => {
-      setOutgoingError('');
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
+      addToast('success', 'Propuesta cancelada');
     },
-    onError: (err: unknown) => {
-      setOutgoingError(
-        (err as any)?.response?.data?.message ??
-          (err instanceof Error ? err.message : 'Error al cancelar')
-      );
-    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al cancelar')),
   });
 
   const isMutating = accepting || rejecting || cancelling;
@@ -240,7 +226,6 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
           {!isLoading && (
             <div>
               <SectionLabel>Propuestas recibidas</SectionLabel>
-              {incomingError && <p className="error" style={{ marginBottom: '0.5rem' }}>{incomingError}</p>}
               {incoming.length === 0 ? (
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
                   Sin propuestas pendientes.
@@ -292,7 +277,6 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
           {!isLoading && (
             <div>
               <SectionLabel>Propuestas enviadas</SectionLabel>
-              {outgoingError && <p className="error" style={{ marginBottom: '0.5rem' }}>{outgoingError}</p>}
               {outgoing.length === 0 ? (
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
                   Sin propuestas activas.

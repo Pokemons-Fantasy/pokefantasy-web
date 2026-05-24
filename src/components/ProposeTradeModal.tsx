@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { proposeTrade } from '../api/trades';
 import { spriteUrl } from '../utils/sprites';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 interface PokemonRef {
   name: string;
@@ -25,7 +27,7 @@ export default function ProposeTradeModal({
 }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [coins, setCoins] = useState(0);
-  const [errorMsg, setErrorMsg] = useState('');
+  const addToast = useToastStore((s) => s.addToast);
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -38,14 +40,10 @@ export default function ProposeTradeModal({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
+      addToast('success', 'Propuesta enviada');
       onClose();
     },
-    onError: (err: unknown) => {
-      const msg =
-        (err as any)?.response?.data?.message ??
-        (err instanceof Error ? err.message : 'Error al enviar la propuesta');
-      setErrorMsg(msg);
-    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al enviar la propuesta')),
   });
 
   const selectedPokemon = myTeam.find((p) => p.name === selected);
@@ -292,8 +290,6 @@ export default function ProposeTradeModal({
               </p>
             )}
           </div>
-
-          {errorMsg && <p className="error">{errorMsg}</p>}
 
           {/* ── Actions ── */}
           <div className="modal-actions">

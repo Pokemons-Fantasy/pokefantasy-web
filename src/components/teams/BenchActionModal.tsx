@@ -9,7 +9,6 @@ interface BenchActionModalProps {
   myBalance: number;
   tierByName: Map<string, Tier | null | undefined>;
   buying: boolean;
-  buyError: string;
   onChooseSwap: () => void;
   onBuyConfirm: () => void;
   onClose: () => void;
@@ -17,7 +16,7 @@ interface BenchActionModalProps {
 
 export default function BenchActionModal({
   benchEntry, myPicks, myBalance, tierByName,
-  buying, buyError, onChooseSwap, onBuyConfirm, onClose,
+  buying, onChooseSwap, onBuyConfirm, onClose,
 }: BenchActionModalProps) {
   const [view, setView] = useState<'choose' | 'buy'>('choose');
 
@@ -136,7 +135,6 @@ export default function BenchActionModal({
                 <span style={{ color: 'var(--green)', fontWeight: 700 }}>💰 {myBalance - price}</span>
               </div>
             </div>
-            {buyError && <p className="error">{buyError}</p>}
             <div className="modal-actions">
               <button className="btn-ghost" onClick={() => setView('choose')} disabled={buying}>
                 ← Volver

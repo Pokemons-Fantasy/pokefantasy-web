@@ -8,14 +8,13 @@ interface StealModalProps {
   myBalance: number;
   tierByName: Map<string, Tier | null | undefined>;
   stealing: boolean;
-  error: string;
   onConfirm: () => void;
   onClose: () => void;
   onBack?: () => void;
 }
 
 export default function StealModal({
-  pick, stealPrice, myBalance, tierByName, stealing, error, onConfirm, onClose, onBack,
+  pick, stealPrice, myBalance, tierByName, stealing, onConfirm, onClose, onBack,
 }: StealModalProps) {
   const tier = tierByName.get(pick.pokemonName);
   const canAfford = myBalance >= stealPrice;
@@ -103,8 +102,6 @@ export default function StealModal({
             </span>
           )}
         </div>
-
-        {error && <p className="error">{error}</p>}
 
         <div className="modal-actions">
           {onBack ? (

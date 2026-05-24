@@ -11,6 +11,8 @@ import {
 } from '../api/pokemons';
 import type { AvailablePokemon } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 const MAX_NOMINATIONS = 16;
 
@@ -44,9 +46,9 @@ export default function PoolPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
   const [genFilter, setGenFilter] = useState<GenFilter>('all');
-  const [error, setError] = useState('');
 
   const { data: available = [], isLoading: loadingPokemons } = useQuery({
     queryKey: ['available-pokemons'],
@@ -76,19 +78,17 @@ export default function PoolPage() {
   const { mutate: nominate, isPending } = useMutation({
     mutationFn: (pokemonName: string) => nominatePokemon(leagueId!, pokemonName),
     onSuccess: () => {
-      setError('');
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => setError(err.message ?? 'Error al nominar'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al nominar')),
   });
 
   const { mutate: denominate } = useMutation({
     mutationFn: (pokemonName: string) => denominatePokemon(leagueId!, pokemonName),
     onSuccess: () => {
-      setError('');
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err: Error) => setError(err.message ?? 'Error al desnominar'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al desnominar')),
   });
 
   const filtered = available
@@ -129,8 +129,6 @@ export default function PoolPage() {
           </div>
           {isDraftActive && <span className="draft-active-badge">Draft activo</span>}
         </div>
-
-        {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
 
         <div className="gen-tabs">
           {GEN_TABS.map((tab) => (
