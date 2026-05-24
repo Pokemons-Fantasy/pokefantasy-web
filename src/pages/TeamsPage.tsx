@@ -442,6 +442,113 @@ function SwapModal({
   );
 }
 
+// ── Rival Action Modal (choose: steal or trade) ───────────────────────────────
+
+interface RivalActionModalProps {
+  pick: DraftPick;
+  responder: string;
+  stealPrice: number;
+  myBalance: number;
+  tierByName: Map<string, Tier | null | undefined>;
+  onChooseSteal: () => void;
+  onChooseTrade: () => void;
+  onClose: () => void;
+}
+
+function RivalActionModal({
+  pick, responder, stealPrice, myBalance, tierByName, onChooseSteal, onChooseTrade, onClose,
+}: RivalActionModalProps) {
+  const tier = tierByName.get(pick.pokemonName);
+  const canAffordSteal = myBalance >= stealPrice;
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal animate-in-fast" style={{ maxWidth: 480 }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.15rem' }}>
+            Pokémon de <strong>{responder}</strong>
+          </h2>
+          <button
+            className="btn-ghost"
+            style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Pokemon header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '1rem',
+          background: 'var(--surface-2)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '1rem 1.25rem', marginTop: '1rem',
+        }}>
+          <img
+            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pick.pokemonId}.png`}
+            alt={pick.pokemonName}
+            style={{ width: 72, height: 72, imageRendering: 'pixelated' }}
+          />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', textTransform: 'capitalize' }}>
+              {pick.pokemonName}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+              {tier && <TierBadge tier={tier} />}
+              <span className="coin-badge" style={{ fontSize: '0.75rem' }}>
+                💰 {stealPrice}
+              </span>
+            </div>
+            <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.15rem' }}>
+              Tu saldo: 💰 {myBalance}
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '1.25rem' }}>
+          <button
+            className="btn-ghost"
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: '0.4rem', padding: '1rem', borderRadius: 10,
+              border: '2px solid var(--border)', height: 'auto',
+              opacity: canAffordSteal ? 1 : 0.5,
+            }}
+            onClick={() => canAffordSteal && onChooseSteal()}
+            disabled={!canAffordSteal}
+            title={!canAffordSteal ? `Necesitas ${stealPrice} monedas (tienes ${myBalance})` : undefined}
+          >
+            <span style={{ fontSize: '1.5rem' }}>🗡️</span>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Robar</span>
+            <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
+              💰 {stealPrice} · {canAffordSteal ? 'puedes permitírtelo' : `te faltan ${stealPrice - myBalance}`}
+            </span>
+          </button>
+
+          <button
+            className="btn-ghost"
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: '0.4rem', padding: '1rem', borderRadius: 10,
+              border: '2px solid var(--border)', height: 'auto',
+            }}
+            onClick={onChooseTrade}
+          >
+            <span style={{ fontSize: '1.5rem' }}>⇄</span>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Proponer intercambio</span>
+            <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
+              Ofrece uno de tus pokémon a cambio
+            </span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ── Steal Modal ───────────────────────────────────────────────────────────────
 
 interface StealModalProps {
@@ -453,10 +560,11 @@ interface StealModalProps {
   error: string;
   onConfirm: () => void;
   onClose: () => void;
+  onBack?: () => void;
 }
 
 function StealModal({
-  pick, stealPrice, myBalance, tierByName, stealing, error, onConfirm, onClose,
+  pick, stealPrice, myBalance, tierByName, stealing, error, onConfirm, onClose, onBack,
 }: StealModalProps) {
   const tier = tierByName.get(pick.pokemonName);
   const canAfford = myBalance >= stealPrice;
@@ -548,9 +656,15 @@ function StealModal({
         {error && <p className="error">{error}</p>}
 
         <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose} disabled={stealing}>
-            Cancelar
-          </button>
+          {onBack ? (
+            <button className="btn-ghost" onClick={onBack} disabled={stealing}>
+              ← Volver
+            </button>
+          ) : (
+            <button className="btn-ghost" onClick={onClose} disabled={stealing}>
+              Cancelar
+            </button>
+          )}
           <button
             className="btn-primary"
             disabled={!canAfford || stealing}
@@ -726,7 +840,8 @@ export default function TeamsPage() {
   const [buyError, setBuyError] = useState('');
   const [benchGoingToSwap, setBenchGoingToSwap] = useState(false);
 
-  const [modalSteal, setModalSteal] = useState<DraftPick | null>(null);
+  const [rivalModalPick, setRivalModalPick] = useState<{ pick: DraftPick; responder: string } | null>(null);
+  const [rivalGoingToSteal, setRivalGoingToSteal] = useState(false);
   const [stealError, setStealError] = useState('');
 
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
@@ -838,7 +953,8 @@ export default function TeamsPage() {
   const { mutate: doSteal, isPending: stealing } = useMutation({
     mutationFn: (targetPokemonName: string) => stealPokemon(leagueId!, targetPokemonName),
     onSuccess: () => {
-      setModalSteal(null);
+      setRivalModalPick(null);
+      setRivalGoingToSteal(false);
       setStealError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
@@ -952,27 +1068,23 @@ export default function TeamsPage() {
             );
           } else {
             // Rival pokemon card
-            const isStealable = stealWindowOpen && !locked && canAffordSteal;
             const isTradeable = isDraftCompleted && !locked;
-            const isClickable = isStealable || isTradeable;
+            const isClickable = (stealWindowOpen && !locked) || isTradeable;
             return (
               <div
                 key={pick.pokemonName}
                 className="pokemon-card"
                 style={{
                   cursor: isClickable ? 'pointer' : 'default',
-                  opacity: stealWindowOpen && (locked || !canAffordSteal) ? 0.5 : 1,
+                  opacity: stealWindowOpen && locked ? 0.5 : 1,
                 }}
-                title={
-                  locked ? '🔒 Bloqueado hasta que finalice la jornada'
-                  : !canAffordSteal && stealWindowOpen ? `Sin monedas para robar (necesitas ${sp})`
-                  : undefined
-                }
+                title={locked ? '🔒 Bloqueado hasta que finalice la jornada' : undefined}
                 onClick={() => {
-                  if (isStealable) {
-                    setStealError('');
-                    setModalSteal(pick);
+                  if (stealWindowOpen && !locked) {
+                    // Modal unificado: el jugador elige robar o proponer trade
+                    setRivalModalPick({ pick, responder: team.username });
                   } else if (isTradeable) {
+                    // Ventana cerrada: directo a ProposeTradeModal (sin click extra)
                     setModalProposeTrade({
                       responder: team.username,
                       responderPokemon: { name: pick.pokemonName, id: pick.pokemonId },
@@ -992,15 +1104,22 @@ export default function TeamsPage() {
                   locked ? (
                     <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
                   ) : (
-                    <span className="coin-badge" style={{
-                      marginTop: '0.25rem',
-                      fontSize: '0.68rem',
-                      background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
-                      borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
-                      color: canAffordSteal ? '#f87171' : '#9ca3af',
-                    }}>
-                      💰 {sp}
-                    </span>
+                    <>
+                      <span className="coin-badge" style={{
+                        marginTop: '0.25rem',
+                        fontSize: '0.68rem',
+                        background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
+                        borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
+                        color: canAffordSteal ? '#f87171' : '#9ca3af',
+                      }}>
+                        💰 {sp}
+                      </span>
+                      {!canAffordSteal && (
+                        <span style={{ marginTop: '0.15rem', fontSize: '0.65rem', color: 'var(--text-3)' }}>
+                          ⇄ proponer
+                        </span>
+                      )}
+                    </>
                   )
                 )}
                 {!stealWindowOpen && isDraftCompleted && !locked && (
@@ -1098,17 +1217,38 @@ export default function TeamsPage() {
         />
       )}
 
-      {/* Steal modal */}
-      {modalSteal && (
+      {/* Rival action modal — choose steal or propose trade */}
+      {rivalModalPick && !rivalGoingToSteal && (
+        <RivalActionModal
+          pick={rivalModalPick.pick}
+          responder={rivalModalPick.responder}
+          stealPrice={effectiveStealPrice(rivalModalPick.pick)}
+          myBalance={myBalance}
+          tierByName={tierByName}
+          onChooseSteal={() => setRivalGoingToSteal(true)}
+          onChooseTrade={() => {
+            setModalProposeTrade({
+              responder: rivalModalPick.responder,
+              responderPokemon: { name: rivalModalPick.pick.pokemonName, id: rivalModalPick.pick.pokemonId },
+            });
+            setRivalModalPick(null);
+          }}
+          onClose={() => setRivalModalPick(null)}
+        />
+      )}
+
+      {/* Steal modal — shown after choosing Robar in RivalActionModal */}
+      {rivalModalPick && rivalGoingToSteal && (
         <StealModal
-          pick={modalSteal}
-          stealPrice={effectiveStealPrice(modalSteal)}
+          pick={rivalModalPick.pick}
+          stealPrice={effectiveStealPrice(rivalModalPick.pick)}
           myBalance={myBalance}
           tierByName={tierByName}
           stealing={stealing}
           error={stealError}
-          onConfirm={() => doSteal(modalSteal.pokemonName)}
-          onClose={() => { setModalSteal(null); setStealError(''); }}
+          onConfirm={() => doSteal(rivalModalPick.pick.pokemonName)}
+          onClose={() => { setRivalModalPick(null); setStealError(''); setRivalGoingToSteal(false); }}
+          onBack={() => { setStealError(''); setRivalGoingToSteal(false); }}
         />
       )}
 
