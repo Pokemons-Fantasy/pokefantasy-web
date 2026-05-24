@@ -42,6 +42,18 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <div style={{
+        position: 'fixed',
+        bottom: '0.6rem',
+        right: '1rem',
+        fontSize: '0.7rem',
+        color: 'var(--text-3)',
+        pointerEvents: 'none',
+        userSelect: 'none',
+        zIndex: 9999,
+      }}>
+        v{__APP_VERSION__}
+      </div>
     </QueryClientProvider>
   );
 }
