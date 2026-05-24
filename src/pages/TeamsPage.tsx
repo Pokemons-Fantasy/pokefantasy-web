@@ -852,6 +852,8 @@ export default function TeamsPage() {
   const [showTradesModal, setShowTradesModal] = useState(false);
   const [modalProposeTrade, setModalProposeTrade] = useState<{ responder: string; responderPokemon: { name: string; id: number } } | null>(null);
 
+  const [copiedTeam, setCopiedTeam] = useState<string | null>(null);
+
   // Deep-link: al llegar desde el aviso de intercambios pendientes, abrir el modal.
   const location = useLocation();
   useEffect(() => {
@@ -933,6 +935,16 @@ export default function TeamsPage() {
     if (pick.lockedUntilRound == null) return false;
     const jornada = schedule?.jornadas?.find((j) => j.roundNumber === pick.lockedUntilRound);
     return jornada?.matches.some((m) => m.status === 'PENDING') ?? false;
+  }
+
+  function exportTeamToShowdown(picks: DraftPick[], teamUsername: string) {
+    const text = picks
+      .map((p) => p.pokemonName.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join('-'))
+      .join('\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedTeam(teamUsername);
+      setTimeout(() => setCopiedTeam(null), 2000);
+    });
   }
 
   // ── Mutations ───────────────────────────────────────────────────────────────
@@ -1351,6 +1363,16 @@ export default function TeamsPage() {
                   {myCoins !== undefined && (
                     <span className="coin-badge">💰 {myCoins.coins}</span>
                   )}
+                  {isDraftCompleted && myTeam.picks.length > 0 && (
+                    <button
+                      className="btn-ghost"
+                      style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem' }}
+                      onClick={() => exportTeamToShowdown(myTeam.picks, myTeam.username)}
+                      title="Copiar equipo en formato Pokémon Showdown"
+                    >
+                      {copiedTeam === myTeam.username ? '✓ Copiado' : '📋 Showdown'}
+                    </button>
+                  )}
                   <button
                     className="btn-ghost own-team-collapse-btn"
                     onClick={() => setOwnTeamCollapsed((c) => !c)}
@@ -1372,6 +1394,16 @@ export default function TeamsPage() {
                   <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
                     {team.picks.length}/{maxTeamSize}
                   </span>
+                  {isDraftCompleted && team.picks.length > 0 && (
+                    <button
+                      className="btn-ghost"
+                      style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', marginLeft: 'auto' }}
+                      onClick={() => exportTeamToShowdown(team.picks, team.username)}
+                      title="Copiar equipo en formato Pokémon Showdown"
+                    >
+                      {copiedTeam === team.username ? '✓ Copiado' : '📋 Showdown'}
+                    </button>
+                  )}
                 </div>
                 {renderPicks(team, false)}
               </div>
