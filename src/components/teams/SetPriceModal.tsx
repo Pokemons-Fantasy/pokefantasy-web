@@ -9,13 +9,12 @@ interface SetPriceModalProps {
   myBalance: number;
   tierByName: Map<string, Tier | null | undefined>;
   saving: boolean;
-  error: string;
   onConfirm: (newPrice: number) => void;
   onClose: () => void;
 }
 
 export default function SetPriceModal({
-  pick, currentPrice, myBalance, tierByName, saving, error, onConfirm, onClose,
+  pick, currentPrice, myBalance, tierByName, saving, onConfirm, onClose,
 }: SetPriceModalProps) {
   const [inputVal, setInputVal] = useState('');
   const tier = tierByName.get(pick.pokemonName);
@@ -126,8 +125,6 @@ export default function SetPriceModal({
             )}
           </div>
         )}
-
-        {error && <p className="error">{error}</p>}
 
         <div className="modal-actions">
           <button className="btn-ghost" onClick={onClose} disabled={saving}>

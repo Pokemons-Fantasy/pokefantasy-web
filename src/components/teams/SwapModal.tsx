@@ -12,14 +12,13 @@ interface SwapModalProps {
   tierByName: Map<string, Tier | null | undefined>;
   leagueSettings: LeagueSettings | undefined;
   swapping: boolean;
-  error: string;
   onConfirm: (give: string) => void;
   onClose: () => void;
   onBack?: () => void;
 }
 
 export default function SwapModal({
-  benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, error, onConfirm, onClose, onBack,
+  benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, onConfirm, onClose, onBack,
 }: SwapModalProps) {
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
@@ -229,8 +228,6 @@ export default function SwapModal({
             )}
           </>
         )}
-
-        {error && <p className="error">{error}</p>}
 
         <div className="modal-actions">
           {onBack ? (

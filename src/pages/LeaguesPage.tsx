@@ -5,14 +5,16 @@ import { useAuthStore } from '../store/authStore';
 import { getMyLeagues, createLeague } from '../api/leagues';
 import CreateLeagueModal from '../components/CreateLeagueModal';
 import PendingTradesBanner from '../components/PendingTradesBanner';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function LeaguesPage() {
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState('');
 
   const { data: leagues = [], isLoading } = useQuery({
     queryKey: ['my-leagues'],
@@ -24,9 +26,8 @@ export default function LeaguesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-leagues'] });
       setShowModal(false);
-      setError('');
     },
-    onError: (err: Error) => setError(err.message ?? 'Error al crear liga'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al crear liga')),
   });
 
   return (
@@ -51,8 +52,6 @@ export default function LeaguesPage() {
           </div>
           <button className="btn-primary" onClick={() => setShowModal(true)}>+ Crear liga</button>
         </div>
-
-        {error && <p className="error" style={{ marginBottom: '1rem' }}>{error}</p>}
 
         {isLoading && (
           <div className="loading-text">
@@ -90,7 +89,7 @@ export default function LeaguesPage() {
       {showModal && (
         <CreateLeagueModal
           onConfirm={(name) => create(name)}
-          onClose={() => { setShowModal(false); setError(''); }}
+          onClose={() => setShowModal(false)}
         />
       )}
     </div>

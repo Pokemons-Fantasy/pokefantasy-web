@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getLeagueDetail, addMember, removeMember } from '../api/leagues';
 import { getDraftStatus, startDraft } from '../api/pokemons';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function LeagueDetailPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -11,9 +13,8 @@ export default function LeagueDetailPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
   const [newMember, setNewMember] = useState('');
-  const [error, setError] = useState('');
-  const [draftError, setDraftError] = useState('');
   const [turnOrder, setTurnOrder] = useState<string[]>([]);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
 
@@ -49,9 +50,8 @@ export default function LeagueDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
       setNewMember('');
-      setError('');
     },
-    onError: (err: Error) => setError(err.message ?? 'Error al añadir miembro'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al añadir miembro')),
   });
 
   const { mutate: remove, isPending: removing } = useMutation({
@@ -75,7 +75,7 @@ export default function LeagueDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
       navigate(`/leagues/${leagueId}/draft`);
     },
-    onError: (err: Error) => setDraftError(err.message ?? 'Error al iniciar draft'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al iniciar draft')),
   });
 
   const moveUp = (i: number) => {
@@ -256,8 +256,6 @@ export default function LeagueDetailPage() {
               ))}
             </div>
 
-            {draftError && <p className="error" style={{ marginTop: '0.75rem' }}>{draftError}</p>}
-
             <button
               className="btn-primary"
               style={{ marginTop: '1rem' }}
@@ -273,7 +271,6 @@ export default function LeagueDetailPage() {
           <>
             <hr className="divider" />
             <p className="section-label">Añadir jugador</p>
-            {error && <p className="error" style={{ marginBottom: '0.75rem' }}>{error}</p>}
             <div className="inline-form">
               <input
                 className="search-input"

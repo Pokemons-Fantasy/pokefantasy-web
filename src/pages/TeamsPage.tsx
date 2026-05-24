@@ -18,6 +18,8 @@ import SwapModal from '../components/teams/SwapModal';
 import RivalActionModal from '../components/teams/RivalActionModal';
 import StealModal from '../components/teams/StealModal';
 import SetPriceModal from '../components/teams/SetPriceModal';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -28,17 +30,15 @@ export default function TeamsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const addToast = useToastStore((s) => s.addToast);
+
   const [modalBench, setModalBench] = useState<BenchEntry | null>(null);
-  const [swapError, setSwapError] = useState('');
-  const [buyError, setBuyError] = useState('');
   const [benchGoingToSwap, setBenchGoingToSwap] = useState(false);
 
   const [rivalModalPick, setRivalModalPick] = useState<{ pick: DraftPick; responder: string } | null>(null);
   const [rivalGoingToSteal, setRivalGoingToSteal] = useState(false);
-  const [stealError, setStealError] = useState('');
 
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
-  const [setPriceError, setSetPriceError] = useState('');
 
   const [ownTeamCollapsed, setOwnTeamCollapsed] = useState(false);
 
@@ -147,12 +147,12 @@ export default function TeamsPage() {
       swapWithBench(leagueId!, give, take),
     onSuccess: () => {
       setModalBench(null);
-      setSwapError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      addToast('success', 'Intercambio realizado');
     },
-    onError: (err: Error) => setSwapError(err.message ?? 'Error al intercambiar'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al intercambiar')),
   });
 
   const { mutate: doSteal, isPending: stealing } = useMutation({
@@ -160,11 +160,11 @@ export default function TeamsPage() {
     onSuccess: () => {
       setRivalModalPick(null);
       setRivalGoingToSteal(false);
-      setStealError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      addToast('success', '¡Pokémon robado!');
     },
-    onError: (err: Error) => setStealError(err.message ?? 'Error al robar'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al robar')),
   });
 
   const { mutate: doSetPrice, isPending: settingPrice } = useMutation({
@@ -172,24 +172,24 @@ export default function TeamsPage() {
       setStealPrice(leagueId!, pokemonName, newPrice),
     onSuccess: () => {
       setModalSetPrice(null);
-      setSetPriceError('');
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      addToast('success', 'Precio de robo actualizado');
     },
-    onError: (err: Error) => setSetPriceError(err.message ?? 'Error al establecer precio'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al establecer precio')),
   });
 
   const { mutate: doBuy, isPending: buying } = useMutation({
     mutationFn: (pokemonName: string) => buyFromBench(leagueId!, pokemonName),
     onSuccess: () => {
       setModalBench(null);
-      setBuyError('');
       setBenchGoingToSwap(false);
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      addToast('success', 'Pokémon comprado');
     },
-    onError: (err: Error) => setBuyError(err.message ?? 'Error al comprar'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al comprar')),
   });
 
   // ── Data ────────────────────────────────────────────────────────────────────
@@ -211,8 +211,6 @@ export default function TeamsPage() {
     if (!isDraftCompleted) return;
     if (!myTeam) return;
     if (swapWindowClosed) return;
-    setSwapError('');
-    setBuyError('');
     setBenchGoingToSwap(false);
     setModalBench(entry);
   }
@@ -252,7 +250,7 @@ export default function TeamsPage() {
                       🛡 {sp}
                     </span>
                     <button
-                      onClick={() => { setSetPriceError(''); setModalSetPrice(pick); }}
+                      onClick={() => setModalSetPrice(pick)}
                       title="Subir precio de robo"
                       style={{
                         marginTop: '0.2rem',
@@ -399,10 +397,9 @@ export default function TeamsPage() {
           myBalance={myBalance}
           tierByName={tierByName}
           buying={buying}
-          buyError={buyError}
           onChooseSwap={() => setBenchGoingToSwap(true)}
           onBuyConfirm={() => doBuy(modalBench.pokemonName)}
-          onClose={() => { setModalBench(null); setBuyError(''); setBenchGoingToSwap(false); }}
+          onClose={() => { setModalBench(null); setBenchGoingToSwap(false); }}
         />
       )}
 
@@ -415,10 +412,9 @@ export default function TeamsPage() {
           tierByName={tierByName}
           leagueSettings={leagueSettings}
           swapping={swapping}
-          error={swapError}
           onConfirm={(give) => doSwap({ give, take: modalBench.pokemonName })}
-          onClose={() => { setModalBench(null); setSwapError(''); setBenchGoingToSwap(false); }}
-          onBack={() => { setSwapError(''); setBenchGoingToSwap(false); }}
+          onClose={() => { setModalBench(null); setBenchGoingToSwap(false); }}
+          onBack={() => setBenchGoingToSwap(false)}
         />
       )}
 
@@ -450,10 +446,9 @@ export default function TeamsPage() {
           myBalance={myBalance}
           tierByName={tierByName}
           stealing={stealing}
-          error={stealError}
           onConfirm={() => doSteal(rivalModalPick.pick.pokemonName)}
-          onClose={() => { setRivalModalPick(null); setStealError(''); setRivalGoingToSteal(false); }}
-          onBack={() => { setStealError(''); setRivalGoingToSteal(false); }}
+          onClose={() => { setRivalModalPick(null); setRivalGoingToSteal(false); }}
+          onBack={() => setRivalGoingToSteal(false)}
         />
       )}
 
@@ -465,9 +460,8 @@ export default function TeamsPage() {
           myBalance={myBalance}
           tierByName={tierByName}
           saving={settingPrice}
-          error={setPriceError}
           onConfirm={(newPrice) => doSetPrice({ pokemonName: modalSetPrice.pokemonName, newPrice })}
-          onClose={() => { setModalSetPrice(null); setSetPriceError(''); }}
+          onClose={() => setModalSetPrice(null)}
         />
       )}
 
