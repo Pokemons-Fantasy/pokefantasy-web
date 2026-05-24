@@ -12,6 +12,7 @@ import LeagueConfigPage from './pages/LeagueConfigPage';
 import SchedulePage from './pages/SchedulePage';
 import TierManagementPage from './pages/TierManagementPage';
 import ActivityPage from './pages/ActivityPage';
+import StandingsPage from './pages/StandingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ToastContainer from './components/ToastContainer';
 
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/leagues/:leagueId/schedule" element={<SchedulePage />} />
             <Route path="/leagues/:leagueId/tiers" element={<TierManagementPage />} />
             <Route path="/leagues/:leagueId/activity" element={<ActivityPage />} />
+            <Route path="/leagues/:leagueId/standings" element={<StandingsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

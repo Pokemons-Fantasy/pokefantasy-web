@@ -165,6 +165,9 @@ export default function LeagueDetailPage() {
             )}
             {draft?.status === 'COMPLETED' && (
               <>
+                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/standings`)}>
+                  🏆 Clasificación
+                </button>
                 <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/schedule`)}>
                   📅 Calendario
                 </button>

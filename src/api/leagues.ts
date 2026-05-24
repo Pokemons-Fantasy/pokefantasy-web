@@ -127,3 +127,16 @@ export const recordMatchResult = async (
 ): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
 };
+
+export interface PlayerStanding {
+  username: string;
+  played: number;
+  wins: number;
+  losses: number;
+  coins: number;
+}
+
+export const getStandings = async (leagueId: string): Promise<PlayerStanding[]> => {
+  const { data } = await apiClient.get<{ standings: PlayerStanding[] }>(`/v1/leagues/${leagueId}/standings`);
+  return data.standings;
+};
