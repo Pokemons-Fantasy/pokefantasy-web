@@ -107,9 +107,14 @@ export default function SchedulePage() {
             <h1 className="page-title">📅 Calendario</h1>
             {league && <p className="page-subtitle">{league.name}</p>}
           </div>
-          {myCoins !== undefined && (
-            <span className="coin-badge coin-badge-lg">💰 {myCoins.coins} monedas</span>
-          )}
+          <div className="section-actions">
+            {myCoins !== undefined && (
+              <span className="coin-badge coin-badge-lg">💰 {myCoins.coins} monedas</span>
+            )}
+            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/standings`)}>
+              🏆 Clasificación
+            </button>
+          </div>
         </div>
 
         {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando calendario...</p>}
