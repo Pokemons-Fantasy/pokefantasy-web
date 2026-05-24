@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { proposeTrade } from '../api/trades';
+import { spriteUrl } from '../utils/sprites';
 
 interface PokemonRef {
   name: string;
@@ -13,10 +14,6 @@ interface Props {
   responderPokemon: PokemonRef;
   myTeam: PokemonRef[];
   onClose: () => void;
-}
-
-function spriteUrl(id: number) {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 }
 
 export default function ProposeTradeModal({
