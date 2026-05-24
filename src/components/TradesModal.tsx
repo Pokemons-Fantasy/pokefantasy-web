@@ -2,15 +2,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTrades, respondToTrade, cancelTrade } from '../api/trades';
 import type { Trade } from '../api/trades';
+import { spriteUrl } from '../utils/sprites';
 
 interface Props {
   leagueId: string;
   currentUsername: string;
   onClose: () => void;
-}
-
-function spriteUrl(id: number) {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 }
 
 function StatusBadge({ status }: { status: Trade['status'] }) {
