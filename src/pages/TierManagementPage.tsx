@@ -7,6 +7,7 @@ import type { ClosedListEntry, Tier, TierChange } from '../api/pokemons';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonGrid } from '../components/SkeletonGrid';
 
 const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
 
@@ -317,7 +318,7 @@ export default function TierManagementPage() {
 
             {/* Pokemon grid */}
             {loadingList ? (
-              <p style={{ color: 'var(--text-3)' }}>Cargando...</p>
+              <SkeletonGrid count={6} />
             ) : tabEntries.length === 0 ? (
               <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
                 No hay pokémon en tier {activeTab}.
