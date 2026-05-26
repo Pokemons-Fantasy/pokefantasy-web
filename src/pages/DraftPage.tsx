@@ -21,6 +21,7 @@ export default function DraftPage() {
   const [search, setSearch] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
+  const [pendingPick, setPendingPick] = useState<ClosedListEntry | null>(null);
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -180,7 +181,7 @@ export default function DraftPage() {
                   <div
                     key={entry.id}
                     className={`pokemon-card ${picking ? 'nominated' : ''}`}
-                    onClick={() => { if (!picking) pick(entry.pokemonName); }}
+                    onClick={() => { if (!picking) setPendingPick(entry); }}
                   >
                     <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
                     <span className="pokemon-name">{entry.pokemonName}</span>
@@ -243,6 +244,31 @@ export default function DraftPage() {
               </button>
               <button className="btn-danger" disabled={cancelling} onClick={() => cancel()}>
                 {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {pendingPick && (
+        <div className="modal-overlay" onClick={() => setPendingPick(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>¿Confirmar pick?</h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
+              Vas a elegir a <strong>{pendingPick.pokemonName}</strong>. Esta acción no se puede deshacer.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-ghost" onClick={() => setPendingPick(null)}>
+                Cancelar
+              </button>
+              <button
+                className="btn-primary"
+                disabled={picking}
+                onClick={() => {
+                  pick(pendingPick.pokemonName);
+                  setPendingPick(null);
+                }}
+              >
+                {picking ? 'Pickeando...' : 'Confirmar'}
               </button>
             </div>
           </div>
