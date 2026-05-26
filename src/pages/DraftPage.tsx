@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
+import { getDraftStatus, draftPick, getClosedList, cancelDraft, autoPickDraft } from '../api/pokemons';
 import type { ClosedListEntry } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
 import { SkeletonTable } from '../components/SkeletonTable';
@@ -22,6 +22,7 @@ export default function DraftPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
   const [pendingPick, setPendingPick] = useState<ClosedListEntry | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -78,6 +79,29 @@ export default function DraftPage() {
       addToast('error', extractErrorMessage(err, 'Error al cancelar el draft'));
     },
   });
+
+  const { mutate: triggerAutoPick } = useMutation({
+    mutationFn: () => autoPickDraft(leagueId!),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] }),
+    onError: () => {}, // silenciar — otro cliente puede haber disparado el auto-pick primero
+  });
+
+  useEffect(() => {
+    if (!draft?.turnDeadline) { setSecondsLeft(null); return; }
+    const update = () => {
+      const diff = Math.ceil((new Date(draft.turnDeadline!).getTime() - Date.now()) / 1000);
+      if (diff <= 0) {
+        setSecondsLeft(0);
+        triggerAutoPick();
+      } else {
+        setSecondsLeft(diff);
+      }
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft?.turnDeadline]);
 
   const statusLabel = !draft ? '—'
     : draft.status === 'COMPLETED' ? 'Completado'
@@ -146,7 +170,18 @@ export default function DraftPage() {
             {draft.status === 'IN_PROGRESS' && (
               <div>
                 <div className="draft-stat-label">Turno actual</div>
-                <div className="draft-stat-value accent">{draft.currentTurn}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div className="draft-stat-value accent">{draft.currentTurn}</div>
+                  {secondsLeft !== null && (
+                    <span style={{
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: secondsLeft <= 10 ? 'var(--red, #ef4444)' : 'var(--text-2)',
+                    }}>
+                      ⏱ {secondsLeft}s
+                    </span>
+                  )}
+                </div>
               </div>
             )}
             {draft.status === 'IN_PROGRESS' && (

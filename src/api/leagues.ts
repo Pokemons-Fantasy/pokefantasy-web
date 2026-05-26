@@ -61,6 +61,7 @@ export interface LeagueSettings {
   tierPctB: number;         // % of pool → B tier (default 20)
   tierPctC: number;         // % of pool → C tier (default 20)
   tierPctD: number;         // % of pool → D tier (default 20)
+  turnTimerSeconds?: number; // seconds per turn; 0 = disabled
 }
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
