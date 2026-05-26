@@ -35,6 +35,7 @@ export default function LeagueConfigPage() {
   const [tierPctB, setTierPctB] = useState<number>(20);
   const [tierPctC, setTierPctC] = useState<number>(20);
   const [tierPctD, setTierPctD] = useState<number>(20);
+  const [turnTimerSeconds, setTurnTimerSeconds] = useState<number>(0);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -73,6 +74,7 @@ export default function LeagueConfigPage() {
       setTierPctB(settings.tierPctB ?? 20);
       setTierPctC(settings.tierPctC ?? 20);
       setTierPctD(settings.tierPctD ?? 20);
+      setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
     }
   }, [settings]);
 
@@ -107,7 +109,8 @@ export default function LeagueConfigPage() {
       { key: 'tierPctB',     label: '% tier B',             current: tierPctB,     saved: settings.tierPctB ?? 20 },
       { key: 'tierPctC',     label: '% tier C',             current: tierPctC,     saved: settings.tierPctC ?? 20 },
       { key: 'tierPctD',     label: '% tier D',             current: tierPctD,     saved: settings.tierPctD ?? 20 },
-      { key: 'maxTeamSize',  label: 'Tamaño max equipo',    current: maxTeamSize,  saved: settings.maxTeamSize ?? 20 },
+      { key: 'maxTeamSize',        label: 'Tamaño max equipo',         current: maxTeamSize,       saved: settings.maxTeamSize ?? 20 },
+      { key: 'turnTimerSeconds',   label: 'Tiempo por turno (s)',      current: turnTimerSeconds,  saved: settings.turnTimerSeconds ?? 0 },
     ];
 
     const changes: Array<{ label: string; old: number | string; new: number | string }> = numFields
@@ -124,7 +127,7 @@ export default function LeagueConfigPage() {
     settings, coinsPerWin, coinsPerLoss,
     priceTierS, priceTierA, priceTierB, priceTierC, priceTierD,
     tierPctS, tierPctA, tierPctB, tierPctC, tierPctD,
-    maxTeamSize, seasonStartDate,
+    maxTeamSize, seasonStartDate, turnTimerSeconds,
   ]);
 
   const hasChanges = pendingChanges.length > 0;
@@ -177,6 +180,7 @@ export default function LeagueConfigPage() {
       tierPctB,
       tierPctC,
       tierPctD,
+      turnTimerSeconds,
     });
   };
 
@@ -196,6 +200,7 @@ export default function LeagueConfigPage() {
       setTierPctB(settings.tierPctB ?? 20);
       setTierPctC(settings.tierPctC ?? 20);
       setTierPctD(settings.tierPctD ?? 20);
+      setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
       setError('');
       setSavedAt(null);
     }
@@ -403,6 +408,25 @@ export default function LeagueConfigPage() {
                   />
                   <span className="config-hint">
                     Máximo de Pokémon que puede tener un jugador post-draft (mínimo 10, por defecto 20).
+                  </span>
+                </div>
+
+                <div className="config-field">
+                  <label className="section-label" htmlFor="turnTimerSeconds">
+                    Tiempo por turno (segundos, 0 = sin límite)
+                  </label>
+                  <input
+                    id="turnTimerSeconds"
+                    className="search-input"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={turnTimerSeconds}
+                    onChange={(e) => setTurnTimerSeconds(Number(e.target.value))}
+                    disabled={!canEdit || saving}
+                  />
+                  <span className="config-hint">
+                    Si el jugador en turno no elige en este tiempo, se asigna un Pokémon aleatorio. 0 desactiva el temporizador.
                   </span>
                 </div>
               </form>

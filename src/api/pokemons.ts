@@ -52,6 +52,8 @@ export interface DraftStatus {
   picks: DraftPick[];
   /** Draft original: lo que eligió cada jugador, inmune a robos/swaps/trades. */
   draftHistory?: DraftPick[];
+  /** ISO Instant deadline for current turn. null if timer disabled or draft not IN_PROGRESS. */
+  turnDeadline?: string | null;
 }
 
 export const getPokemons = async (): Promise<Pokemon[]> => {
@@ -125,6 +127,10 @@ export const startDraft = async (leagueId: string, turnOrder: string[]): Promise
 
 export const cancelDraft = async (leagueId: string): Promise<void> => {
   await apiClient.delete(`/v1/leagues/${leagueId}/draft`);
+};
+
+export const autoPickDraft = async (leagueId: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/draft/auto-pick`);
 };
 
 export interface BenchEntry {
