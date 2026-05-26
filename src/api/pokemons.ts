@@ -20,6 +20,15 @@ export interface ClosedListEntry {
   nominatedBy: string;
   sprite: string;
   tier?: Tier | null;
+  stats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+    specialAttack: number;
+    specialDefense: number;
+    speed: number;
+  } | null;
+  types?: string[];
 }
 
 export interface DraftPick {
