@@ -5,7 +5,8 @@ import { useAuthStore } from '../store/authStore';
 import {
   getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice,
 } from '../api/pokemons';
-import type { BenchEntry, DraftPick, Tier } from '../api/pokemons';
+import type { BenchEntry, ClosedListEntry, DraftPick, Tier } from '../api/pokemons';
+import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 import { getTrades } from '../api/trades';
@@ -46,6 +47,7 @@ export default function TeamsPage() {
   const [modalProposeTrade, setModalProposeTrade] = useState<{ responder: string; responderPokemon: { name: string; id: number } } | null>(null);
 
   const [copiedTeam, setCopiedTeam] = useState<string | null>(null);
+  const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
 
   // Deep-link: al llegar desde el aviso de intercambios pendientes, abrir el modal.
   const location = useLocation();
@@ -76,6 +78,7 @@ export default function TeamsPage() {
     staleTime: 30_000,
   });
   const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
+  const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
 
   const { data: myCoins } = useQuery({
     queryKey: ['my-coins', leagueId],
@@ -267,6 +270,13 @@ export default function TeamsPage() {
                     </button>
                   </>
                 )}
+                <button
+                  className="pokemon-info-btn"
+                  onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pick.pokemonName) ?? null); }}
+                  title="Ver detalles"
+                >
+                  i
+                </button>
               </div>
             );
           } else {
@@ -334,6 +344,13 @@ export default function TeamsPage() {
                     ⇄ proponer
                   </span>
                 )}
+                <button
+                  className="pokemon-info-btn"
+                  onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pick.pokemonName) ?? null); }}
+                  title="Ver detalles"
+                >
+                  i
+                </button>
               </div>
             );
           }
@@ -482,6 +499,17 @@ export default function TeamsPage() {
           responderPokemon={modalProposeTrade.responderPokemon}
           myTeam={myTeam.picks.map((p) => ({ name: p.pokemonName, id: p.pokemonId }))}
           onClose={() => setModalProposeTrade(null)}
+        />
+      )}
+
+      {detailEntry && (
+        <PokemonDetailModal
+          pokemonId={detailEntry.pokemonId}
+          pokemonName={detailEntry.pokemonName}
+          tier={detailEntry.tier}
+          stats={detailEntry.stats}
+          types={detailEntry.types}
+          onClose={() => setDetailEntry(null)}
         />
       )}
 
@@ -676,6 +704,13 @@ export default function TeamsPage() {
                             Gratis
                           </span>
                         )}
+                        <button
+                          className="pokemon-info-btn"
+                          onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(entry.pokemonName) ?? null); }}
+                          title="Ver detalles"
+                        >
+                          i
+                        </button>
                       </div>
                     );
                   })}
