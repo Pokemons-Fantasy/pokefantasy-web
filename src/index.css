@@ -1363,3 +1363,37 @@ body {
   from { transform: translateX(110%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+
+/* ── Pokemon info button ── */
+.pokemon-info-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-3);
+  font-size: 0.65rem;
+  font-style: italic;
+  font-family: serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 0;
+  line-height: 1;
+  z-index: 1;
+}
+.pokemon-card:hover .pokemon-info-btn {
+  opacity: 1;
+}
+@media (hover: none) {
+  .pokemon-info-btn {
+    opacity: 1;
+  }
+}

@@ -20,6 +20,15 @@ export interface ClosedListEntry {
   nominatedBy: string;
   sprite: string;
   tier?: Tier | null;
+  stats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+    specialAttack: number;
+    specialDefense: number;
+    speed: number;
+  } | null;
+  types?: string[];
 }
 
 export interface DraftPick {
@@ -63,9 +72,38 @@ export const denominatePokemon = async (leagueId: string, pokemonName: string): 
   await apiClient.delete(`/v1/leagues/${leagueId}/closed-list/nominate/${pokemonName}`);
 };
 
+// Raw shapes from the backend (before transformation)
+interface RawStat {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  base_stat: number;
+  stat: { name: string; url: string };
+}
+interface RawType {
+  type: { name: string; url: string };
+}
+interface RawClosedListEntry extends Omit<ClosedListEntry, 'stats' | 'types'> {
+  stats?: RawStat[] | null;
+  types?: RawType[];
+}
+
+function transformEntry(raw: RawClosedListEntry): ClosedListEntry {
+  return {
+    ...raw,
+    types: raw.types?.map((t) => t.type.name),
+    stats: raw.stats == null ? raw.stats : {
+      hp:             raw.stats.find((s) => s.stat.name === 'hp')?.base_stat ?? 0,
+      attack:         raw.stats.find((s) => s.stat.name === 'attack')?.base_stat ?? 0,
+      defense:        raw.stats.find((s) => s.stat.name === 'defense')?.base_stat ?? 0,
+      specialAttack:  raw.stats.find((s) => s.stat.name === 'special-attack')?.base_stat ?? 0,
+      specialDefense: raw.stats.find((s) => s.stat.name === 'special-defense')?.base_stat ?? 0,
+      speed:          raw.stats.find((s) => s.stat.name === 'speed')?.base_stat ?? 0,
+    },
+  };
+}
+
 export const getClosedList = async (leagueId: string): Promise<ClosedListEntry[]> => {
-  const { data } = await apiClient.get<ClosedListEntry[]>(`/v1/leagues/${leagueId}/closed-list`);
-  return data;
+  const { data } = await apiClient.get<RawClosedListEntry[]>(`/v1/leagues/${leagueId}/closed-list`);
+  return data.map(transformEntry);
 };
 
 export const getDraftStatus = async (leagueId: string): Promise<DraftStatus | null> => {

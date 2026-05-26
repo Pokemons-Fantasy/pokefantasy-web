@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
+import type { ClosedListEntry } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
+import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -17,6 +19,7 @@ export default function DraftPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -181,6 +184,13 @@ export default function DraftPage() {
                     <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
                     <span className="pokemon-name">{entry.pokemonName}</span>
                     <TierBadge tier={entry.tier} />
+                    <button
+                      className="pokemon-info-btn"
+                      onClick={(e) => { e.stopPropagation(); setDetailEntry(entry); }}
+                      title="Ver detalles"
+                    >
+                      i
+                    </button>
                   </div>
                 ))}
               </div>
@@ -236,6 +246,16 @@ export default function DraftPage() {
             </div>
           </div>
         </div>
+      )}
+      {detailEntry && (
+        <PokemonDetailModal
+          pokemonId={detailEntry.pokemonId}
+          pokemonName={detailEntry.pokemonName}
+          tier={detailEntry.tier}
+          stats={detailEntry.stats}
+          types={detailEntry.types}
+          onClose={() => setDetailEntry(null)}
+        />
       )}
     </div>
   );

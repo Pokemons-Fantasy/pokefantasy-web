@@ -9,8 +9,9 @@ import {
   nominatePokemon,
   denominatePokemon,
 } from '../api/pokemons';
-import type { AvailablePokemon } from '../api/pokemons';
+import type { AvailablePokemon, ClosedListEntry } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
+import PokemonDetailModal from '../components/PokemonDetailModal';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 
@@ -49,6 +50,7 @@ export default function PoolPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
   const [genFilter, setGenFilter] = useState<GenFilter>('all');
+  const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
 
   const { data: available = [], isLoading: loadingPokemons } = useQuery({
     queryKey: ['available-pokemons'],
@@ -71,6 +73,7 @@ export default function PoolPage() {
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
   const nominatedNames = new Set(closedList.map((e) => e.pokemonName));
   const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
+  const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
   const isDraftActive = draftStatus && draftStatus.status !== 'PENDING';
   const canNominate = !isDraftActive && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
@@ -177,11 +180,30 @@ export default function PoolPage() {
                 {isNominated && <TierBadge tier={tierByName.get(pokemon.name)} />}
                 {isOwn && <span className="pokemon-tag pokemon-tag-own">Tuyo</span>}
                 {isNominated && !isOwn && <span className="pokemon-tag pokemon-tag-taken">Tomado</span>}
+                {isNominated && (
+                  <button
+                    className="pokemon-info-btn"
+                    onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pokemon.name) ?? null); }}
+                    title="Ver detalles"
+                  >
+                    i
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
       </main>
+      {detailEntry && (
+        <PokemonDetailModal
+          pokemonId={detailEntry.pokemonId}
+          pokemonName={detailEntry.pokemonName}
+          tier={detailEntry.tier}
+          stats={detailEntry.stats}
+          types={detailEntry.types}
+          onClose={() => setDetailEntry(null)}
+        />
+      )}
     </div>
   );
 }
