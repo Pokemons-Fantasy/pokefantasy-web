@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { Tier } from '../api/pokemons';
 import { spriteUrl } from '../utils/sprites';
 
@@ -54,16 +55,30 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats, types, onClose }: Props) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
+        ref={dialogRef}
         className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pokemon-detail-title"
         style={{ maxWidth: 480, gap: '0.75rem' }}
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '1.15rem' }}>{pokemonName}</h2>
+          <h2 id="pokemon-detail-title" style={{ margin: 0, fontSize: '1.15rem' }}>{pokemonName}</h2>
           <button
             onClick={onClose}
             style={{
@@ -152,7 +167,14 @@ export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats
                     <div key={key} style={{ display: 'grid', gridTemplateColumns: '3rem 2.4rem 1fr', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', textAlign: 'right' }}>{label}</span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text)', textAlign: 'right', fontFamily: "'Space Mono', monospace" }}>{val}</span>
-                      <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>
+                      <div
+                        role="meter"
+                        aria-valuenow={val}
+                        aria-valuemin={0}
+                        aria-valuemax={255}
+                        aria-label={label}
+                        style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}
+                      >
                         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 999 }} />
                       </div>
                     </div>
