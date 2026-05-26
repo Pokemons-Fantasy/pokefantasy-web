@@ -5,6 +5,7 @@ import type { Trade } from '../api/trades';
 import { spriteUrl } from '../utils/sprites';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonTable } from './SkeletonTable';
 
 interface Props {
   leagueId: string;
@@ -216,11 +217,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
             gap: '1.25rem',
           }}
         >
-          {isLoading && (
-            <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', textAlign: 'center' }}>
-              Cargando…
-            </p>
-          )}
+          {isLoading && <SkeletonTable rows={3} />}
 
           {/* ── Incoming ── */}
           {!isLoading && (

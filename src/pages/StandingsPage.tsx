@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getStandings, getLeagueDetail } from '../api/leagues';
 import type { PlayerStanding } from '../api/leagues';
+import { SkeletonTable } from '../components/SkeletonTable';
 
 export default function StandingsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -54,7 +55,7 @@ export default function StandingsPage() {
           </div>
         </div>
 
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
+        {isLoading && <SkeletonTable rows={4} />}
 
         {!isLoading && standings && standings.length === 0 && (
           <div className="empty-state">

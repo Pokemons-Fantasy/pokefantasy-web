@@ -12,6 +12,7 @@ import {
 } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonTable } from '../components/SkeletonTable';
 
 export default function SchedulePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -117,7 +118,7 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando calendario...</p>}
+        {isLoading && <SkeletonTable rows={3} />}
 
         {!isLoading && !schedule && (
           <div className="empty-state">

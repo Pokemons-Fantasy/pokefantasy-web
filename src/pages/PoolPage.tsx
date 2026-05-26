@@ -14,6 +14,7 @@ import TierBadge from '../components/TierBadge';
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonGrid } from '../components/SkeletonGrid';
 
 const MAX_NOMINATIONS = 16;
 
@@ -153,7 +154,7 @@ export default function PoolPage() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {loadingPokemons && <p style={{ color: 'var(--text-3)' }}>Cargando pokémons...</p>}
+        {loadingPokemons && <SkeletonGrid count={8} cardHeight="70px" />}
 
         <div className="pokemon-grid">
           {filtered.map((pokemon) => {

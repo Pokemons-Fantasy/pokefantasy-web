@@ -7,6 +7,7 @@ import {
 } from '../api/pokemons';
 import type { BenchEntry, ClosedListEntry, DraftPick, Tier } from '../api/pokemons';
 import PokemonDetailModal from '../components/PokemonDetailModal';
+import { SkeletonGrid } from '../components/SkeletonGrid';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
 import TierBadge from '../components/TierBadge';
 import { getTrades } from '../api/trades';
@@ -516,7 +517,7 @@ export default function TeamsPage() {
       <main className="page-content">
         <h1 className="page-title">Equipos</h1>
 
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
+        {isLoading && <SkeletonGrid count={6} />}
 
         {!isLoading && !draft && (
           <div className="empty-state">

@@ -6,6 +6,7 @@ import { getLeagueDetail, addMember, removeMember } from '../api/leagues';
 import { getDraftStatus, startDraft } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonTable } from '../components/SkeletonTable';
 
 export default function LeagueDetailPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -105,7 +106,7 @@ export default function LeagueDetailPage() {
           </div>
         </header>
         <main className="page-content">
-          <p style={{ color: 'var(--text-3)' }}>Cargando...</p>
+          <SkeletonTable rows={4} />
         </main>
       </div>
     );

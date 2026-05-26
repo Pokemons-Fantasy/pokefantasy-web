@@ -11,6 +11,7 @@ import {
 import { getDraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonTable } from '../components/SkeletonTable';
 
 export default function LeagueConfigPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -225,7 +226,7 @@ export default function LeagueConfigPage() {
           </div>
         </div>
 
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
+        {isLoading && <SkeletonTable rows={5} />}
 
         {!isLoading && (
           <>

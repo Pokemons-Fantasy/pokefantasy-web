@@ -7,6 +7,7 @@ import CreateLeagueModal from '../components/CreateLeagueModal';
 import PendingTradesBanner from '../components/PendingTradesBanner';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { SkeletonGrid } from '../components/SkeletonGrid';
 
 export default function LeaguesPage() {
   const username = useAuthStore((s) => s.username);
@@ -53,12 +54,7 @@ export default function LeaguesPage() {
           <button className="btn-primary" onClick={() => setShowModal(true)}>+ Crear liga</button>
         </div>
 
-        {isLoading && (
-          <div className="loading-text">
-            <span className="spinner" />
-            Cargando ligas...
-          </div>
-        )}
+        {isLoading && <SkeletonGrid count={4} cardHeight="90px" />}
 
         {!isLoading && (
           <div className="cards-grid stagger">

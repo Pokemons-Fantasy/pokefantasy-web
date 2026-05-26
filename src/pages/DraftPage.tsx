@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft } from '../api/pokemons';
 import type { ClosedListEntry } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
+import { SkeletonTable } from '../components/SkeletonTable';
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
@@ -127,7 +128,7 @@ export default function DraftPage() {
           </div>
         </div>
 
-        {isLoading && <p style={{ color: 'var(--text-3)' }}>Cargando...</p>}
+        {isLoading && <SkeletonTable rows={5} />}
         {!isLoading && !draft && (
           <div className="empty-state">
             <p>No hay draft activo en esta liga.</p>
