@@ -570,31 +570,37 @@ export default function TeamsPage() {
             {myTeam && (
               <div className="own-team-panel">
                 <div className="own-team-panel-header">
-                  <div className="member-avatar">{myTeam.username[0]}</div>
-                  <span style={{ fontWeight: 600, fontSize: '1rem' }}>Tu equipo</span>
-                  <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                    {myTeam.picks.length}/{maxTeamSize}
-                  </span>
-                  <span className="badge badge-green">Tú</span>
-                  {myCoins !== undefined && (
-                    <span className="coin-badge">💰 {myCoins.coins}</span>
-                  )}
-                  {isDraftCompleted && myTeam.picks.length > 0 && (
+                  {/* Identidad: avatar + nombre + contadores */}
+                  <div className="own-team-header-info">
+                    <div className="member-avatar">{myTeam.username[0]}</div>
+                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>Tu equipo</span>
+                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
+                      {myTeam.picks.length}/{maxTeamSize}
+                    </span>
+                    <span className="badge badge-green">Tú</span>
+                    {myCoins !== undefined && (
+                      <span className="coin-badge">💰 {myCoins.coins}</span>
+                    )}
+                  </div>
+                  {/* Acciones: Showdown + colapsar */}
+                  <div className="own-team-header-actions">
+                    {isDraftCompleted && myTeam.picks.length > 0 && (
+                      <button
+                        className="btn-ghost"
+                        style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem' }}
+                        onClick={() => exportTeamToShowdown(myTeam.picks, myTeam.username)}
+                        title="Copiar equipo en formato Pokémon Showdown"
+                      >
+                        {copiedTeam === myTeam.username ? '✓ Copiado' : '📋 Showdown'}
+                      </button>
+                    )}
                     <button
-                      className="btn-ghost"
-                      style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem' }}
-                      onClick={() => exportTeamToShowdown(myTeam.picks, myTeam.username)}
-                      title="Copiar equipo en formato Pokémon Showdown"
+                      className="btn-ghost own-team-collapse-btn"
+                      onClick={() => setOwnTeamCollapsed((c) => !c)}
                     >
-                      {copiedTeam === myTeam.username ? '✓ Copiado' : '📋 Showdown'}
+                      {ownTeamCollapsed ? '▶' : '▼'}
                     </button>
-                  )}
-                  <button
-                    className="btn-ghost own-team-collapse-btn"
-                    onClick={() => setOwnTeamCollapsed((c) => !c)}
-                  >
-                    {ownTeamCollapsed ? '▶ Mostrar' : '▼ Ocultar'}
-                  </button>
+                  </div>
                 </div>
                 {!ownTeamCollapsed && (
                   <div className="own-team-panel-grid">{renderPicks(myTeam, true)}</div>

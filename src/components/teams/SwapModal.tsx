@@ -148,7 +148,7 @@ export default function SwapModal({
               ¿Qué pokémon de tu equipo entregas?
             </p>
             <div
-              className="pokemon-grid"
+              className="pokemon-grid pokemon-grid-modal"
               style={{ maxHeight: 260, overflowY: 'auto', paddingRight: '0.25rem' }}
             >
               {myPicks.map((pick) => {
