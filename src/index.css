@@ -258,11 +258,30 @@ body {
 .own-team-panel-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Left group: avatar + name + count + badges */
+.own-team-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* Right group: action buttons */
+.own-team-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .own-team-collapse-btn {
-  margin-left: auto;
   padding: 0.25rem 0.7rem;
   font-size: 0.8rem;
 }
@@ -271,6 +290,13 @@ body {
   margin-top: 0.75rem;
   max-height: 42vh;
   overflow-y: auto;
+}
+
+/* Compact pokemon grid for use inside modals (avoids min-width overflow) */
+.pokemon-grid-modal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 0.5rem;
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -1285,6 +1311,15 @@ body {
     display: none;
   }
 
+  /* Header right: tighten gap and shrink buttons */
+  .header-right {
+    gap: 0.5rem;
+  }
+  .header-right .btn-ghost {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
   /* Typography */
   .page-title {
     font-size: 1.35rem;
@@ -1356,6 +1391,30 @@ body {
   /* Modal fits small screens */
   .modal {
     padding: 1.5rem;
+  }
+
+  /* Modal actions: wrap on very narrow screens */
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+  .modal-actions .btn-primary,
+  .modal-actions .btn-ghost,
+  .modal-actions .btn-secondary,
+  .modal-actions .btn-danger {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Own-team panel: reduce sticky grid height on mobile */
+  .own-team-panel-grid {
+    max-height: 30vh;
+  }
+
+  /* Own-team header: actions always on their own line if needed */
+  .own-team-header-info {
+    flex: 1 1 auto;
   }
 }
 

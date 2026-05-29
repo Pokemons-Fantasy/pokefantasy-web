@@ -84,7 +84,7 @@ export default function ProposeTradeModal({
           </button>
         </div>
 
-        <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowX: 'hidden' }}>
 
           {/* ── Trade preview: give ↔ receive ── */}
           <div
@@ -216,7 +216,7 @@ export default function ProposeTradeModal({
               </p>
             ) : (
               <div
-                className="pokemon-grid"
+                className="pokemon-grid pokemon-grid-modal"
                 style={{ maxHeight: 200, overflowY: 'auto', paddingRight: '0.15rem' }}
               >
                 {myTeam.map((p) => {
