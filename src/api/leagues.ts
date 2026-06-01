@@ -141,3 +141,18 @@ export const getStandings = async (leagueId: string): Promise<PlayerStanding[]> 
   const { data } = await apiClient.get<{ standings: PlayerStanding[] }>(`/v1/leagues/${leagueId}/standings`);
   return data.standings;
 };
+
+export const generateInviteLink = async (leagueId: string): Promise<{ token: string }> => {
+  const res = await apiClient.post(`/v1/leagues/${leagueId}/invite/generate`);
+  return res.data;
+};
+
+export const redeemInvite = async (token: string): Promise<{ leagueId: string }> => {
+  const res = await apiClient.post(`/v1/invite/${token}/redeem`);
+  return res.data;
+};
+
+export const searchUsers = async (q: string, leagueId: string): Promise<string[]> => {
+  const res = await apiClient.get('/v1/users/search', { params: { q, leagueId } });
+  return res.data;
+};
