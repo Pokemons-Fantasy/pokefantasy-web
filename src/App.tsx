@@ -13,6 +13,8 @@ import SchedulePage from './pages/SchedulePage';
 import TierManagementPage from './pages/TierManagementPage';
 import ActivityPage from './pages/ActivityPage';
 import StandingsPage from './pages/StandingsPage';
+import PlayerProfilePage from './pages/PlayerProfilePage';
+import MyProfilePage from './pages/MyProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ToastContainer from './components/ToastContainer';
 
@@ -28,6 +30,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/profile" element={<MyProfilePage />} />
             <Route path="/leagues" element={<LeaguesPage />} />
             <Route path="/leagues/:leagueId" element={<LeagueDetailPage />} />
             <Route path="/leagues/:leagueId/pool" element={<PoolPage />} />
@@ -38,6 +41,7 @@ export default function App() {
             <Route path="/leagues/:leagueId/tiers" element={<TierManagementPage />} />
             <Route path="/leagues/:leagueId/activity" element={<ActivityPage />} />
             <Route path="/leagues/:leagueId/standings" element={<StandingsPage />} />
+            <Route path="/leagues/:leagueId/players/:username" element={<PlayerProfilePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -38,7 +38,12 @@ export default function PageHeader({ left, rightExtra }: PageHeaderProps) {
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <span className="header-user">
+          <span
+            className="header-user"
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/profile')}
+            title="Ver mi perfil"
+          >
             Hola, <strong>{username}</strong>
           </span>
           <button className="btn-ghost" onClick={logout}>

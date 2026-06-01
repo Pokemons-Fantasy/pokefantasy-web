@@ -71,7 +71,13 @@ export default function StandingsPage() {
               </thead>
               <tbody>
                 {standings.map((row, i) => (
-                  <StandingRow key={row.username} row={row} pos={i + 1} isMe={row.username === username} />
+                  <StandingRow
+                    key={row.username}
+                    row={row}
+                    pos={i + 1}
+                    isMe={row.username === username}
+                    onNavigate={() => navigate(`/leagues/${leagueId}/players/${row.username}`)}
+                  />
                 ))}
               </tbody>
             </table>
@@ -86,10 +92,12 @@ function StandingRow({
   row,
   pos,
   isMe,
+  onNavigate,
 }: {
   row: PlayerStanding;
   pos: number;
   isMe: boolean;
+  onNavigate: () => void;
 }) {
   const posLabel = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : String(pos);
 
@@ -101,9 +109,11 @@ function StandingRow({
               background: 'var(--accent-dim)',
               outline: '1px solid var(--accent)',
               outlineOffset: '-1px',
+              cursor: 'pointer',
             }
-          : undefined
+          : { cursor: 'pointer' }
       }
+      onClick={onNavigate}
     >
       <td style={{ textAlign: 'center', fontSize: pos <= 3 ? '1.1rem' : '0.9rem' }}>
         {posLabel}
