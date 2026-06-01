@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { getMyLeagues, createLeague } from '../api/leagues';
 import CreateLeagueModal from '../components/CreateLeagueModal';
 import PendingTradesBanner from '../components/PendingTradesBanner';

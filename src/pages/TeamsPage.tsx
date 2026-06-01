@@ -22,13 +22,13 @@ import StealModal from '../components/teams/StealModal';
 import SetPriceModal from '../components/teams/SetPriceModal';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import PageHeader from '../components/PageHeader';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function TeamsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -384,50 +384,34 @@ export default function TeamsPage() {
 
   return (
     <div className="page-wrapper">
-      <header className="page-header">
-        <div className="page-header-inner">
+      <PageHeader
+        left={
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>
-              ← Draft
-            </button>
+            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>← Draft</button>
             <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
           </div>
-          <div className="header-right">
-            <span className="header-user">Hola, <strong>{username}</strong></span>
-            {isDraftCompleted && (
-              <button
-                className="btn-ghost"
-                style={{ position: 'relative' }}
-                onClick={() => setShowTradesModal(true)}
-              >
-                Intercambios
-                {pendingIncomingCount > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      background: 'var(--accent)',
-                      color: '#fff',
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      borderRadius: '50%',
-                      width: 18,
-                      height: 18,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {pendingIncomingCount}
-                  </span>
-                )}
-              </button>
+        }
+        rightExtra={isDraftCompleted ? (
+          <button
+            className="btn-ghost"
+            style={{ position: 'relative' }}
+            onClick={() => setShowTradesModal(true)}
+          >
+            Intercambios
+            {pendingIncomingCount > 0 && (
+              <span style={{
+                position: 'absolute', top: -6, right: -6,
+                background: 'var(--accent)', color: '#fff',
+                fontSize: '0.65rem', fontWeight: 700,
+                borderRadius: '50%', width: 18, height: 18,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {pendingIncomingCount}
+              </span>
             )}
-            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
-          </div>
-        </div>
-      </header>
+          </button>
+        ) : undefined}
+      />
 
       {/* Bench action modal — choose swap or buy */}
       {modalBench && myTeam && !benchGoingToSwap && (

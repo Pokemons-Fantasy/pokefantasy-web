@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { getActivityFeed } from '../api/activity';
 import PageHeader from '../components/PageHeader';
 import type { ActivityEvent } from '../api/activity';
