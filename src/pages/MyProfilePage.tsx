@@ -66,7 +66,7 @@ export default function MyProfilePage() {
                 key={league.id}
                 className="card"
                 style={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/leagues/${league.id}`)}
+                onClick={() => navigate(`/leagues/${league.id}/players/${username}`)}
               >
                 <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
                   {league.name}
