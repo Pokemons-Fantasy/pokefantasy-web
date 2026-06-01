@@ -3,10 +3,10 @@ import { useAuthStore } from '../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { getMyLeagues } from '../api/leagues';
 import PendingTradesBanner from '../components/PendingTradesBanner';
+import PageHeader from '../components/PageHeader';
 
 export default function HomePage() {
   const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
   const { data: leagues = [] } = useQuery({
@@ -34,15 +34,7 @@ export default function HomePage() {
 
   return (
     <div className="page-wrapper">
-      <header className="page-header">
-        <div className="page-header-inner">
-          <span className="logo">PokeFantasy</span>
-          <div className="header-right">
-            <span className="header-user">Hola, <strong>{username}</strong></span>
-            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
-          </div>
-        </div>
-      </header>
+      <PageHeader />
 
       <main className="page-content">
         <PendingTradesBanner />
