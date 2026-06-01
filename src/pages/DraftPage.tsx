@@ -27,9 +27,30 @@ export default function DraftPage() {
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
     queryFn: () => getDraftStatus(leagueId!),
-    refetchInterval: 5000,
     enabled: !!leagueId,
   });
+
+  // SSE — actualización en tiempo real; fallback a polling cada 10 s si la conexión se cierra
+  useEffect(() => {
+    if (!leagueId) return;
+    const BASE = import.meta.env.VITE_API_URL ?? 'https://pokefantasy.onrender.com';
+    const es = new EventSource(`${BASE}/v1/leagues/${leagueId}/draft/events`);
+
+    es.addEventListener('draft-updated', () => {
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+    });
+
+    const fallback = setInterval(() => {
+      if (es.readyState === EventSource.CLOSED) {
+        queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      }
+    }, 10_000);
+
+    return () => {
+      es.close();
+      clearInterval(fallback);
+    };
+  }, [leagueId, queryClient]);
 
   const { data: pool = [] } = useQuery({
     queryKey: ['closed-list', leagueId],
