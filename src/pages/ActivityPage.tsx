@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getActivityFeed } from '../api/activity';
+import PageHeader from '../components/PageHeader';
 import type { ActivityEvent } from '../api/activity';
 
 // ── Event formatting ──────────────────────────────────────────────────────────
@@ -217,8 +218,6 @@ function EventCard({ event, isRecent }: EventCardProps) {
 
 export default function ActivityPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
-  const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
   const [page, setPage] = useState(0);
@@ -262,27 +261,12 @@ export default function ActivityPage() {
 
   return (
     <div className="page-wrapper">
-      {/* Header */}
-      <header className="page-header">
-        <div className="page-header-inner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>
-              ← Liga
-            </button>
-            <span className="logo" onClick={() => navigate('/leagues')}>
-              PokeFantasy
-            </span>
-          </div>
-          <div className="header-right">
-            <span className="header-user">
-              Hola, <strong>{username}</strong>
-            </span>
-            <button className="btn-ghost" onClick={logout}>
-              Cerrar sesión
-            </button>
-          </div>
+      <PageHeader left={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
+          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
         </div>
-      </header>
+      } />
 
       <main className="page-content">
         {/* Section header */}
