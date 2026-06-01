@@ -15,6 +15,7 @@ import ActivityPage from './pages/ActivityPage';
 import StandingsPage from './pages/StandingsPage';
 import PlayerProfilePage from './pages/PlayerProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
+import InvitePage from './pages/InvitePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ToastContainer from './components/ToastContainer';
 
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/leagues/:leagueId/activity" element={<ActivityPage />} />
             <Route path="/leagues/:leagueId/standings" element={<StandingsPage />} />
             <Route path="/leagues/:leagueId/players/:username" element={<PlayerProfilePage />} />
+            <Route path="/invite/:token" element={<InvitePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

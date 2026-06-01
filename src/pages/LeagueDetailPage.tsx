@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getLeagueDetail, addMember, removeMember } from '../api/leagues';
+import { getLeagueDetail, addMember, removeMember, generateInviteLink, searchUsers } from '../api/leagues';
+import { useDebounce } from '../hooks/useDebounce';
 import { getDraftStatus, startDraft } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -15,9 +16,19 @@ export default function LeagueDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
-  const [newMember, setNewMember] = useState('');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [turnOrder, setTurnOrder] = useState<string[]>([]);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+
+  const debouncedSearch = useDebounce(memberSearch, 300);
+
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['user-search', debouncedSearch, leagueId],
+    queryFn: () => searchUsers(debouncedSearch, leagueId!),
+    enabled: debouncedSearch.length >= 2,
+    staleTime: 30_000,
+  });
 
   const { data: league, isLoading } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -50,9 +61,19 @@ export default function LeagueDetailPage() {
     mutationFn: (target: string) => addMember(leagueId!, target),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
-      setNewMember('');
+      setMemberSearch('');
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al añadir miembro')),
+  });
+
+  const { mutate: generateInvite } = useMutation({
+    mutationFn: () => generateInviteLink(leagueId!),
+    onSuccess: ({ token }) => {
+      const url = `${window.location.origin}/invite/${token}`;
+      navigator.clipboard.writeText(url);
+      addToast('success', 'Link de invitación copiado (válido 48 h)');
+    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al generar link')),
   });
 
   const { mutate: remove, isPending: removing } = useMutation({
@@ -265,23 +286,54 @@ export default function LeagueDetailPage() {
           <>
             <hr className="divider" />
             <p className="section-label">Añadir jugador</p>
-            <div className="inline-form">
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Nombre de usuario"
-                value={newMember}
-                onChange={(e) => setNewMember(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && newMember.trim()) add(newMember.trim()); }}
-              />
-              <button
-                className="btn-primary"
-                disabled={adding || !newMember.trim()}
-                onClick={() => add(newMember.trim())}
-              >
-                {adding ? 'Añadiendo...' : 'Añadir'}
-              </button>
+            <div style={{ position: 'relative' }}>
+              <div className="inline-form">
+                <input
+                  className="search-input"
+                  type="text"
+                  placeholder="Nombre de usuario"
+                  value={memberSearch}
+                  onChange={(e) => { setMemberSearch(e.target.value); setShowSuggestions(true); }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && memberSearch.trim()) {
+                      add(memberSearch.trim());
+                      setShowSuggestions(false);
+                    }
+                  }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                />
+                <button
+                  className="btn-primary"
+                  disabled={adding || !memberSearch.trim()}
+                  onClick={() => { add(memberSearch.trim()); setShowSuggestions(false); }}
+                >
+                  {adding ? 'Añadiendo...' : 'Añadir'}
+                </button>
+              </div>
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="autocomplete-dropdown">
+                  {suggestions.map((username) => (
+                    <li
+                      key={username}
+                      onMouseDown={() => {
+                        setMemberSearch(username);
+                        add(username);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {username}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
+            <button
+              className="btn-ghost"
+              style={{ marginTop: '0.5rem', width: '100%' }}
+              onClick={() => generateInvite()}
+            >
+              🔗 Copiar link de invitación
+            </button>
           </>
         )}
       </main>
