@@ -131,9 +131,8 @@ export default function TeamsPage() {
   }
 
   function isLocked(pick: DraftPick): boolean {
-    if (pick.lockedUntilRound == null) return false;
-    const jornada = schedule?.jornadas?.find((j) => j.roundNumber === pick.lockedUntilRound);
-    return jornada?.matches.some((m) => m.status === 'PENDING') ?? false;
+    if (!pick.lockedUntil) return false;
+    return new Date(pick.lockedUntil) > new Date();
   }
 
   function exportTeamToShowdown(picks: DraftPick[], teamUsername: string) {
@@ -314,7 +313,9 @@ export default function TeamsPage() {
                   cursor: isClickable ? 'pointer' : 'default',
                   opacity: stealWindowOpen && locked ? 0.5 : 1,
                 }}
-                title={locked ? '🔒 Bloqueado hasta que finalice la jornada' : undefined}
+                title={locked && pick.lockedUntil
+                  ? `🔒 Bloqueado hasta ${new Date(pick.lockedUntil).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+                  : undefined}
                 onClick={() => {
                   if (stealWindowOpen && !locked) {
                     // Modal unificado: el jugador elige robar o proponer trade
