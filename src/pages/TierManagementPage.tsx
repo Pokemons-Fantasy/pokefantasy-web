@@ -8,6 +8,7 @@ import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
+import PageHeader from '../components/PageHeader';
 
 const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
 
@@ -164,7 +165,6 @@ function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustMod
 export default function TierManagementPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -223,20 +223,12 @@ export default function TierManagementPage() {
 
   return (
     <div className="page-wrapper">
-      <header className="page-header">
-        <div className="page-header-inner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>
-              Ligas
-            </button>
-            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-          </div>
-          <div className="header-right">
-            <span className="header-user">Hola, <strong>{username}</strong></span>
-            <button className="btn-ghost" onClick={logout}>Cerrar sesion</button>
-          </div>
+      <PageHeader left={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>Ligas</button>
+          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
         </div>
-      </header>
+      } />
 
       {/* Tier adjust modal */}
       {modalEntry && (

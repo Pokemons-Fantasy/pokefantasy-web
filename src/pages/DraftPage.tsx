@@ -10,11 +10,11 @@ import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import PageHeader from '../components/PageHeader';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
@@ -116,20 +116,12 @@ export default function DraftPage() {
 
   return (
     <div className="page-wrapper">
-      <header className="page-header">
-        <div className="page-header-inner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>
-              ← Liga
-            </button>
-            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-          </div>
-          <div className="header-right">
-            <span className="header-user">Hola, <strong>{username}</strong></span>
-            <button className="btn-ghost" onClick={logout}>Cerrar sesión</button>
-          </div>
+      <PageHeader left={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
+          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
         </div>
-      </header>
+      } />
 
       <main className="page-content">
         <div className="section-header">
