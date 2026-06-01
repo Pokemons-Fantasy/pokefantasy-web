@@ -43,6 +43,8 @@ export default function TeamsPage() {
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
 
   const [ownTeamCollapsed, setOwnTeamCollapsed] = useState(false);
+  const [filterName, setFilterName] = useState('');
+  const [filterTiers, setFilterTiers] = useState<Set<Tier>>(new Set());
 
   const [showTradesModal, setShowTradesModal] = useState(false);
   const [modalProposeTrade, setModalProposeTrade] = useState<{ responder: string; responderPokemon: { name: string; id: number } } | null>(null);
@@ -210,6 +212,26 @@ export default function TeamsPage() {
   const myTeam = teams.find((t) => t.username === username);
   const isDraftCompleted = draft?.status === 'COMPLETED';
   const myBalance = myCoins?.coins ?? 0;
+
+  const filterActive = filterName.trim() !== '' || filterTiers.size > 0;
+
+  const filteredRivals = teams
+    .filter((t) => t.username !== username)
+    .map((team) => ({
+      username: team.username,
+      picks: filterActive
+        ? team.picks.filter((pick) => {
+            const nameMatch =
+              !filterName.trim() ||
+              pick.pokemonName.toLowerCase().includes(filterName.trim().toLowerCase());
+            const tierMatch =
+              filterTiers.size === 0 ||
+              filterTiers.has(tierByName.get(pick.pokemonName) as Tier);
+            return nameMatch && tierMatch;
+          })
+        : team.picks,
+    }))
+    .filter((team) => !filterActive || team.picks.length > 0);
 
   function handleBenchCardClick(entry: BenchEntry) {
     if (!isDraftCompleted) return;
@@ -608,7 +630,58 @@ export default function TeamsPage() {
               </div>
             )}
 
-            {teams.filter((team) => team.username !== username).map((team) => (
+            {/* ── Filter bar (rivals only) ── */}
+            {teams.some((t) => t.username !== username) && (
+              <div style={{ marginBottom: '1rem' }}>
+                <input
+                  className="search-input"
+                  type="text"
+                  placeholder="Buscar pokémon en equipos rivales..."
+                  value={filterName}
+                  onChange={(e) => setFilterName(e.target.value)}
+                  style={{ marginBottom: '0.5rem' }}
+                />
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginRight: '0.1rem' }}>
+                    Tier:
+                  </span>
+                  {(['S', 'A', 'B', 'C', 'D'] as Tier[]).map((tier) => (
+                    <button
+                      key={tier}
+                      className={`gen-tab${filterTiers.has(tier) ? ' active' : ''}`}
+                      onClick={() =>
+                        setFilterTiers((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(tier)) next.delete(tier);
+                          else next.add(tier);
+                          return next;
+                        })
+                      }
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                  {filterActive && (
+                    <button
+                      className="gen-tab"
+                      style={{ color: 'var(--red)', borderColor: 'rgba(248,113,113,0.3)' }}
+                      onClick={() => { setFilterName(''); setFilterTiers(new Set()); }}
+                    >
+                      ✕ Limpiar
+                    </button>
+                  )}
+                </div>
+                {filterActive && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.45rem' }}>
+                    {filteredRivals.length}{' '}
+                    {filteredRivals.length === 1 ? 'rival' : 'rivales'} ·{' '}
+                    {filteredRivals.reduce((acc, t) => acc + t.picks.length, 0)} pokémon
+                  </p>
+                )}
+              </div>
+            )}
+
+            {filteredRivals.map((team) => (
               <div key={team.username}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div className="member-avatar">{team.username[0]}</div>
