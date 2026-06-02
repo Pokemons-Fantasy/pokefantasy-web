@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Clipboard } from '@capacitor/clipboard';
 import { useAuthStore } from '../store/authStore';
 import {
   getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice,
@@ -139,7 +140,7 @@ export default function TeamsPage() {
     const text = picks
       .map((p) => p.pokemonName.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join('-'))
       .join('\n\n');
-    navigator.clipboard.writeText(text).then(() => {
+    Clipboard.write({ string: text }).then(() => {
       setCopiedTeam(teamUsername);
       setTimeout(() => setCopiedTeam(null), 2000);
     });
