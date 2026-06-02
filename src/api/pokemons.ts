@@ -39,8 +39,8 @@ export interface DraftPick {
   pickedAt: string;
   /** Custom steal price set by owner. null/undefined = use priceTierX default. */
   customStealPrice?: number | null;
-  /** Round number of jornada when stolen. null/undefined = not locked. */
-  lockedUntilRound?: number | null;
+  /** ISO timestamp hasta el que este pokémon está bloqueado. null/undefined = libre. */
+  lockedUntil?: string | null;
 }
 
 export interface DraftStatus {
