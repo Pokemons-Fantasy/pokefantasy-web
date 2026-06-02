@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PokeFantasy</string>
+    <string name="title_activity_main">PokeFantasy</string>
+    <string name="package_name">com.pokefantasy.app</string>
+    <string name="custom_url_scheme">com.pokefantasy.app</string>
+</resources>

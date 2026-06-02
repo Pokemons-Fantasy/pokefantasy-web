@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Clipboard } from '@capacitor/clipboard';
 import { useAuthStore } from '../store/authStore';
 import { getLeagueDetail, addMember, removeMember, generateInviteLink, searchUsers } from '../api/leagues';
 import { useDebounce } from '../hooks/useDebounce';
@@ -70,7 +71,7 @@ export default function LeagueDetailPage() {
     mutationFn: () => generateInviteLink(leagueId!),
     onSuccess: ({ token }) => {
       const url = `${window.location.origin}/invite/${token}`;
-      navigator.clipboard.writeText(url);
+      Clipboard.write({ string: url });
       addToast('success', 'Link de invitación copiado (válido 48 h)');
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al generar link')),
