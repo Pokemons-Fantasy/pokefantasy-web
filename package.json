@@ -14,6 +14,7 @@
   "dependencies": {
     "@capacitor/clipboard": "^8.0.1",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/push-notifications": "^8.1.1",
     "@tanstack/react-query": "^5.100.10",
     "axios": "^1.16.1",
     "react": "^19.2.6",
