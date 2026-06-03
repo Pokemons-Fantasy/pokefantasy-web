@@ -44,6 +44,8 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* Android/iOS gesture nav bar safe area */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ─── ANIMATIONS ─── */
@@ -226,6 +228,12 @@ body {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
+  /* Push header content below Android/iOS status bar */
+  padding-top: env(safe-area-inset-top);
+}
+
+.theme-light .page-header {
+  background: rgba(244, 244, 248, 0.88);
 }
 
 .page-header-inner {
@@ -260,7 +268,7 @@ body {
 /* Sticky own-team panel (TeamsPage) */
 .own-team-panel {
   position: sticky;
-  top: 60px;                /* matches .page-header-inner height */
+  top: calc(60px + env(safe-area-inset-top));  /* header-inner 60px + status bar */
   z-index: 40;              /* below header (z-50), above rival teams */
   background: var(--surface);
   border: 1px solid rgba(52, 211, 153, 0.28);
