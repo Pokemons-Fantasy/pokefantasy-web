@@ -12,3 +12,8 @@ android/local.properties
 # Android signing keys (never commit)
 *.jks
 *.keystore
+# Firebase config (contains API keys)
+android/app/google-services.json
+# IDE
+.idea/
+android/.idea/

@@ -1,5 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { App as CapApp } from '@capacitor/app';
+import { useAuthStore } from './store/authStore';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
@@ -21,11 +26,48 @@ import ToastContainer from './components/ToastContainer';
 
 const queryClient = new QueryClient();
 
+function deepLinkPath(url: string): string {
+  const parsed = new URL(url);
+  // "pokefantasy://invite/TOKEN" → hostname="invite", pathname="/TOKEN" → "/invite/TOKEN"
+  return `/${parsed.hostname}${parsed.pathname}`;
+}
+
+function DeepLinkHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const sub = CapApp.addListener('appUrlOpen', (event) => {
+      navigate(deepLinkPath(event.url));
+    });
+
+    CapApp.getLaunchUrl().then((result) => {
+      if (result?.url?.startsWith('pokefantasy://')) {
+        navigate(deepLinkPath(result.url));
+      }
+    });
+
+    return () => { sub.then(h => h.remove()); };
+  }, [navigate]);
+
+  return null;
+}
+
 export default function App() {
+  const authToken = useAuthStore(state => state.token);
+
+  useEffect(() => {
+    if (authToken && Capacitor.isNativePlatform()) {
+      PushNotifications.register();
+    }
+  }, [authToken]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ToastContainer />
       <BrowserRouter>
+        <DeepLinkHandler />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

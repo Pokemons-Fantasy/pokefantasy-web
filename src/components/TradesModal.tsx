@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTrades, respondToTrade, cancelTrade } from '../api/trades';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import type { Trade } from '../api/trades';
 import { spriteUrl } from '../utils/sprites';
 import { useToastStore } from '../store/toastStore';
@@ -124,6 +125,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
   const { mutate: doAccept, isPending: accepting } = useMutation({
     mutationFn: (tradeId: string) => respondToTrade(leagueId, tradeId, true),
     onSuccess: () => {
+      Haptics.impact({ style: ImpactStyle.Medium });
       queryClient.invalidateQueries({ queryKey: ['trades', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });

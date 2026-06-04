@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useAuthStore } from '../store/authStore';
 import {
   getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice,
@@ -164,6 +165,7 @@ export default function TeamsPage() {
   const { mutate: doSteal, isPending: stealing } = useMutation({
     mutationFn: (targetPokemonName: string) => stealPokemon(leagueId!, targetPokemonName),
     onSuccess: () => {
+      Haptics.impact({ style: ImpactStyle.Heavy });
       setRivalModalPick(null);
       setRivalGoingToSteal(false);
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
