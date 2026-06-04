@@ -11,6 +11,7 @@ import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -79,6 +80,7 @@ export default function DraftPage() {
   const { mutate: pick, isPending: picking } = useMutation({
     mutationFn: (pokemonName: string) => draftPick(leagueId!, pokemonName),
     onSuccess: () => {
+      Haptics.impact({ style: ImpactStyle.Medium });
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },

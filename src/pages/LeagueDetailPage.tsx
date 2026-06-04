@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
+import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../store/authStore';
 import { getLeagueDetail, addMember, removeMember, generateInviteLink, searchUsers } from '../api/leagues';
 import { useDebounce } from '../hooks/useDebounce';
@@ -70,7 +71,9 @@ export default function LeagueDetailPage() {
   const { mutate: generateInvite } = useMutation({
     mutationFn: () => generateInviteLink(leagueId!),
     onSuccess: ({ token }) => {
-      const url = `${window.location.origin}/invite/${token}`;
+      const url = Capacitor.isNativePlatform()
+        ? `pokefantasy://invite/${token}`
+        : `${window.location.origin}/invite/${token}`;
       Clipboard.write({ string: url });
       addToast('success', 'Link de invitación copiado (válido 48 h)');
     },

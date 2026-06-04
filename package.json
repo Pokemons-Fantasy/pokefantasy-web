@@ -9,12 +9,16 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "cap:sync": "npm run build && npx cap sync android",
-    "cap:open": "npx cap open android"
+    "cap:open": "npx cap open android",
+    "generate:assets": "node scripts/generate-assets.mjs && npx @capacitor/assets generate --android"
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.0",
     "@capacitor/clipboard": "^8.0.1",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/push-notifications": "^8.1.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@tanstack/react-query": "^5.100.10",
     "axios": "^1.16.1",
     "react": "^19.2.6",
@@ -24,6 +28,7 @@
   },
   "devDependencies": {
     "@capacitor/android": "^8.4.0",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
@@ -34,6 +39,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
