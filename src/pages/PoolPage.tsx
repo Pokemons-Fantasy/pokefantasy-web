@@ -19,7 +19,7 @@ import PageHeader from '../components/PageHeader';
 
 const MAX_NOMINATIONS = 16;
 
-type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'forms';
+type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'regional';
 
 const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] = [
   { label: 'Todos',    key: 'all' },
@@ -32,12 +32,16 @@ const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] 
   { label: 'Gen VII', key: 'gen7', min: 722, max: 809  },
   { label: 'Gen VIII',key: 'gen8', min: 810, max: 905  },
   { label: 'Gen IX',  key: 'gen9', min: 906, max: 1025 },
-  { label: 'Formas',  key: 'forms' },
+  { label: 'Regional', key: 'regional' },
 ];
 
 function matchesGen(p: AvailablePokemon, gen: GenFilter): boolean {
   if (gen === 'all') return true;
-  if (gen === 'forms') return p.id >= 10000;
+  if (gen === 'regional') {
+    const name = p.name.toLowerCase();
+    return name.includes('-alola') || name.includes('-galar')
+        || name.includes('-hisui') || name.includes('-paldea');
+  }
   const tab = GEN_TABS.find((t) => t.key === gen);
   if (!tab || tab.min === undefined || tab.max === undefined) return false;
   return p.id >= tab.min && p.id <= tab.max && p.id < 10000;
