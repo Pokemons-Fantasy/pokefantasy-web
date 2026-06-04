@@ -23,6 +23,7 @@ import MyProfilePage from './pages/MyProfilePage';
 import InvitePage from './pages/InvitePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ToastContainer from './components/ToastContainer';
+import { useNotificationPoller } from './hooks/useNotificationPoller';
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,11 @@ function deepLinkPath(url: string): string {
   const parsed = new URL(url);
   // "pokefantasy://invite/TOKEN" → hostname="invite", pathname="/TOKEN" → "/invite/TOKEN"
   return `/${parsed.hostname}${parsed.pathname}`;
+}
+
+function GlobalNotifications() {
+  useNotificationPoller();
+  return null;
 }
 
 function DeepLinkHandler() {
@@ -68,6 +74,7 @@ export default function App() {
       <ToastContainer />
       <BrowserRouter>
         <DeepLinkHandler />
+        <GlobalNotifications />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
