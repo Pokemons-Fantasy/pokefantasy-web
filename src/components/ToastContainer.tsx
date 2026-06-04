@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToastStore } from '../store/toastStore';
 import type { Toast, ToastType } from '../store/toastStore';
 
@@ -16,12 +17,21 @@ const COLORS: Record<ToastType, { border: string; bg: string; icon: string }> = 
 
 function ToastItem({ toast }: { toast: Toast }) {
   const removeToast = useToastStore((s) => s.removeToast);
+  const navigate = useNavigate();
   const { border, bg, icon } = COLORS[toast.type];
+  const persistent = !!toast.actionUrl;
 
   useEffect(() => {
+    if (persistent) return;
     const timer = setTimeout(() => removeToast(toast.id), DISMISS_MS[toast.type]);
     return () => clearTimeout(timer);
-  }, [toast.id, toast.type, removeToast]);
+  }, [toast.id, toast.type, removeToast, persistent]);
+
+  function handleBodyClick() {
+    if (!toast.actionUrl) return;
+    removeToast(toast.id);
+    navigate(toast.actionUrl);
+  }
 
   return (
     <div
@@ -38,7 +48,11 @@ function ToastItem({ toast }: { toast: Toast }) {
         minWidth: 260,
         maxWidth: 360,
         animation: 'slideInRight 0.22s ease-out',
+        cursor: persistent ? 'pointer' : 'default',
       }}
+      onClick={handleBodyClick}
+      role={persistent ? 'button' : undefined}
+      title={persistent ? 'Ver actividad' : undefined}
     >
       {/* Icon */}
       <span
@@ -72,11 +86,16 @@ function ToastItem({ toast }: { toast: Toast }) {
         }}
       >
         {toast.message}
+        {persistent && (
+          <span style={{ display: 'block', fontSize: '0.75rem', color: border, marginTop: '0.2rem' }}>
+            Ver actividad →
+          </span>
+        )}
       </span>
 
       {/* Dismiss */}
       <button
-        onClick={() => removeToast(toast.id)}
+        onClick={(e) => { e.stopPropagation(); removeToast(toast.id); }}
         style={{
           flexShrink: 0,
           background: 'none',
@@ -97,6 +116,12 @@ function ToastItem({ toast }: { toast: Toast }) {
 
 export default function ToastContainer() {
   const toasts = useToastStore((s) => s.toasts);
+  const clearPersistent = useToastStore((s) => s.clearPersistent);
+  const location = useLocation();
+
+  useEffect(() => {
+    clearPersistent();
+  }, [location.pathname, clearPersistent]);
 
   if (toasts.length === 0) return null;
 
