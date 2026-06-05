@@ -103,6 +103,15 @@ export default function TeamsPage() {
 
   const maxTeamSize = leagueSettings?.maxTeamSize ?? 10;
 
+  const DAY_NAMES: Record<number, string> = {
+    1: 'lunes', 2: 'martes', 3: 'miércoles', 4: 'jueves',
+    5: 'viernes', 6: 'sábado', 7: 'domingo',
+  };
+  const stealDayLabel = DAY_NAMES[leagueSettings?.stealWindowCloseDay ?? 4] ?? 'jueves';
+  const stealTimeLabel = leagueSettings?.stealWindowCloseTime ?? '23:59';
+  const swapDayLabel  = DAY_NAMES[leagueSettings?.swapWindowCloseDay ?? 5] ?? 'viernes';
+  const swapTimeLabel  = leagueSettings?.swapWindowCloseTime ?? '16:00';
+
   const { data: schedule } = useQuery({
     queryKey: ['schedule', leagueId],
     queryFn: () => getSchedule(leagueId!),
@@ -600,7 +609,7 @@ export default function TeamsPage() {
             color: '#fbbf24',
             marginBottom: '0.75rem',
           }}>
-            🔓 Ventana de intercambios abierta — cierra el viernes a las 16:00
+            🔓 Ventana de intercambios abierta — cierra el {swapDayLabel} a las {swapTimeLabel}
           </div>
         )}
 
@@ -611,7 +620,7 @@ export default function TeamsPage() {
             color: '#fbbf24',
             marginBottom: '0.75rem',
           }}>
-            🔓 Ventana de robos abierta — cierra el jueves a las 23:59
+            🔓 Ventana de robos abierta — cierra el {stealDayLabel} a las {stealTimeLabel}
           </div>
         ) : (
           <div className="my-turn-banner" style={{
@@ -620,7 +629,7 @@ export default function TeamsPage() {
             color: '#f87171',
             marginBottom: '0.75rem',
           }}>
-            🔒 Robos cerrados — la ventana abre el jueves de la semana de la jornada
+            🔒 Robos cerrados — la ventana abre el {stealDayLabel} de la semana de la jornada
           </div>
         )}
 
