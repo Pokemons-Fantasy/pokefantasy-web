@@ -62,6 +62,10 @@ export interface LeagueSettings {
   tierPctC: number;         // % of pool → C tier (default 20)
   tierPctD: number;         // % of pool → D tier (default 20)
   turnTimerSeconds?: number; // seconds per turn; 0 = disabled
+  stealWindowCloseDay?: number;   // ISO 1-7 (1=Mon…7=Sun), default 4 (Thu)
+  stealWindowCloseTime?: string;  // "HH:mm", default "23:59"
+  swapWindowCloseDay?: number;    // ISO 1-7, default 5 (Fri)
+  swapWindowCloseTime?: string;   // "HH:mm", default "16:00"
 }
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
