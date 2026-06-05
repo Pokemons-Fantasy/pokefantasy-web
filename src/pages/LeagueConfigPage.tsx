@@ -36,6 +36,10 @@ export default function LeagueConfigPage() {
   const [tierPctC, setTierPctC] = useState<number>(20);
   const [tierPctD, setTierPctD] = useState<number>(20);
   const [turnTimerSeconds, setTurnTimerSeconds] = useState<number>(0);
+  const [stealWindowCloseDay, setStealWindowCloseDay] = useState<number>(4);
+  const [stealWindowCloseTime, setStealWindowCloseTime] = useState<string>('23:59');
+  const [swapWindowCloseDay, setSwapWindowCloseDay] = useState<number>(5);
+  const [swapWindowCloseTime, setSwapWindowCloseTime] = useState<string>('16:00');
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -75,6 +79,10 @@ export default function LeagueConfigPage() {
       setTierPctC(settings.tierPctC ?? 20);
       setTierPctD(settings.tierPctD ?? 20);
       setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
+      setStealWindowCloseDay(settings.stealWindowCloseDay ?? 4);
+      setStealWindowCloseTime(settings.stealWindowCloseTime ?? '23:59');
+      setSwapWindowCloseDay(settings.swapWindowCloseDay ?? 5);
+      setSwapWindowCloseTime(settings.swapWindowCloseTime ?? '16:00');
     }
   }, [settings]);
 
@@ -109,8 +117,10 @@ export default function LeagueConfigPage() {
       { key: 'tierPctB',     label: '% tier B',             current: tierPctB,     saved: settings.tierPctB ?? 20 },
       { key: 'tierPctC',     label: '% tier C',             current: tierPctC,     saved: settings.tierPctC ?? 20 },
       { key: 'tierPctD',     label: '% tier D',             current: tierPctD,     saved: settings.tierPctD ?? 20 },
-      { key: 'maxTeamSize',        label: 'Tamaño max equipo',         current: maxTeamSize,       saved: settings.maxTeamSize ?? 20 },
-      { key: 'turnTimerSeconds',   label: 'Tiempo por turno (s)',      current: turnTimerSeconds,  saved: settings.turnTimerSeconds ?? 0 },
+      { key: 'maxTeamSize',           label: 'Tamaño max equipo',          current: maxTeamSize,          saved: settings.maxTeamSize ?? 20 },
+      { key: 'turnTimerSeconds',      label: 'Tiempo por turno (s)',       current: turnTimerSeconds,     saved: settings.turnTimerSeconds ?? 0 },
+      { key: 'stealWindowCloseDay',   label: 'Día cierre ventana robo',    current: stealWindowCloseDay,  saved: settings.stealWindowCloseDay ?? 4 },
+      { key: 'swapWindowCloseDay',    label: 'Día cierre ventana swap',    current: swapWindowCloseDay,   saved: settings.swapWindowCloseDay ?? 5 },
     ];
 
     const changes: Array<{ label: string; old: number | string; new: number | string }> = numFields
@@ -122,12 +132,22 @@ export default function LeagueConfigPage() {
       changes.push({ label: 'Fecha inicio temporada', old: savedDate || '—', new: seasonStartDate || '—' });
     }
 
+    const savedStealTime = settings.stealWindowCloseTime ?? '23:59';
+    if (stealWindowCloseTime !== savedStealTime) {
+      changes.push({ label: 'Hora cierre robo', old: savedStealTime, new: stealWindowCloseTime });
+    }
+    const savedSwapTime = settings.swapWindowCloseTime ?? '16:00';
+    if (swapWindowCloseTime !== savedSwapTime) {
+      changes.push({ label: 'Hora cierre swap', old: savedSwapTime, new: swapWindowCloseTime });
+    }
+
     return changes;
   }, [
     settings, coinsPerWin, coinsPerLoss,
     priceTierS, priceTierA, priceTierB, priceTierC, priceTierD,
     tierPctS, tierPctA, tierPctB, tierPctC, tierPctD,
     maxTeamSize, seasonStartDate, turnTimerSeconds,
+    stealWindowCloseDay, stealWindowCloseTime, swapWindowCloseDay, swapWindowCloseTime,
   ]);
 
   const hasChanges = pendingChanges.length > 0;
@@ -181,6 +201,10 @@ export default function LeagueConfigPage() {
       tierPctC,
       tierPctD,
       turnTimerSeconds,
+      stealWindowCloseDay,
+      stealWindowCloseTime,
+      swapWindowCloseDay,
+      swapWindowCloseTime,
     });
   };
 
@@ -201,6 +225,10 @@ export default function LeagueConfigPage() {
       setTierPctC(settings.tierPctC ?? 20);
       setTierPctD(settings.tierPctD ?? 20);
       setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
+      setStealWindowCloseDay(settings.stealWindowCloseDay ?? 4);
+      setStealWindowCloseTime(settings.stealWindowCloseTime ?? '23:59');
+      setSwapWindowCloseDay(settings.swapWindowCloseDay ?? 5);
+      setSwapWindowCloseTime(settings.swapWindowCloseTime ?? '16:00');
       setError('');
       setSavedAt(null);
     }
@@ -420,6 +448,80 @@ export default function LeagueConfigPage() {
                   <span className="config-hint">
                     Si el jugador en turno no elige en este tiempo, se asigna un Pokémon aleatorio. 0 desactiva el temporizador.
                   </span>
+                </div>
+
+                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
+                <p className="section-label" style={{ marginBottom: '0.35rem' }}>Ventanas de tiempo</p>
+                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
+                  Día y hora en que cierra cada ventana dentro de la semana de jornada.
+                </span>
+
+                <div className="config-field">
+                  <label className="section-label">Cierre ventana de robos</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                      className="search-input"
+                      value={stealWindowCloseDay}
+                      onChange={(e) => setStealWindowCloseDay(Number(e.target.value))}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    >
+                      {[
+                        { value: 1, label: 'Lunes' },
+                        { value: 2, label: 'Martes' },
+                        { value: 3, label: 'Miércoles' },
+                        { value: 4, label: 'Jueves' },
+                        { value: 5, label: 'Viernes' },
+                        { value: 6, label: 'Sábado' },
+                        { value: 7, label: 'Domingo' },
+                      ].map((d) => (
+                        <option key={d.value} value={d.value}>{d.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      className="search-input"
+                      type="time"
+                      value={stealWindowCloseTime}
+                      onChange={(e) => setStealWindowCloseTime(e.target.value)}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                  <span className="config-hint">Por defecto: jueves 23:59</span>
+                </div>
+
+                <div className="config-field">
+                  <label className="section-label">Cierre ventana de intercambios</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                      className="search-input"
+                      value={swapWindowCloseDay}
+                      onChange={(e) => setSwapWindowCloseDay(Number(e.target.value))}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    >
+                      {[
+                        { value: 1, label: 'Lunes' },
+                        { value: 2, label: 'Martes' },
+                        { value: 3, label: 'Miércoles' },
+                        { value: 4, label: 'Jueves' },
+                        { value: 5, label: 'Viernes' },
+                        { value: 6, label: 'Sábado' },
+                        { value: 7, label: 'Domingo' },
+                      ].map((d) => (
+                        <option key={d.value} value={d.value}>{d.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      className="search-input"
+                      type="time"
+                      value={swapWindowCloseTime}
+                      onChange={(e) => setSwapWindowCloseTime(e.target.value)}
+                      disabled={!canEdit || saving}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                  <span className="config-hint">Por defecto: viernes 16:00</span>
                 </div>
               </form>
 
