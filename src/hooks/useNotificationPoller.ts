@@ -11,7 +11,7 @@ export function useNotificationPoller() {
   const addToast = useToastStore((s) => s.addToast);
   const queryClient = useQueryClient();
 
-  const prevTradeCount = useRef<number | null>(null);
+  const seenTradeIds = useRef<Set<string>>(new Set());
   const seenStealIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -24,10 +24,18 @@ export function useNotificationPoller() {
         queryFn: getMyPendingTrades,
         staleTime: 25_000,
       });
-      if (!isInit && prevTradeCount.current !== null && trades.length > prevTradeCount.current) {
-        addToast('info', '🔔 Nueva propuesta de intercambio');
+      for (const trade of trades) {
+        if (!seenTradeIds.current.has(trade.id)) {
+          seenTradeIds.current.add(trade.id);
+          if (!isInit) {
+            addToast(
+              'info',
+              `🔔 Nueva propuesta de intercambio de ${trade.proposer}`,
+              `/leagues/${trade.leagueId}/activity`,
+            );
+          }
+        }
       }
-      prevTradeCount.current = trades.length;
 
       // --- Robos ---
       const leagues = await queryClient.fetchQuery({
@@ -46,7 +54,11 @@ export function useNotificationPoller() {
             if (!seenStealIds.current.has(event.id)) {
               seenStealIds.current.add(event.id);
               if (!isInit) {
-                addToast('info', `🔥 ${event.actorUsername} te robó a ${event.pokemonName}`);
+                addToast(
+                  'info',
+                  `🔥 ${event.actorUsername} te robó a ${event.pokemonName}`,
+                  `/leagues/${league.id}/activity`,
+                );
               }
             }
           }

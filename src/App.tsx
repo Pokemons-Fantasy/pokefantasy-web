@@ -71,8 +71,8 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastContainer />
       <BrowserRouter>
+        <ToastContainer />
         <DeepLinkHandler />
         <GlobalNotifications />
         <Routes>
