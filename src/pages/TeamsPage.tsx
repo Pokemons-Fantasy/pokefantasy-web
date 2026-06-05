@@ -5,7 +5,7 @@ import { Clipboard } from '@capacitor/clipboard';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useAuthStore } from '../store/authStore';
 import {
-  getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice,
+  getDraftStatus, getBench, getClosedList, swapWithBench, buyFromBench, stealPokemon, setStealPrice, releasePokemon,
 } from '../api/pokemons';
 import type { BenchEntry, ClosedListEntry, DraftPick, Tier } from '../api/pokemons';
 import PokemonDetailModal from '../components/PokemonDetailModal';
@@ -22,6 +22,7 @@ import SwapModal from '../components/teams/SwapModal';
 import RivalActionModal from '../components/teams/RivalActionModal';
 import StealModal from '../components/teams/StealModal';
 import SetPriceModal from '../components/teams/SetPriceModal';
+import ReleaseModal from '../components/teams/ReleaseModal';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
@@ -43,6 +44,7 @@ export default function TeamsPage() {
   const [rivalGoingToSteal, setRivalGoingToSteal] = useState(false);
 
   const [modalSetPrice, setModalSetPrice] = useState<DraftPick | null>(null);
+  const [releaseModalPick, setReleaseModalPick] = useState<DraftPick | null>(null);
 
   const [ownTeamCollapsed, setOwnTeamCollapsed] = useState(false);
   const [filterName, setFilterName] = useState('');
@@ -200,6 +202,22 @@ export default function TeamsPage() {
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al comprar')),
   });
 
+  const { mutate: doRelease, isPending: releasing } = useMutation({
+    mutationFn: (pokemonName: string) => releasePokemon(leagueId!, pokemonName),
+    onSuccess: () => {
+      Haptics.impact({ style: ImpactStyle.Medium });
+      const name = releaseModalPick?.pokemonName ?? '';
+      const tier = tierByName.get(name);
+      const reward = Math.floor(priceForTier(leagueSettings, tier) / 2);
+      setReleaseModalPick(null);
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      addToast('success', `${name} liberado — +${reward} monedas`);
+    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al liberar')),
+  });
+
   // ── Data ────────────────────────────────────────────────────────────────────
 
   const teams = draft
@@ -294,6 +312,24 @@ export default function TeamsPage() {
                       ⬆ precio
                     </button>
                   </>
+                )}
+                {!swapWindowClosed && !isLocked(pick) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setReleaseModalPick(pick); }}
+                    title="Liberar a la banca"
+                    style={{
+                      marginTop: '0.2rem',
+                      padding: '0.15rem 0.4rem',
+                      fontSize: '0.65rem',
+                      background: 'rgba(248,113,113,0.12)',
+                      border: '1px solid rgba(248,113,113,0.25)',
+                      borderRadius: 4,
+                      color: '#fca5a5',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🔓 liberar
+                  </button>
                 )}
                 <button
                   className="pokemon-info-btn"
@@ -490,6 +526,19 @@ export default function TeamsPage() {
           saving={settingPrice}
           onConfirm={(newPrice) => doSetPrice({ pokemonName: modalSetPrice.pokemonName, newPrice })}
           onClose={() => setModalSetPrice(null)}
+        />
+      )}
+
+      {/* Release modal */}
+      {releaseModalPick && (
+        <ReleaseModal
+          pick={releaseModalPick}
+          rewardCoins={Math.floor(priceForTier(leagueSettings, tierByName.get(releaseModalPick.pokemonName)) / 2)}
+          currentCoins={myBalance}
+          tierByName={tierByName}
+          releasing={releasing}
+          onConfirm={() => doRelease(releaseModalPick.pokemonName)}
+          onClose={() => setReleaseModalPick(null)}
         />
       )}
 

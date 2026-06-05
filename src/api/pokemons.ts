@@ -158,6 +158,10 @@ export const buyFromBench = async (leagueId: string, pokemonName: string): Promi
   await apiClient.post(`/v1/leagues/${leagueId}/bench/buy`, { pokemonName });
 };
 
+export const releasePokemon = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/bench/release`, { pokemonName });
+};
+
 export const stealPokemon = async (leagueId: string, targetPokemonName: string): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/steal`, { targetPokemonName });
 };
