@@ -160,3 +160,26 @@ export const searchUsers = async (q: string, leagueId: string): Promise<string[]
   const res = await apiClient.get('/v1/users/search', { params: { q, leagueId } });
   return res.data;
 };
+
+// ── Season Stats ──────────────────────────────────────────────────────────────
+
+export interface PlayerSeasonStats {
+  username: string;
+  wins: number;
+  losses: number;
+  played: number;
+  winPct: number;           // 0-100, división entera
+  currentStreak: number;    // positivo = racha de victorias, negativo = derrotas
+  mvpPokemon: string | null;
+}
+
+export const getSeasonStats = async (leagueId: string): Promise<PlayerSeasonStats[]> => {
+  const { data } = await apiClient.get<{ players: PlayerSeasonStats[] }>(
+    `/v1/leagues/${leagueId}/season-stats`
+  );
+  return data.players;
+};
+
+export const setMyMvp = async (leagueId: string, pokemonName: string): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/my-mvp`, { pokemonName });
+};
