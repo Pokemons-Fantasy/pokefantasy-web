@@ -1,28 +1,24 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { logout as apiLogout } from '../api/auth';
 
 interface AuthState {
-  token: string | null;
   username: string | null;
-  setAuth: (token: string, username: string) => void;
-  logout: () => void;
+  setAuth: (username: string) => void;
+  logout: () => Promise<void>;
   isAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      token: null,
       username: null,
-      setAuth: (token, username) => {
-        localStorage.setItem('token', token);
-        set({ token, username });
+      setAuth: (username) => set({ username }),
+      logout: async () => {
+        try { await apiLogout(); } catch (_) { /* cookie cleared server-side si puede */ }
+        set({ username: null });
       },
-      logout: () => {
-        localStorage.removeItem('token');
-        set({ token: null, username: null });
-      },
-      isAuthenticated: () => !!get().token,
+      isAuthenticated: () => !!get().username,
     }),
     { name: 'auth-storage' }
   )

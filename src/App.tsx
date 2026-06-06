@@ -67,13 +67,13 @@ function DeepLinkHandler() {
 }
 
 export default function App() {
-  const authToken = useAuthStore(state => state.token);
+  const authUsername = useAuthStore(state => state.username);
 
   useEffect(() => {
-    if (authToken && Capacitor.isNativePlatform()) {
+    if (authUsername && Capacitor.isNativePlatform()) {
       PushNotifications.register();
     }
-  }, [authToken]);
+  }, [authUsername]);
 
   return (
     <QueryClientProvider client={queryClient}>

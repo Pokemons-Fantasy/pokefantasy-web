@@ -10,7 +10,6 @@ const API_BASE = import.meta.env.VITE_API_URL ?? 'https://pokefantasy.onrender.c
 
 export function useNotificationSse() {
   const username = useAuthStore((s) => s.username);
-  const token = useAuthStore((s) => s.token);
   const addToast = useToastStore((s) => s.addToast);
   const queryClient = useQueryClient();
 
@@ -18,7 +17,7 @@ export function useNotificationSse() {
   const seenStealIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!username || !token) return;
+    if (!username) return;
 
     // --- Init: populate refs without toasting ---
     async function initRefs() {
@@ -49,7 +48,7 @@ export function useNotificationSse() {
     let fallbackInterval: ReturnType<typeof setInterval> | null = null;
 
     // --- SSE ---
-    const es = new EventSource(`${API_BASE}/v1/users/events?token=${token}`);
+    const es = new EventSource(`${API_BASE}/v1/users/events`, { withCredentials: true });
 
     es.addEventListener('steal', (e: MessageEvent) => {
       const data = JSON.parse(e.data) as {
@@ -129,5 +128,5 @@ export function useNotificationSse() {
       es.close();
       if (fallbackInterval) clearInterval(fallbackInterval);
     };
-  }, [username, token, queryClient, addToast]);
+  }, [username, queryClient, addToast]);
 }
