@@ -88,6 +88,7 @@ export function useNotificationSse() {
     });
 
     es.onerror = () => {
+      es.close(); // stop browser auto-reconnect; fallback polling takes over
       // SSE dropped — activate fallback polling at 120s
       if (!fallbackInterval) {
         fallbackInterval = setInterval(async () => {
