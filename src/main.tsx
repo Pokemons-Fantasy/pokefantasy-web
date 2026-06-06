@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { apiClient } from './api/client'
 import './index.css'
 import App from './App.tsx'
 import { Capacitor } from '@capacitor/core'
@@ -18,20 +19,9 @@ if (Capacitor.isNativePlatform()) {
     }
   })
 
-  PushNotifications.addListener('registration', async ({ value: token }) => {
+  PushNotifications.addListener('registration', async ({ value: fcmToken }) => {
     try {
-      const raw = localStorage.getItem('auth-storage')
-      if (!raw) return
-      const { state } = JSON.parse(raw) as { state: { token?: string } }
-      if (!state?.token) return
-      await fetch('https://pokefantasy.onrender.com/v1/users/push-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${state.token}`,
-        },
-        body: JSON.stringify({ token }),
-      })
+      await apiClient.post('/v1/users/push-token', { token: fcmToken })
     } catch (e) {
       console.warn('Failed to register push token', e)
     }
