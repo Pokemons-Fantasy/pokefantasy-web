@@ -42,6 +42,7 @@ export default function LeagueConfigPage() {
   const [swapWindowCloseTime, setSwapWindowCloseTime] = useState<string>('16:00');
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -152,6 +153,26 @@ export default function LeagueConfigPage() {
 
   const hasChanges = pendingChanges.length > 0;
 
+  // ── Guard navegación con cambios sin guardar ──────────────────────────────────
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    if (hasChanges) {
+      window.addEventListener('beforeunload', handler);
+    }
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasChanges]);
+
+  const guardedNavigate = (target: string) => {
+    if (hasChanges) {
+      setLeaveTarget(target);
+    } else {
+      navigate(target);
+    }
+  };
+
   // ── Mutations ────────────────────────────────────────────────────────────────
   const { mutate: save, isPending: saving } = useMutation({
     mutationFn: (payload: LeagueSettings) => updateLeagueSettings(leagueId!, payload),
@@ -238,8 +259,8 @@ export default function LeagueConfigPage() {
     <div className="page-wrapper">
       <PageHeader left={
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
+          <button className="btn-back" onClick={() => guardedNavigate(`/leagues/${leagueId}`)}>← Liga</button>
+          <span className="logo" onClick={() => guardedNavigate('/leagues')}>PokeFantasy</span>
         </div>
       } />
 
@@ -611,6 +632,26 @@ export default function LeagueConfigPage() {
           </>
         )}
       </main>
+
+      {leaveTarget && (
+        <div className="modal-overlay" onClick={() => setLeaveTarget(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">Cambios sin guardar</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              Tienes {pendingChanges.length} cambio{pendingChanges.length !== 1 ? 's' : ''} sin guardar.
+              Si sales ahora se perderán.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setLeaveTarget(null)}>
+                Seguir editando
+              </button>
+              <button className="btn-danger" onClick={() => navigate(leaveTarget)}>
+                Descartar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
