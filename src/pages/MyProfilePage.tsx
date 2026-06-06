@@ -109,82 +109,81 @@ export default function MyProfilePage() {
                     </span>
                   </div>
 
+                  {/* Stats row — only when there are played games */}
                   {myStats && myStats.played > 0 && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      {/* W / L / winPct */}
-                      <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.82rem', marginBottom: '0.35rem' }}>
-                        <span style={{ color: 'var(--green)', fontWeight: 600 }}>{myStats.wins}V</span>
-                        <span style={{ color: '#f87171', fontWeight: 600 }}>{myStats.losses}D</span>
-                        <span style={{ color: 'var(--text-3)' }}>{myStats.winPct}%</span>
-                        {myStats.currentStreak !== 0 && (
-                          <span style={{ color: myStats.currentStreak > 0 ? 'var(--green)' : '#f87171', fontWeight: 600 }}>
-                            {myStats.currentStreak > 0 ? `+${myStats.currentStreak}` : myStats.currentStreak} racha
-                          </span>
-                        )}
-                      </div>
-
-                      {/* MVP */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-3)' }}
-                        onClick={(e) => e.stopPropagation()}>
-                        <span>⭐ MVP:</span>
-                        {mvpPickerLeagueId === league.id ? (
-                          <span style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                            <select
-                              className="search-input"
-                              style={{ fontSize: '0.78rem', padding: '0.15rem 0.4rem', height: 'auto' }}
-                              value={selectedMvp}
-                              onChange={(e) => setSelectedMvp(e.target.value)}
-                            >
-                              <option value="">-- Elige --</option>
-                              {myPickerOptions.map((name) => (
-                                <option key={name} value={name}>{name}</option>
-                              ))}
-                            </select>
-                            <button
-                              className="btn-ghost"
-                              style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                              disabled={!selectedMvp || savingMvp}
-                              onClick={() => saveMvp()}
-                            >
-                              {savingMvp ? '...' : '✓'}
-                            </button>
-                            <button
-                              className="btn-ghost"
-                              style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', color: 'var(--text-3)' }}
-                              onClick={() => setMvpPickerLeagueId(null)}
-                            >
-                              ✕
-                            </button>
-                          </span>
-                        ) : (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <span style={{ color: 'var(--text-1)' }}>
-                              {myStats.mvpPokemon ?? '—'}
-                            </span>
-                            {league.status === 'ACTIVE' && (
-                              <button
-                                className="btn-ghost"
-                                style={{ fontSize: '0.7rem', padding: '0.1rem 0.3rem', lineHeight: 1 }}
-                                title="Cambiar MVP"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedMvp(myStats.mvpPokemon ?? '');
-                                  setMvpPickerLeagueId(league.id);
-                                }}
-                              >
-                                ✏️
-                              </button>
-                            )}
-                          </span>
-                        )}
-                      </div>
+                    <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.82rem', marginBottom: '0.35rem', marginTop: '0.5rem' }}>
+                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{myStats.wins}V</span>
+                      <span style={{ color: '#f87171', fontWeight: 600 }}>{myStats.losses}D</span>
+                      <span style={{ color: 'var(--text-3)' }}>{myStats.winPct}%</span>
+                      {myStats.currentStreak !== 0 && (
+                        <span style={{ color: myStats.currentStreak > 0 ? 'var(--green)' : '#f87171', fontWeight: 600 }}>
+                          {myStats.currentStreak > 0 ? `+${myStats.currentStreak}` : myStats.currentStreak} racha
+                        </span>
+                      )}
                     </div>
                   )}
 
+                  {/* No games yet */}
                   {myStats && myStats.played === 0 && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>
                       Sin partidos aún
                     </p>
+                  )}
+
+                  {/* MVP row — shown whenever ACTIVE (can set MVP after draft, before first game) */}
+                  {myStats && league.status === 'ACTIVE' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.25rem' }}
+                      onClick={(e) => e.stopPropagation()}>
+                      <span>⭐ MVP:</span>
+                      {mvpPickerLeagueId === league.id ? (
+                        <span style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                          <select
+                            className="search-input"
+                            style={{ fontSize: '0.78rem', padding: '0.15rem 0.4rem', height: 'auto' }}
+                            value={selectedMvp}
+                            onChange={(e) => setSelectedMvp(e.target.value)}
+                          >
+                            <option value="">-- Elige --</option>
+                            {myPickerOptions.map((name) => (
+                              <option key={name} value={name}>{name}</option>
+                            ))}
+                          </select>
+                          <button
+                            className="btn-ghost"
+                            style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
+                            disabled={!selectedMvp || savingMvp}
+                            onClick={() => saveMvp()}
+                          >
+                            {savingMvp ? '...' : '✓'}
+                          </button>
+                          <button
+                            className="btn-ghost"
+                            style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', color: 'var(--text-3)' }}
+                            onClick={() => setMvpPickerLeagueId(null)}
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ) : (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <span style={{ color: 'var(--text-1)' }}>
+                            {myStats.mvpPokemon ?? '—'}
+                          </span>
+                          <button
+                            className="btn-ghost"
+                            style={{ fontSize: '0.7rem', padding: '0.1rem 0.3rem', lineHeight: 1 }}
+                            title="Cambiar MVP"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedMvp(myStats.mvpPokemon ?? '');
+                              setMvpPickerLeagueId(league.id);
+                            }}
+                          >
+                            ✏️
+                          </button>
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               );
