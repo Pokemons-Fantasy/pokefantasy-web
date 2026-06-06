@@ -130,8 +130,8 @@ export default function MyProfilePage() {
                     </p>
                   )}
 
-                  {/* MVP row — shown whenever ACTIVE (can set MVP after draft, before first game) */}
-                  {myStats && league.status === 'ACTIVE' && (
+                  {/* MVP row — shown whenever there are stats (backend validates draft COMPLETED) */}
+                  {myStats && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.25rem' }}
                       onClick={(e) => e.stopPropagation()}>
                       <span>⭐ MVP:</span>
