@@ -159,7 +159,7 @@ export default function MyProfilePage() {
                           <button
                             className="btn-ghost"
                             style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', color: 'var(--text-3)' }}
-                            onClick={() => setMvpPickerLeagueId(null)}
+                            onClick={() => { setMvpPickerLeagueId(null); setSelectedMvp(''); }}
                           >
                             ✕
                           </button>
