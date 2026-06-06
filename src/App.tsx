@@ -24,7 +24,7 @@ import InvitePage from './pages/InvitePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
-import { useNotificationPoller } from './hooks/useNotificationPoller';
+import { useNotificationSse } from './hooks/useNotificationSse';
 
 const queryClient = new QueryClient();
 
@@ -35,7 +35,7 @@ function deepLinkPath(url: string): string {
 }
 
 function GlobalNotifications() {
-  useNotificationPoller();
+  useNotificationSse();
   return null;
 }
 
