@@ -21,10 +21,14 @@ export interface ActivityFeedResponse {
   hasMore: boolean;
 }
 
-export const getActivityFeed = async (leagueId: string, page: number): Promise<ActivityFeedResponse> => {
+export const getActivityFeed = async (
+  leagueId: string,
+  page: number,
+  options?: { username?: string }
+): Promise<ActivityFeedResponse> => {
   const { data } = await apiClient.get<ActivityFeedResponse>(
     `/v1/leagues/${leagueId}/activity`,
-    { params: { page, size: 20 } }
+    { params: { page, size: 20, ...(options?.username ? { username: options.username } : {}) } }
   );
   return data;
 };

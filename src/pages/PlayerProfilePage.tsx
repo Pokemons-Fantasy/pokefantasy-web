@@ -1,13 +1,72 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getDraftStatus, getClosedList } from '../api/pokemons';
 import type { DraftPick, Tier } from '../api/pokemons';
 import { getStandings, getLeagueDetail } from '../api/leagues';
+import { getActivityFeed } from '../api/activity';
+import type { ActivityEvent } from '../api/activity';
 import PageHeader from '../components/PageHeader';
 import TierBadge from '../components/TierBadge';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { spriteUrl } from '../utils/sprites';
+
+function coinDelta(event: ActivityEvent, username: string): number {
+  const a = event.coinsAmount ?? 0;
+  switch (event.type) {
+    case 'COIN_EARNED':    return a;
+    case 'BENCH_SWAP':     return a;
+    case 'BENCH_PURCHASE': return -a;
+    case 'STEAL':
+      return event.actorUsername === username ? -a : 2 * a;
+    case 'TRADE_COMPLETED':
+      return event.actorUsername === username ? -a : a;
+    default: return 0;
+  }
+}
+
+function coinEventIcon(event: ActivityEvent, username: string): string {
+  switch (event.type) {
+    case 'COIN_EARNED':    return '🏆';
+    case 'BENCH_PURCHASE': return '🛒';
+    case 'BENCH_SWAP':     return '↔';
+    case 'TRADE_COMPLETED': return '🤝';
+    case 'STEAL':
+      return event.actorUsername === username ? '⚡' : '💰';
+    default: return '🪙';
+  }
+}
+
+function coinEventLabel(event: ActivityEvent, username: string): string {
+  const a = event.coinsAmount ?? 0;
+  switch (event.type) {
+    case 'COIN_EARNED':
+      return `+${a} jornada ${event.roundNumber ?? '?'}`;
+    case 'BENCH_PURCHASE':
+      return `Compré ${event.pokemonName ?? ''} (-${a})`;
+    case 'BENCH_SWAP':
+      return `Swap: ${event.pokemonName ?? ''}↔${event.pokemonName2 ?? ''} (+${a})`;
+    case 'TRADE_COMPLETED':
+      return event.actorUsername === username
+        ? `Trade con ${event.targetUsername ?? ''} (-${a})`
+        : `Trade con ${event.actorUsername} (+${a})`;
+    case 'STEAL':
+      return event.actorUsername === username
+        ? `Robé ${event.pokemonName ?? ''} a ${event.targetUsername ?? ''} (-${a})`
+        : `Me robaron ${event.pokemonName ?? ''} (+${2 * a})`;
+    default: return event.type;
+  }
+}
+
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'ahora';
+  if (m < 60) return `hace ${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `hace ${h}h`;
+  return `hace ${Math.floor(h / 24)}d`;
+}
 
 export default function PlayerProfilePage() {
   const { leagueId, username } = useParams<{ leagueId: string; username: string }>();
@@ -42,6 +101,18 @@ export default function PlayerProfilePage() {
   });
 
   const isLoading = draftLoading || closedListLoading;
+
+  const [coinPage, setCoinPage] = useState(0);
+  const { data: coinFeed } = useQuery({
+    queryKey: ['coin-history', leagueId, username, coinPage],
+    queryFn: () => getActivityFeed(leagueId!, coinPage, { username: username! }),
+    staleTime: 60_000,
+    enabled: !!leagueId && !!username,
+  });
+
+  const coinEvents = (coinFeed?.events ?? []).filter(
+    (e) => e.coinsAmount != null && e.coinsAmount > 0 && e.type !== 'MATCH_RESULT' && e.type !== 'TIER_CHANGE'
+  );
 
   const tierByName = useMemo(
     () => new Map<string, Tier | null | undefined>(closedList?.map((e) => [e.pokemonName, e.tier])),
@@ -137,7 +208,7 @@ export default function PlayerProfilePage() {
 
         {/* ── Historial del draft (solo si difiere del equipo actual) ── */}
         {!isLoading && showHistory && (
-          <div>
+          <div style={{ marginBottom: '2rem' }}>
             <p className="section-label" style={{ marginBottom: '0.75rem' }}>Picks originales del draft</p>
             <div className="pokemon-grid animate-in" style={{ opacity: 0.65 }}>
               {draftHistory.map((pick) => (
@@ -146,6 +217,69 @@ export default function PlayerProfilePage() {
             </div>
           </div>
         )}
+
+        {/* ── Historial de monedas ── */}
+        <div>
+          <p className="section-label" style={{ marginBottom: '0.75rem' }}>Monedas</p>
+
+          {coinEvents.length === 0 && coinFeed !== undefined && (
+            <div className="empty-state" style={{ padding: '1.5rem 1rem' }}>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>Sin movimientos de monedas aún.</p>
+            </div>
+          )}
+
+          {coinEvents.length > 0 && (
+            <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {coinEvents.map((event) => {
+                const delta = coinDelta(event, username!);
+                const positive = delta >= 0;
+                return (
+                  <div
+                    key={event.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      padding: '0.6rem 0.75rem',
+                      background: 'var(--surface-2)',
+                      borderRadius: '0.5rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>
+                      {coinEventIcon(event, username!)}
+                    </span>
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-2)' }}>
+                      {coinEventLabel(event, username!)}
+                    </span>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        color: positive ? 'var(--green)' : 'var(--red)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {positive ? '+' : ''}{delta} 🪙
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', flexShrink: 0, minWidth: '4rem', textAlign: 'right' }}>
+                      {formatRelative(event.createdAt)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {coinFeed?.hasMore && (
+            <button
+              className="btn-secondary"
+              style={{ marginTop: '0.75rem', width: '100%' }}
+              onClick={() => setCoinPage((p) => p + 1)}
+            >
+              Cargar más
+            </button>
+          )}
+        </div>
 
       </main>
     </div>
