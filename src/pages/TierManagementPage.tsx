@@ -9,16 +9,10 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import PageHeader from '../components/PageHeader';
+import { spriteUrl } from '../utils/sprites';
+import { tierRank } from '../utils/tiers';
 
 const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
-
-function spriteUrl(pokemonId: number) {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
-}
-
-function tierRank(t: Tier): number {
-  return { S: 0, A: 1, B: 2, C: 3, D: 4 }[t];
-}
 
 // ── Tier color helpers ────────────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-type Tier = 'S' | 'A' | 'B' | 'C' | 'D';
+import type { Tier } from '../api/pokemons';
 
 interface TierBadgeProps {
   tier?: Tier | null;

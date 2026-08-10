@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { apiClient } from './client';
 
 export interface Pokemon {
@@ -112,8 +113,14 @@ export const getDraftStatus = async (leagueId: string): Promise<DraftStatus | nu
   try {
     const { data } = await apiClient.get<DraftStatus>(`/v1/leagues/${leagueId}/draft`);
     return data;
-  } catch {
-    return null;
+  } catch (err) {
+    // El backend responde 409 (no 404) cuando la liga todavía no tiene draft —
+    // ver GetDraftStatusCommandHandler/ApiExceptionHandler. Cualquier otro
+    // error (red, 401, 500...) debe propagar para que React Query lo marque isError.
+    if (axios.isAxiosError(err) && err.response?.status === 409) {
+      return null;
+    }
+    throw err;
   }
 };
 
