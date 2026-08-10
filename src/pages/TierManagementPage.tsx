@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getClosedList, getDraftStatus, assignTier } from '../api/pokemons';
 import type { ClosedListEntry, Tier, TierChange } from '../api/pokemons';
@@ -194,12 +194,6 @@ export default function TierManagementPage() {
 
   const isDraftCompleted = draft?.status === 'COMPLETED';
 
-  // Redirect if not admin (once data is loaded)
-  if (league && !isAdmin) {
-    navigate(`/leagues/${leagueId}`);
-    return null;
-  }
-
   const { mutate: doAdjust, isPending: adjusting } = useMutation({
     mutationFn: ({ entryId, tier }: { entryId: string; tier: Tier }) =>
       assignTier(leagueId!, entryId, tier),
@@ -211,6 +205,11 @@ export default function TierManagementPage() {
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al ajustar tier')),
   });
+
+  // Redirect if not admin (once data is loaded) — tras todos los hooks, nunca antes.
+  if (league && !isAdmin) {
+    return <Navigate to={`/leagues/${leagueId}`} replace />;
+  }
 
   const countByTier = (t: Tier) => closedList.filter((e) => e.tier === t).length;
   const tabEntries = closedList.filter((e) => e.tier === activeTab);

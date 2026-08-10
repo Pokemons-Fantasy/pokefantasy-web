@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getActivityFeed } from '../api/activity';
@@ -231,21 +231,22 @@ export default function ActivityPage() {
   });
 
   // Accumulate events when new pages load
-  if (data) {
-    const incomingIds = new Set(data.events.map((e) => e.id));
-    const dedupedExisting = allEvents.filter((e) => !incomingIds.has(e.id));
+  useEffect(() => {
+    if (!data) return;
+    setAllEvents((prev) => {
+      const incomingIds = new Set(data.events.map((e) => e.id));
+      const dedupedExisting = prev.filter((e) => !incomingIds.has(e.id));
 
-    // Only add page-0 events at the front (auto-refresh), others at the end
-    const merged =
-      page === 0
-        ? [...data.events, ...dedupedExisting.filter((e) => !data.events.some((d) => d.id === e.id))]
-        : [...dedupedExisting, ...data.events];
+      // Only add page-0 events at the front (auto-refresh), others at the end
+      const merged =
+        page === 0
+          ? [...data.events, ...dedupedExisting.filter((e) => !data.events.some((d) => d.id === e.id))]
+          : [...dedupedExisting, ...data.events];
 
-    if (merged.length !== allEvents.length || merged.some((e, i) => e.id !== allEvents[i]?.id)) {
-      // Schedule update outside render
-      setTimeout(() => setAllEvents(merged), 0);
-    }
-  }
+      const unchanged = merged.length === prev.length && merged.every((e, i) => e.id === prev[i]?.id);
+      return unchanged ? prev : merged;
+    });
+  }, [data, page]);
 
   const handleLoadMore = useCallback(() => {
     setPage((p) => p + 1);

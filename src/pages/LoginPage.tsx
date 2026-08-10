@@ -1,21 +1,31 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, type Location } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
+
+interface LocationState {
+  from?: Location;
+}
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const setAuth = useAuthStore((s) => s.setAuth);
+  const addToast = useToastStore((s) => s.addToast);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as LocationState | null)?.from;
 
   const mutation = useMutation({
     mutationFn: () => login(username, password),
     onSuccess: ({ username: loggedUsername }) => {
       setAuth(loggedUsername);
-      navigate('/');
+      navigate(from ?? '/', { replace: true });
     },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Usuario o contraseña incorrectos')),
   });
 
   return (
@@ -45,7 +55,6 @@ export default function LoginPage() {
             {mutation.isPending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-        {mutation.isError && <p className="error">Usuario o contraseña incorrectos</p>}
         <p className="auth-footer">¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
       </div>
     </div>
