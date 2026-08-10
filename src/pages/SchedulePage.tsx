@@ -70,14 +70,14 @@ export default function SchedulePage() {
     return `Jornada ${j.roundNumber} · ${vuelta}`;
   }
 
-  /** Compute swap window status for a jornada client-side. */
+  /** Swap window status for the active jornada — el backend es la única fuente de verdad
+   *  para "abierto/cerrado" (schedule.swapWindowOpen); aquí solo se resuelven los casos
+   *  que ese booleano no cubre (jornada ya completada / sin fecha de swap). */
   function swapWindowStatus(j: JornadaDto): 'open' | 'closed' | 'no-dates' | 'completed' {
     const allDone = j.matches.every((m) => m.status === 'COMPLETED');
     if (allDone) return 'completed';
     if (!j.swapDeadline) return 'no-dates';
-    const now = new Date();
-    const deadline = new Date(j.swapDeadline);
-    return now < deadline ? 'open' : 'closed';
+    return schedule?.swapWindowOpen ? 'open' : 'closed';
   }
 
   // Active jornada = first with at least one PENDING match

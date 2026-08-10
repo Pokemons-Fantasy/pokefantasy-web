@@ -2,15 +2,19 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { register } from '../api/auth';
+import { useToastStore } from '../store/toastStore';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const addToast = useToastStore((s) => s.addToast);
 
   const mutation = useMutation({
     mutationFn: () => register(username, password),
     onSuccess: () => navigate('/login'),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'El usuario ya existe o ha habido un error')),
   });
 
   return (
@@ -40,7 +44,6 @@ export default function RegisterPage() {
             {mutation.isPending ? 'Creando cuenta...' : 'Registrarse'}
           </button>
         </form>
-        {mutation.isError && <p className="error">El usuario ya existe o ha habido un error</p>}
         {mutation.isSuccess && <p className="success">¡Cuenta creada! Redirigiendo...</p>}
         <p className="auth-footer">¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
       </div>
