@@ -17,6 +17,7 @@ import ProposeTradeModal from '../components/ProposeTradeModal';
 import TradesModal from '../components/TradesModal';
 import { spriteUrl } from '../utils/sprites';
 import { priceForTier } from '../utils/tiers';
+import { deriveTeams } from '../utils/teams';
 import BenchActionModal from '../components/teams/BenchActionModal';
 import SwapModal from '../components/teams/SwapModal';
 import RivalActionModal from '../components/teams/RivalActionModal';
@@ -60,6 +61,7 @@ export default function TeamsPage() {
   const location = useLocation();
   useEffect(() => {
     const navState = location.state as { openTrades?: boolean } | null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pendiente, roadmap-frontend.md Fase 3
     if (navState?.openTrades) setShowTradesModal(true);
   }, [location.state]);
 
@@ -229,14 +231,7 @@ export default function TeamsPage() {
 
   // ── Data ────────────────────────────────────────────────────────────────────
 
-  const teams = draft
-    ? draft.turnOrder.map((player) => ({
-        username: player,
-        picks: (draft.picks ?? [])
-          .filter((p) => p.username === player)
-          .sort((a, b) => a.pokemonId - b.pokemonId),
-      }))
-    : [];
+  const teams = deriveTeams(draft);
 
   const myTeam = teams.find((t) => t.username === username);
   const isDraftCompleted = draft?.status === 'COMPLETED';

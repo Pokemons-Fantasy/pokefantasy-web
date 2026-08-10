@@ -46,6 +46,7 @@ export default function LeagueDetailPage() {
 
   useEffect(() => {
     if (league && turnOrder.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sin acción inmediata (roadmap-frontend.md)
       setTurnOrder(league.members.map((m) => m.username));
     }
   }, [league]);

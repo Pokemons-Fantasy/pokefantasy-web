@@ -230,9 +230,12 @@ export default function ActivityPage() {
     refetchInterval: 30_000,
   });
 
-  // Accumulate events when new pages load
+  // Accumulate events when new pages load. Necesita useEffect+setState real: acumula
+  // resultados de MULTIPLES fetches (paginación + auto-refresh de page 0) a lo largo del
+  // tiempo, algo que un `select` de React Query no puede hacer (solo ve el resultado actual).
   useEffect(() => {
     if (!data) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAllEvents((prev) => {
       const incomingIds = new Set(data.events.map((e) => e.id));
       const dedupedExisting = prev.filter((e) => !incomingIds.has(e.id));
@@ -257,6 +260,7 @@ export default function ActivityPage() {
   const isFirstLoad = isLoading && allEvents.length === 0;
 
   // Events from the last 5 minutes count as "recent"
+  // eslint-disable-next-line react-hooks/purity -- pendiente, ver roadmap-frontend.md Fase 1
   const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 
   return (

@@ -107,7 +107,7 @@ export function useNotificationSse() {
                 );
               }
             }
-          } catch (_) {
+          } catch {
             // network unavailable — retry next tick
           }
         }, 120_000);

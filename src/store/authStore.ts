@@ -15,7 +15,7 @@ export const useAuthStore = create<AuthState>()(
       username: null,
       setAuth: (username) => set({ username }),
       logout: async () => {
-        try { await apiLogout(); } catch (_) { /* cookie cleared server-side si puede */ }
+        try { await apiLogout(); } catch { /* cookie cleared server-side si puede */ }
         set({ username: null });
       },
       isAuthenticated: () => !!get().username,

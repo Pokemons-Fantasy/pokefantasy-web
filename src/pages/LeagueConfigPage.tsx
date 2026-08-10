@@ -62,9 +62,11 @@ export default function LeagueConfigPage() {
     enabled: !!leagueId,
   });
 
-  // Sync local form state when settings load
+  // Sync local form state when settings load. Se resuelve al colapsar estos 19 useState
+  // en un único objeto (roadmap-frontend.md Fase 3).
   useEffect(() => {
     if (settings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCoinsPerWin(settings.coinsPerWin);
       setCoinsPerLoss(settings.coinsPerLoss);
       setPriceTierS(settings.priceTierS ?? 0);

@@ -111,6 +111,7 @@ export default function DraftPage() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pendiente, ver roadmap-frontend.md Fase 1
     if (!draft?.turnDeadline) { setSecondsLeft(null); return; }
     const update = () => {
       const diff = Math.ceil((new Date(draft.turnDeadline!).getTime() - Date.now()) / 1000);
