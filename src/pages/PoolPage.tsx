@@ -16,6 +16,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import PageHeader from '../components/PageHeader';
+import { spriteUrl } from '../utils/sprites';
 
 const MAX_NOMINATIONS = 16;
 
@@ -174,7 +175,7 @@ export default function PoolPage() {
                   : 'Clic para nominar'
                 }
               >
-                <img src={pokemon.spriteUrl} alt={pokemon.name} className="pokemon-sprite" />
+                <img src={spriteUrl(pokemon.id)} alt={pokemon.name} className="pokemon-sprite" />
                 <span className="pokemon-name">{pokemon.name}</span>
                 {isNominated && <TierBadge tier={tierByName.get(pokemon.name)} />}
                 {isOwn && <span className="pokemon-tag pokemon-tag-own">Tuyo</span>}

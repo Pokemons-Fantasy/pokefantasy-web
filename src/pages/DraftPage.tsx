@@ -12,6 +12,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { spriteUrl } from '../utils/sprites';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -233,7 +234,7 @@ export default function DraftPage() {
                     className={`pokemon-card ${picking ? 'nominated' : ''}`}
                     onClick={() => { if (!picking) setPendingPick(entry); }}
                   >
-                    <img src={entry.sprite} alt={entry.pokemonName} className="pokemon-sprite" />
+                    <img src={spriteUrl(entry.pokemonId)} alt={entry.pokemonName} className="pokemon-sprite" />
                     <span className="pokemon-name">{entry.pokemonName}</span>
                     <TierBadge tier={entry.tier} />
                     <button
