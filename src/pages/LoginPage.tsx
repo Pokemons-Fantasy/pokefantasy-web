@@ -36,14 +36,18 @@ export default function LoginPage() {
           <p>Inicia sesión para continuar</p>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+          <label htmlFor="login-username" className="sr-only">Usuario</label>
           <input
+            id="login-username"
             placeholder="Usuario"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             autoComplete="username"
           />
+          <label htmlFor="login-password" className="sr-only">Contraseña</label>
           <input
+            id="login-password"
             type="password"
             placeholder="Contraseña"
             value={password}

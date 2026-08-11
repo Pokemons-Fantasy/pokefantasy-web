@@ -82,6 +82,7 @@ export default function BenchSection({
                     className="pokemon-info-btn"
                     onClick={(e) => { e.stopPropagation(); onInfo(entryByName.get(entry.pokemonName) ?? null); }}
                     title="Ver detalles"
+                    aria-label="Ver detalles"
                   >
                     i
                   </button>
