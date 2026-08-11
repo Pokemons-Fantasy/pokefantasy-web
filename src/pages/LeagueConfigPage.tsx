@@ -13,6 +13,12 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PageHeader from '../components/PageHeader';
+import GeneralSettingsSection from '../components/leagueConfig/GeneralSettingsSection';
+import TierPricesSection from '../components/leagueConfig/TierPricesSection';
+import TierDistributionSection from '../components/leagueConfig/TierDistributionSection';
+import ScheduleSection from '../components/leagueConfig/ScheduleSection';
+import TimeWindowsSection from '../components/leagueConfig/TimeWindowsSection';
+import PendingChangesSidebar from '../components/leagueConfig/PendingChangesSidebar';
 
 const DEFAULT_SETTINGS: LeagueSettings = {
   coinsPerWin: 100,
@@ -129,6 +135,7 @@ export default function LeagueConfigPage() {
   );
   const draftInProgress = draft?.status === 'IN_PROGRESS';
   const canEdit = isAdmin && !draftInProgress;
+  const fieldsDisabled = !canEdit;
 
   const tierSum = form.tierPctS + form.tierPctA + form.tierPctB + form.tierPctC + form.tierPctD;
   const tierSumOk = tierSum === 100;
@@ -269,324 +276,29 @@ export default function LeagueConfigPage() {
                 className="config-form animate-in"
                 style={{ maxWidth: 'none' }}
               >
-                <div className="config-field">
-                  <label className="section-label" htmlFor="coinsPerWin">
-                    Monedas por victoria
-                  </label>
-                  <input
-                    id="coinsPerWin"
-                    className="search-input"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={form.coinsPerWin}
-                    onChange={(e) => setField('coinsPerWin', Number(e.target.value))}
-                    disabled={!canEdit || saving}
-                  />
-                  <span className="config-hint">Lo que ganan los jugadores al ganar un combate.</span>
-                </div>
-
-                <div className="config-field">
-                  <label className="section-label" htmlFor="coinsPerLoss">
-                    Monedas por derrota
-                  </label>
-                  <input
-                    id="coinsPerLoss"
-                    className="search-input"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={form.coinsPerLoss}
-                    onChange={(e) => setField('coinsPerLoss', Number(e.target.value))}
-                    disabled={!canEdit || saving}
-                  />
-                  <span className="config-hint">Premio de consolación tras una derrota.</span>
-                </div>
-
-                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-                <p className="section-label" style={{ marginBottom: '1rem' }}>Precio por tier (monedas)</p>
-                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
-                  Coste en monedas de elegir un Pokémon de cada categoría.
-                </span>
-
-                {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                  const key = `priceTier${tier}` as const;
-                  return (
-                    <div key={tier} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
-                        {tier}
-                      </span>
-                      <input
-                        className="search-input"
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={form[key]}
-                        onChange={(e) => setField(key, Number(e.target.value))}
-                        disabled={!canEdit || saving}
-                        style={{ flex: 1 }}
-                      />
-                    </div>
-                  );
-                })}
-
-                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-                <p className="section-label" style={{ marginBottom: '0.35rem' }}>Distribución de tiers al inicio del draft</p>
-                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
-                  Porcentaje del pool que se asigna a cada tier. La suma debe ser exactamente 100%.
-                  Se aplica cuando se inicia el draft.
-                </span>
-
-                {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                  const key = `tierPct${tier}` as const;
-                  return (
-                    <div key={`pct-${tier}`} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
-                        {tier}
-                      </span>
-                      <input
-                        className="search-input"
-                        type="number"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={form[key]}
-                        onChange={(e) => setField(key, Number(e.target.value))}
-                        disabled={!canEdit || saving}
-                        style={{ flex: 1 }}
-                      />
-                      <span style={{ color: 'var(--text-3)', fontSize: '0.85rem', minWidth: 20 }}>%</span>
-                    </div>
-                  );
-                })}
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem',
-                  marginBottom: '0.25rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: tierSumOk ? 'var(--green)' : 'var(--red)',
-                }}>
-                  {tierSumOk ? '✓' : '✗'} Suma: {tierSum}% {tierSumOk ? '— correcto' : '(debe ser 100%)'}
-                </div>
-
-                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-                <p className="section-label" style={{ marginBottom: '1rem' }}>Calendario de temporada</p>
-
-                <div className="config-field">
-                  <label className="section-label" htmlFor="seasonStartDate">
-                    Fecha del primer fin de semana
-                  </label>
-                  <input
-                    id="seasonStartDate"
-                    className="search-input"
-                    type="date"
-                    value={form.seasonStartDate}
-                    onChange={(e) => setField('seasonStartDate', e.target.value)}
-                    disabled={!canEdit || saving}
-                  />
-                  <span className="config-hint">
-                    Sábado de la jornada 1. El sistema asigna automáticamente una semana por jornada.
-                  </span>
-                </div>
-
-                <div className="config-field">
-                  <label className="section-label" htmlFor="maxTeamSize">
-                    Tamaño máximo del equipo
-                  </label>
-                  <input
-                    id="maxTeamSize"
-                    className="search-input"
-                    type="number"
-                    min={10}
-                    step={1}
-                    value={form.maxTeamSize}
-                    onChange={(e) => setField('maxTeamSize', Number(e.target.value))}
-                    disabled={!canEdit || saving}
-                  />
-                  <span className="config-hint">
-                    Máximo de Pokémon que puede tener un jugador post-draft (mínimo 10, por defecto 20).
-                  </span>
-                </div>
-
-                <div className="config-field">
-                  <label className="section-label" htmlFor="turnTimerSeconds">
-                    Tiempo por turno (segundos, 0 = sin límite)
-                  </label>
-                  <input
-                    id="turnTimerSeconds"
-                    className="search-input"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={form.turnTimerSeconds}
-                    onChange={(e) => setField('turnTimerSeconds', Number(e.target.value))}
-                    disabled={!canEdit || saving}
-                  />
-                  <span className="config-hint">
-                    Si el jugador en turno no elige en este tiempo, se asigna un Pokémon aleatorio. 0 desactiva el temporizador.
-                  </span>
-                </div>
-
-                <hr className="divider" style={{ margin: '1.5rem 0 1rem' }} />
-                <p className="section-label" style={{ marginBottom: '0.35rem' }}>Ventanas de tiempo</p>
-                <span className="config-hint" style={{ marginBottom: '1rem', display: 'block' }}>
-                  Día y hora en que cierra cada ventana dentro de la semana de jornada.
-                </span>
-
-                <div className="config-field">
-                  <label className="section-label">Cierre ventana de robos</label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <select
-                      className="search-input"
-                      value={form.stealWindowCloseDay}
-                      onChange={(e) => setField('stealWindowCloseDay', Number(e.target.value))}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    >
-                      {[
-                        { value: 1, label: 'Lunes' },
-                        { value: 2, label: 'Martes' },
-                        { value: 3, label: 'Miércoles' },
-                        { value: 4, label: 'Jueves' },
-                        { value: 5, label: 'Viernes' },
-                        { value: 6, label: 'Sábado' },
-                        { value: 7, label: 'Domingo' },
-                      ].map((d) => (
-                        <option key={d.value} value={d.value}>{d.label}</option>
-                      ))}
-                    </select>
-                    <input
-                      className="search-input"
-                      type="time"
-                      value={form.stealWindowCloseTime}
-                      onChange={(e) => setField('stealWindowCloseTime', e.target.value)}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    />
-                  </div>
-                  <span className="config-hint">Por defecto: jueves 23:59</span>
-                </div>
-
-                <div className="config-field">
-                  <label className="section-label">Cierre ventana de intercambios</label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <select
-                      className="search-input"
-                      value={form.swapWindowCloseDay}
-                      onChange={(e) => setField('swapWindowCloseDay', Number(e.target.value))}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    >
-                      {[
-                        { value: 1, label: 'Lunes' },
-                        { value: 2, label: 'Martes' },
-                        { value: 3, label: 'Miércoles' },
-                        { value: 4, label: 'Jueves' },
-                        { value: 5, label: 'Viernes' },
-                        { value: 6, label: 'Sábado' },
-                        { value: 7, label: 'Domingo' },
-                      ].map((d) => (
-                        <option key={d.value} value={d.value}>{d.label}</option>
-                      ))}
-                    </select>
-                    <input
-                      className="search-input"
-                      type="time"
-                      value={form.swapWindowCloseTime}
-                      onChange={(e) => setField('swapWindowCloseTime', e.target.value)}
-                      disabled={!canEdit || saving}
-                      style={{ flex: 1 }}
-                    />
-                  </div>
-                  <span className="config-hint">Por defecto: viernes 16:00</span>
-                </div>
+                <GeneralSettingsSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+                <TierPricesSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+                <TierDistributionSection
+                  form={form}
+                  setField={setField}
+                  disabled={fieldsDisabled || saving}
+                  tierSum={tierSum}
+                  tierSumOk={tierSumOk}
+                />
+                <ScheduleSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+                <TimeWindowsSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
               </form>
 
               {/* Right column — sticky sidebar */}
-              <div className="settings-sidebar">
-                {/* Unsaved changes indicator */}
-                {hasChanges && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.6rem 0.9rem',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(251,191,36,0.07)',
-                    border: '1px solid rgba(251,191,36,0.3)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    color: '#fbbf24',
-                  }}>
-                    <span style={{ fontSize: '0.6rem' }}>●</span>
-                    {pendingChanges.length} cambio{pendingChanges.length !== 1 ? 's' : ''} sin guardar
-                  </div>
-                )}
-
-                {/* Pending changes list */}
-                {pendingChanges.length > 0 && (
-                  <div style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius)',
-                    padding: '0.75rem 1rem',
-                  }}>
-                    <p className="section-label" style={{ marginBottom: '0.6rem' }}>Cambios pendientes</p>
-                    {pendingChanges.map((c) => (
-                      <div
-                        key={c.label}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
-                          gap: '0.5rem',
-                          fontSize: '0.78rem',
-                          marginBottom: '0.3rem',
-                        }}
-                      >
-                        <span style={{ color: 'var(--text-2)' }}>{c.label}</span>
-                        <span style={{ whiteSpace: 'nowrap', color: 'var(--text-3)', fontFamily: 'var(--font-mono, monospace)' }}>
-                          {c.old} → <span style={{ color: 'var(--accent)' }}>{c.new}</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Error / success */}
-                {error && (
-                  <p className="error" style={{ margin: 0 }}>{error}</p>
-                )}
-                {savedAt && !hasChanges && !error && (
-                  <p className="success" style={{ margin: 0 }}>✓ Cambios guardados</p>
-                )}
-
-                {/* Action buttons */}
-                {canEdit && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <button
-                      type="submit"
-                      form="settings-form"
-                      className="btn-primary"
-                      disabled={saving || !tierSumOk}
-                    >
-                      {saving ? 'Guardando...' : 'Guardar cambios'}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-ghost"
-                      onClick={handleCancel}
-                      disabled={saving}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                )}
-              </div>
+              <PendingChangesSidebar
+                pendingChanges={pendingChanges}
+                error={error}
+                savedAt={savedAt}
+                canEdit={canEdit}
+                saving={saving}
+                tierSumOk={tierSumOk}
+                onCancel={handleCancel}
+              />
 
             </div>
           </>
