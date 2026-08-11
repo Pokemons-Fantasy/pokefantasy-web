@@ -14,6 +14,77 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PageHeader from '../components/PageHeader';
 
+const DEFAULT_SETTINGS: LeagueSettings = {
+  coinsPerWin: 100,
+  coinsPerLoss: 50,
+  priceTierS: 0,
+  priceTierA: 0,
+  priceTierB: 0,
+  priceTierC: 0,
+  priceTierD: 0,
+  seasonStartDate: '',
+  maxTeamSize: 20,
+  tierPctS: 20,
+  tierPctA: 20,
+  tierPctB: 20,
+  tierPctC: 20,
+  tierPctD: 20,
+  turnTimerSeconds: 0,
+  stealWindowCloseDay: 4,
+  stealWindowCloseTime: '23:59',
+  swapWindowCloseDay: 5,
+  swapWindowCloseTime: '16:00',
+};
+
+/** Fusiona lo que devuelve el backend con los defaults de UI, campo a campo. */
+function withDefaults(settings: LeagueSettings | undefined): LeagueSettings {
+  return {
+    coinsPerWin: settings?.coinsPerWin ?? DEFAULT_SETTINGS.coinsPerWin,
+    coinsPerLoss: settings?.coinsPerLoss ?? DEFAULT_SETTINGS.coinsPerLoss,
+    priceTierS: settings?.priceTierS ?? DEFAULT_SETTINGS.priceTierS,
+    priceTierA: settings?.priceTierA ?? DEFAULT_SETTINGS.priceTierA,
+    priceTierB: settings?.priceTierB ?? DEFAULT_SETTINGS.priceTierB,
+    priceTierC: settings?.priceTierC ?? DEFAULT_SETTINGS.priceTierC,
+    priceTierD: settings?.priceTierD ?? DEFAULT_SETTINGS.priceTierD,
+    seasonStartDate: settings?.seasonStartDate ?? DEFAULT_SETTINGS.seasonStartDate,
+    maxTeamSize: settings?.maxTeamSize ?? DEFAULT_SETTINGS.maxTeamSize,
+    tierPctS: settings?.tierPctS ?? DEFAULT_SETTINGS.tierPctS,
+    tierPctA: settings?.tierPctA ?? DEFAULT_SETTINGS.tierPctA,
+    tierPctB: settings?.tierPctB ?? DEFAULT_SETTINGS.tierPctB,
+    tierPctC: settings?.tierPctC ?? DEFAULT_SETTINGS.tierPctC,
+    tierPctD: settings?.tierPctD ?? DEFAULT_SETTINGS.tierPctD,
+    turnTimerSeconds: settings?.turnTimerSeconds ?? DEFAULT_SETTINGS.turnTimerSeconds,
+    stealWindowCloseDay: settings?.stealWindowCloseDay ?? DEFAULT_SETTINGS.stealWindowCloseDay,
+    stealWindowCloseTime: settings?.stealWindowCloseTime ?? DEFAULT_SETTINGS.stealWindowCloseTime,
+    swapWindowCloseDay: settings?.swapWindowCloseDay ?? DEFAULT_SETTINGS.swapWindowCloseDay,
+    swapWindowCloseTime: settings?.swapWindowCloseTime ?? DEFAULT_SETTINGS.swapWindowCloseTime,
+  };
+}
+
+const FIELD_LABELS: Record<keyof LeagueSettings, string> = {
+  coinsPerWin: 'Monedas por victoria',
+  coinsPerLoss: 'Monedas por derrota',
+  priceTierS: 'Precio tier S',
+  priceTierA: 'Precio tier A',
+  priceTierB: 'Precio tier B',
+  priceTierC: 'Precio tier C',
+  priceTierD: 'Precio tier D',
+  seasonStartDate: 'Fecha inicio temporada',
+  maxTeamSize: 'Tamaño máx. equipo',
+  tierPctS: '% tier S',
+  tierPctA: '% tier A',
+  tierPctB: '% tier B',
+  tierPctC: '% tier C',
+  tierPctD: '% tier D',
+  turnTimerSeconds: 'Tiempo por turno (s)',
+  stealWindowCloseDay: 'Día cierre ventana robo',
+  stealWindowCloseTime: 'Hora cierre robo',
+  swapWindowCloseDay: 'Día cierre ventana swap',
+  swapWindowCloseTime: 'Hora cierre swap',
+};
+
+const FIELD_KEYS = Object.keys(FIELD_LABELS) as (keyof LeagueSettings)[];
+
 export default function LeagueConfigPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
@@ -21,25 +92,7 @@ export default function LeagueConfigPage() {
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
 
-  const [coinsPerWin, setCoinsPerWin] = useState<number>(100);
-  const [coinsPerLoss, setCoinsPerLoss] = useState<number>(50);
-  const [priceTierS, setPriceTierS] = useState<number>(0);
-  const [priceTierA, setPriceTierA] = useState<number>(0);
-  const [priceTierB, setPriceTierB] = useState<number>(0);
-  const [priceTierC, setPriceTierC] = useState<number>(0);
-  const [priceTierD, setPriceTierD] = useState<number>(0);
-  const [seasonStartDate, setSeasonStartDate] = useState<string>('');
-  const [maxTeamSize, setMaxTeamSize] = useState<number>(20);
-  const [tierPctS, setTierPctS] = useState<number>(20);
-  const [tierPctA, setTierPctA] = useState<number>(20);
-  const [tierPctB, setTierPctB] = useState<number>(20);
-  const [tierPctC, setTierPctC] = useState<number>(20);
-  const [tierPctD, setTierPctD] = useState<number>(20);
-  const [turnTimerSeconds, setTurnTimerSeconds] = useState<number>(0);
-  const [stealWindowCloseDay, setStealWindowCloseDay] = useState<number>(4);
-  const [stealWindowCloseTime, setStealWindowCloseTime] = useState<string>('23:59');
-  const [swapWindowCloseDay, setSwapWindowCloseDay] = useState<number>(5);
-  const [swapWindowCloseTime, setSwapWindowCloseTime] = useState<string>('16:00');
+  const [form, setForm] = useState<LeagueSettings>(DEFAULT_SETTINGS);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
@@ -62,30 +115,12 @@ export default function LeagueConfigPage() {
     enabled: !!leagueId,
   });
 
-  // Sync local form state when settings load. Se resuelve al colapsar estos 19 useState
-  // en un único objeto (roadmap-frontend.md Fase 3).
+  // Sync local form state when settings load — estado editable derivado de datos async,
+  // no hay alternativa pura (settings llega de useQuery).
   useEffect(() => {
     if (settings) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCoinsPerWin(settings.coinsPerWin);
-      setCoinsPerLoss(settings.coinsPerLoss);
-      setPriceTierS(settings.priceTierS ?? 0);
-      setPriceTierA(settings.priceTierA ?? 0);
-      setPriceTierB(settings.priceTierB ?? 0);
-      setPriceTierC(settings.priceTierC ?? 0);
-      setPriceTierD(settings.priceTierD ?? 0);
-      setSeasonStartDate(settings.seasonStartDate ?? '');
-      setMaxTeamSize(settings.maxTeamSize ?? 20);
-      setTierPctS(settings.tierPctS ?? 20);
-      setTierPctA(settings.tierPctA ?? 20);
-      setTierPctB(settings.tierPctB ?? 20);
-      setTierPctC(settings.tierPctC ?? 20);
-      setTierPctD(settings.tierPctD ?? 20);
-      setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
-      setStealWindowCloseDay(settings.stealWindowCloseDay ?? 4);
-      setStealWindowCloseTime(settings.stealWindowCloseTime ?? '23:59');
-      setSwapWindowCloseDay(settings.swapWindowCloseDay ?? 5);
-      setSwapWindowCloseTime(settings.swapWindowCloseTime ?? '16:00');
+      setForm(withDefaults(settings));
     }
   }, [settings]);
 
@@ -95,63 +130,26 @@ export default function LeagueConfigPage() {
   const draftInProgress = draft?.status === 'IN_PROGRESS';
   const canEdit = isAdmin && !draftInProgress;
 
-  const tierSum = tierPctS + tierPctA + tierPctB + tierPctC + tierPctD;
+  const tierSum = form.tierPctS + form.tierPctA + form.tierPctB + form.tierPctC + form.tierPctD;
   const tierSumOk = tierSum === 100;
+
+  function setField<K extends keyof LeagueSettings>(key: K, value: LeagueSettings[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
 
   // ── Pending changes tracking ─────────────────────────────────────────────────
   const pendingChanges = useMemo(() => {
     if (!settings) return [];
-    type NumField = {
-      key: keyof LeagueSettings;
-      label: string;
-      current: number;
-      saved: number | undefined;
-    };
-    const numFields: NumField[] = [
-      { key: 'coinsPerWin',  label: 'Monedas por victoria', current: coinsPerWin,  saved: settings.coinsPerWin },
-      { key: 'coinsPerLoss', label: 'Monedas por derrota',  current: coinsPerLoss, saved: settings.coinsPerLoss },
-      { key: 'priceTierS',   label: 'Precio tier S',        current: priceTierS,   saved: settings.priceTierS ?? 0 },
-      { key: 'priceTierA',   label: 'Precio tier A',        current: priceTierA,   saved: settings.priceTierA ?? 0 },
-      { key: 'priceTierB',   label: 'Precio tier B',        current: priceTierB,   saved: settings.priceTierB ?? 0 },
-      { key: 'priceTierC',   label: 'Precio tier C',        current: priceTierC,   saved: settings.priceTierC ?? 0 },
-      { key: 'priceTierD',   label: 'Precio tier D',        current: priceTierD,   saved: settings.priceTierD ?? 0 },
-      { key: 'tierPctS',     label: '% tier S',             current: tierPctS,     saved: settings.tierPctS ?? 20 },
-      { key: 'tierPctA',     label: '% tier A',             current: tierPctA,     saved: settings.tierPctA ?? 20 },
-      { key: 'tierPctB',     label: '% tier B',             current: tierPctB,     saved: settings.tierPctB ?? 20 },
-      { key: 'tierPctC',     label: '% tier C',             current: tierPctC,     saved: settings.tierPctC ?? 20 },
-      { key: 'tierPctD',     label: '% tier D',             current: tierPctD,     saved: settings.tierPctD ?? 20 },
-      { key: 'maxTeamSize',           label: 'Tamaño max equipo',          current: maxTeamSize,          saved: settings.maxTeamSize ?? 20 },
-      { key: 'turnTimerSeconds',      label: 'Tiempo por turno (s)',       current: turnTimerSeconds,     saved: settings.turnTimerSeconds ?? 0 },
-      { key: 'stealWindowCloseDay',   label: 'Día cierre ventana robo',    current: stealWindowCloseDay,  saved: settings.stealWindowCloseDay ?? 4 },
-      { key: 'swapWindowCloseDay',    label: 'Día cierre ventana swap',    current: swapWindowCloseDay,   saved: settings.swapWindowCloseDay ?? 5 },
-    ];
-
-    const changes: Array<{ label: string; old: number | string; new: number | string }> = numFields
-      .filter((f) => f.current !== f.saved)
-      .map((f) => ({ label: f.label, old: f.saved ?? 0, new: f.current }));
-
-    const savedDate = settings.seasonStartDate ?? '';
-    if (seasonStartDate !== savedDate) {
-      changes.push({ label: 'Fecha inicio temporada', old: savedDate || '—', new: seasonStartDate || '—' });
-    }
-
-    const savedStealTime = settings.stealWindowCloseTime ?? '23:59';
-    if (stealWindowCloseTime !== savedStealTime) {
-      changes.push({ label: 'Hora cierre robo', old: savedStealTime, new: stealWindowCloseTime });
-    }
-    const savedSwapTime = settings.swapWindowCloseTime ?? '16:00';
-    if (swapWindowCloseTime !== savedSwapTime) {
-      changes.push({ label: 'Hora cierre swap', old: savedSwapTime, new: swapWindowCloseTime });
-    }
-
-    return changes;
-  }, [
-    settings, coinsPerWin, coinsPerLoss,
-    priceTierS, priceTierA, priceTierB, priceTierC, priceTierD,
-    tierPctS, tierPctA, tierPctB, tierPctC, tierPctD,
-    maxTeamSize, seasonStartDate, turnTimerSeconds,
-    stealWindowCloseDay, stealWindowCloseTime, swapWindowCloseDay, swapWindowCloseTime,
-  ]);
+    const saved = withDefaults(settings);
+    return FIELD_KEYS.filter((key) => form[key] !== saved[key]).map((key) => {
+      const oldVal = saved[key];
+      const newVal = form[key];
+      if (key === 'seasonStartDate') {
+        return { label: FIELD_LABELS[key], old: oldVal || '—', new: newVal || '—' };
+      }
+      return { label: FIELD_LABELS[key], old: oldVal ?? 0, new: newVal ?? 0 };
+    });
+  }, [settings, form]);
 
   const hasChanges = pendingChanges.length > 0;
 
@@ -192,15 +190,15 @@ export default function LeagueConfigPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (coinsPerWin < 0 || coinsPerLoss < 0) {
+    if (form.coinsPerWin < 0 || form.coinsPerLoss < 0) {
       setError('Los valores deben ser >= 0');
       return;
     }
-    if (priceTierS < 0 || priceTierA < 0 || priceTierB < 0 || priceTierC < 0 || priceTierD < 0) {
+    if (form.priceTierS < 0 || form.priceTierA < 0 || form.priceTierB < 0 || form.priceTierC < 0 || form.priceTierD < 0) {
       setError('Los precios por tier deben ser >= 0');
       return;
     }
-    if (maxTeamSize < 10) {
+    if ((form.maxTeamSize ?? 0) < 10) {
       setError('El tamaño máximo del equipo debe ser >= 10');
       return;
     }
@@ -208,50 +206,12 @@ export default function LeagueConfigPage() {
       setError(`Los porcentajes de tier deben sumar 100 (suma actual: ${tierSum}%)`);
       return;
     }
-    save({
-      coinsPerWin,
-      coinsPerLoss,
-      priceTierS,
-      priceTierA,
-      priceTierB,
-      priceTierC,
-      priceTierD,
-      seasonStartDate: seasonStartDate || undefined,
-      maxTeamSize,
-      tierPctS,
-      tierPctA,
-      tierPctB,
-      tierPctC,
-      tierPctD,
-      turnTimerSeconds,
-      stealWindowCloseDay,
-      stealWindowCloseTime,
-      swapWindowCloseDay,
-      swapWindowCloseTime,
-    });
+    save({ ...form, seasonStartDate: form.seasonStartDate || undefined });
   };
 
   const handleCancel = () => {
     if (settings) {
-      setCoinsPerWin(settings.coinsPerWin);
-      setCoinsPerLoss(settings.coinsPerLoss);
-      setPriceTierS(settings.priceTierS ?? 0);
-      setPriceTierA(settings.priceTierA ?? 0);
-      setPriceTierB(settings.priceTierB ?? 0);
-      setPriceTierC(settings.priceTierC ?? 0);
-      setPriceTierD(settings.priceTierD ?? 0);
-      setSeasonStartDate(settings.seasonStartDate ?? '');
-      setMaxTeamSize(settings.maxTeamSize ?? 20);
-      setTierPctS(settings.tierPctS ?? 20);
-      setTierPctA(settings.tierPctA ?? 20);
-      setTierPctB(settings.tierPctB ?? 20);
-      setTierPctC(settings.tierPctC ?? 20);
-      setTierPctD(settings.tierPctD ?? 20);
-      setTurnTimerSeconds(settings.turnTimerSeconds ?? 0);
-      setStealWindowCloseDay(settings.stealWindowCloseDay ?? 4);
-      setStealWindowCloseTime(settings.stealWindowCloseTime ?? '23:59');
-      setSwapWindowCloseDay(settings.swapWindowCloseDay ?? 5);
-      setSwapWindowCloseTime(settings.swapWindowCloseTime ?? '16:00');
+      setForm(withDefaults(settings));
       setError('');
       setSavedAt(null);
     }
@@ -319,8 +279,8 @@ export default function LeagueConfigPage() {
                     type="number"
                     min={0}
                     step={1}
-                    value={coinsPerWin}
-                    onChange={(e) => setCoinsPerWin(Number(e.target.value))}
+                    value={form.coinsPerWin}
+                    onChange={(e) => setField('coinsPerWin', Number(e.target.value))}
                     disabled={!canEdit || saving}
                   />
                   <span className="config-hint">Lo que ganan los jugadores al ganar un combate.</span>
@@ -336,8 +296,8 @@ export default function LeagueConfigPage() {
                     type="number"
                     min={0}
                     step={1}
-                    value={coinsPerLoss}
-                    onChange={(e) => setCoinsPerLoss(Number(e.target.value))}
+                    value={form.coinsPerLoss}
+                    onChange={(e) => setField('coinsPerLoss', Number(e.target.value))}
                     disabled={!canEdit || saving}
                   />
                   <span className="config-hint">Premio de consolación tras una derrota.</span>
@@ -350,8 +310,7 @@ export default function LeagueConfigPage() {
                 </span>
 
                 {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                  const valueMap = { S: priceTierS, A: priceTierA, B: priceTierB, C: priceTierC, D: priceTierD };
-                  const setterMap = { S: setPriceTierS, A: setPriceTierA, B: setPriceTierB, C: setPriceTierC, D: setPriceTierD };
+                  const key = `priceTier${tier}` as const;
                   return (
                     <div key={tier} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
                       <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
@@ -362,8 +321,8 @@ export default function LeagueConfigPage() {
                         type="number"
                         min={0}
                         step={1}
-                        value={valueMap[tier]}
-                        onChange={(e) => setterMap[tier](Number(e.target.value))}
+                        value={form[key]}
+                        onChange={(e) => setField(key, Number(e.target.value))}
                         disabled={!canEdit || saving}
                         style={{ flex: 1 }}
                       />
@@ -379,8 +338,7 @@ export default function LeagueConfigPage() {
                 </span>
 
                 {(['S', 'A', 'B', 'C', 'D'] as const).map((tier) => {
-                  const pctMap = { S: tierPctS, A: tierPctA, B: tierPctB, C: tierPctC, D: tierPctD };
-                  const setPctMap = { S: setTierPctS, A: setTierPctA, B: setTierPctB, C: setTierPctC, D: setTierPctD };
+                  const key = `tierPct${tier}` as const;
                   return (
                     <div key={`pct-${tier}`} className="config-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
                       <span className={`tier-badge tier-badge-${tier.toLowerCase()}`} style={{ position: 'static', width: 28, height: 28, fontSize: '0.75rem', flexShrink: 0 }}>
@@ -392,8 +350,8 @@ export default function LeagueConfigPage() {
                         min={0}
                         max={100}
                         step={1}
-                        value={pctMap[tier]}
-                        onChange={(e) => setPctMap[tier](Number(e.target.value))}
+                        value={form[key]}
+                        onChange={(e) => setField(key, Number(e.target.value))}
                         disabled={!canEdit || saving}
                         style={{ flex: 1 }}
                       />
@@ -426,8 +384,8 @@ export default function LeagueConfigPage() {
                     id="seasonStartDate"
                     className="search-input"
                     type="date"
-                    value={seasonStartDate}
-                    onChange={(e) => setSeasonStartDate(e.target.value)}
+                    value={form.seasonStartDate}
+                    onChange={(e) => setField('seasonStartDate', e.target.value)}
                     disabled={!canEdit || saving}
                   />
                   <span className="config-hint">
@@ -445,8 +403,8 @@ export default function LeagueConfigPage() {
                     type="number"
                     min={10}
                     step={1}
-                    value={maxTeamSize}
-                    onChange={(e) => setMaxTeamSize(Number(e.target.value))}
+                    value={form.maxTeamSize}
+                    onChange={(e) => setField('maxTeamSize', Number(e.target.value))}
                     disabled={!canEdit || saving}
                   />
                   <span className="config-hint">
@@ -464,8 +422,8 @@ export default function LeagueConfigPage() {
                     type="number"
                     min={0}
                     step={1}
-                    value={turnTimerSeconds}
-                    onChange={(e) => setTurnTimerSeconds(Number(e.target.value))}
+                    value={form.turnTimerSeconds}
+                    onChange={(e) => setField('turnTimerSeconds', Number(e.target.value))}
                     disabled={!canEdit || saving}
                   />
                   <span className="config-hint">
@@ -484,8 +442,8 @@ export default function LeagueConfigPage() {
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <select
                       className="search-input"
-                      value={stealWindowCloseDay}
-                      onChange={(e) => setStealWindowCloseDay(Number(e.target.value))}
+                      value={form.stealWindowCloseDay}
+                      onChange={(e) => setField('stealWindowCloseDay', Number(e.target.value))}
                       disabled={!canEdit || saving}
                       style={{ flex: 1 }}
                     >
@@ -504,8 +462,8 @@ export default function LeagueConfigPage() {
                     <input
                       className="search-input"
                       type="time"
-                      value={stealWindowCloseTime}
-                      onChange={(e) => setStealWindowCloseTime(e.target.value)}
+                      value={form.stealWindowCloseTime}
+                      onChange={(e) => setField('stealWindowCloseTime', e.target.value)}
                       disabled={!canEdit || saving}
                       style={{ flex: 1 }}
                     />
@@ -518,8 +476,8 @@ export default function LeagueConfigPage() {
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <select
                       className="search-input"
-                      value={swapWindowCloseDay}
-                      onChange={(e) => setSwapWindowCloseDay(Number(e.target.value))}
+                      value={form.swapWindowCloseDay}
+                      onChange={(e) => setField('swapWindowCloseDay', Number(e.target.value))}
                       disabled={!canEdit || saving}
                       style={{ flex: 1 }}
                     >
@@ -538,8 +496,8 @@ export default function LeagueConfigPage() {
                     <input
                       className="search-input"
                       type="time"
-                      value={swapWindowCloseTime}
-                      onChange={(e) => setSwapWindowCloseTime(e.target.value)}
+                      value={form.swapWindowCloseTime}
+                      onChange={(e) => setField('swapWindowCloseTime', e.target.value)}
                       disabled={!canEdit || saving}
                       style={{ flex: 1 }}
                     />
