@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deriveTeams } from './teams';
+import { deriveTeams, isPickLocked } from './teams';
 import type { DraftStatus, DraftPick } from '../api/pokemons';
 
 function pick(username: string, pokemonId: number, pokemonName = `mon-${pokemonId}`): DraftPick {
@@ -57,5 +57,22 @@ describe('deriveTeams', () => {
     // @ts-expect-error simulating a malformed API response
     d.picks = null;
     expect(deriveTeams(d)).toEqual([{ username: 'ash', picks: [] }]);
+  });
+});
+
+describe('isPickLocked', () => {
+  it('returns false when lockedUntil is not set', () => {
+    expect(isPickLocked({ lockedUntil: null })).toBe(false);
+    expect(isPickLocked({ lockedUntil: undefined })).toBe(false);
+  });
+
+  it('returns true when lockedUntil is in the future', () => {
+    const future = new Date(Date.now() + 60_000).toISOString();
+    expect(isPickLocked({ lockedUntil: future })).toBe(true);
+  });
+
+  it('returns false when lockedUntil is in the past', () => {
+    const past = new Date(Date.now() - 60_000).toISOString();
+    expect(isPickLocked({ lockedUntil: past })).toBe(false);
   });
 });

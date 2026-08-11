@@ -11,11 +11,9 @@ import type { BenchEntry, ClosedListEntry, DraftPick, Tier } from '../api/pokemo
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues';
-import TierBadge from '../components/TierBadge';
 import { getTrades } from '../api/trades';
 import ProposeTradeModal from '../components/ProposeTradeModal';
 import TradesModal from '../components/TradesModal';
-import { spriteUrl } from '../utils/sprites';
 import { priceForTier } from '../utils/tiers';
 import { deriveTeams } from '../utils/teams';
 import BenchActionModal from '../components/teams/BenchActionModal';
@@ -24,6 +22,10 @@ import RivalActionModal from '../components/teams/RivalActionModal';
 import StealModal from '../components/teams/StealModal';
 import SetPriceModal from '../components/teams/SetPriceModal';
 import ReleaseModal from '../components/teams/ReleaseModal';
+import OwnTeamPanel from '../components/teams/OwnTeamPanel';
+import RivalTeamsList from '../components/teams/RivalTeamsList';
+import TeamFilterBar from '../components/teams/TeamFilterBar';
+import BenchSection from '../components/teams/BenchSection';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
@@ -145,11 +147,6 @@ export default function TeamsPage() {
     return priceForTier(leagueSettings, tier);
   }
 
-  function isLocked(pick: DraftPick): boolean {
-    if (!pick.lockedUntil) return false;
-    return new Date(pick.lockedUntil) > new Date();
-  }
-
   function exportTeamToShowdown(picks: DraftPick[], teamUsername: string) {
     const text = picks
       .map((p) => p.pokemonName.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join('-'))
@@ -258,172 +255,12 @@ export default function TeamsPage() {
     .filter((team) => !filterActive || team.picks.length > 0);
 
   function handleBenchCardClick(entry: BenchEntry) {
-    if (!isDraftCompleted) return;
-    if (!myTeam) return;
-    if (swapWindowClosed) return;
     setBenchGoingToSwap(false);
     setModalBench(entry);
   }
 
-  function renderPicks(team: { username: string; picks: DraftPick[] }, isMe: boolean) {
-    if (team.picks.length === 0) {
-      return <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Sin picks aún</p>;
-    }
-    return (
-      <div className="pokemon-grid">
-        {team.picks.map((pick) => {
-          const locked = isLocked(pick);
-          const sp = effectiveStealPrice(pick);
-          const canAffordSteal = myBalance >= sp;
-
-          if (isMe) {
-            // Own pokemon card
-            return (
-              <div key={pick.pokemonName} className="pokemon-card" style={{ cursor: 'default', position: 'relative' }}>
-                <img
-                  src={spriteUrl(pick.pokemonId)}
-                  alt={pick.pokemonName}
-                  className="pokemon-sprite"
-                  loading="lazy"
-                />
-                <span className="pokemon-name">{pick.pokemonName}</span>
-                <TierBadge tier={tierByName.get(pick.pokemonName)} />
-                {/* Steal price badge */}
-                {stealWindowOpen && (
-                  <>
-                    <span className="coin-badge" style={{
-                      marginTop: '0.25rem',
-                      fontSize: '0.68rem',
-                      background: 'rgba(251,191,36,0.1)',
-                      borderColor: 'rgba(251,191,36,0.25)',
-                    }}>
-                      🛡 {sp}
-                    </span>
-                    <button
-                      onClick={() => setModalSetPrice(pick)}
-                      title="Subir precio de robo"
-                      style={{
-                        marginTop: '0.2rem',
-                        padding: '0.15rem 0.4rem',
-                        fontSize: '0.65rem',
-                        background: 'rgba(99,102,241,0.15)',
-                        border: '1px solid rgba(99,102,241,0.3)',
-                        borderRadius: 4,
-                        color: '#a5b4fc',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ⬆ precio
-                    </button>
-                  </>
-                )}
-                {!swapWindowClosed && !isLocked(pick) && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setReleaseModalPick(pick); }}
-                    title="Liberar a la banca"
-                    style={{
-                      marginTop: '0.2rem',
-                      padding: '0.15rem 0.4rem',
-                      fontSize: '0.65rem',
-                      background: 'rgba(248,113,113,0.12)',
-                      border: '1px solid rgba(248,113,113,0.25)',
-                      borderRadius: 4,
-                      color: '#fca5a5',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🔓 liberar
-                  </button>
-                )}
-                <button
-                  className="pokemon-info-btn"
-                  onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pick.pokemonName) ?? null); }}
-                  title="Ver detalles"
-                >
-                  i
-                </button>
-              </div>
-            );
-          } else {
-            // Rival pokemon card
-            const isTradeable = isDraftCompleted && !locked;
-            const isClickable = (stealWindowOpen && !locked) || isTradeable;
-            return (
-              <div
-                key={pick.pokemonName}
-                className="pokemon-card"
-                style={{
-                  cursor: isClickable ? 'pointer' : 'default',
-                  opacity: stealWindowOpen && locked ? 0.5 : 1,
-                }}
-                title={locked && pick.lockedUntil
-                  ? `🔒 Bloqueado hasta ${new Date(pick.lockedUntil).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
-                  : undefined}
-                onClick={() => {
-                  if (stealWindowOpen && !locked) {
-                    // Modal unificado: el jugador elige robar o proponer trade
-                    setRivalModalPick({ pick, responder: team.username });
-                  } else if (isTradeable) {
-                    // Ventana cerrada: directo a ProposeTradeModal (sin click extra)
-                    setModalProposeTrade({
-                      responder: team.username,
-                      responderPokemon: { name: pick.pokemonName, id: pick.pokemonId },
-                    });
-                  }
-                }}
-              >
-                <img
-                  src={spriteUrl(pick.pokemonId)}
-                  alt={pick.pokemonName}
-                  className="pokemon-sprite"
-                  loading="lazy"
-                />
-                <span className="pokemon-name">{pick.pokemonName}</span>
-                <TierBadge tier={tierByName.get(pick.pokemonName)} />
-                {stealWindowOpen && (
-                  locked ? (
-                    <span style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>🔒</span>
-                  ) : (
-                    <>
-                      <span className="coin-badge" style={{
-                        marginTop: '0.25rem',
-                        fontSize: '0.68rem',
-                        background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
-                        borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
-                        color: canAffordSteal ? '#f87171' : '#9ca3af',
-                      }}>
-                        💰 {sp}
-                      </span>
-                      {!canAffordSteal && (
-                        <span style={{ marginTop: '0.15rem', fontSize: '0.65rem', color: 'var(--text-3)' }}>
-                          ⇄ proponer
-                        </span>
-                      )}
-                    </>
-                  )
-                )}
-                {!stealWindowOpen && isDraftCompleted && !locked && (
-                  <span style={{
-                    marginTop: '0.25rem',
-                    fontSize: '0.65rem',
-                    color: 'var(--text-3)',
-                  }}>
-                    ⇄ proponer
-                  </span>
-                )}
-                <button
-                  className="pokemon-info-btn"
-                  onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pick.pokemonName) ?? null); }}
-                  title="Ver detalles"
-                >
-                  i
-                </button>
-              </div>
-            );
-          }
-        })}
-      </div>
-    );
+  function showDetail(pick: DraftPick) {
+    setDetailEntry(entryByName.get(pick.pokemonName) ?? null);
   }
 
   return (
@@ -631,214 +468,74 @@ export default function TeamsPage() {
         {draft && teams.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginTop: '1.5rem' }}>
             {myTeam && (
-              <div className="own-team-panel">
-                <div className="own-team-panel-header">
-                  {/* Identidad: avatar + nombre + contadores */}
-                  <div className="own-team-header-info">
-                    <div className="member-avatar">{myTeam.username[0]}</div>
-                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>Tu equipo</span>
-                    <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                      {myTeam.picks.length}/{maxTeamSize}
-                    </span>
-                    <span className="badge badge-green">Tú</span>
-                    {myCoins !== undefined && (
-                      <span className="coin-badge">💰 {myCoins.coins}</span>
-                    )}
-                  </div>
-                  {/* Acciones: Showdown + colapsar */}
-                  <div className="own-team-header-actions">
-                    {isDraftCompleted && myTeam.picks.length > 0 && (
-                      <button
-                        className="btn-ghost"
-                        style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem' }}
-                        onClick={() => exportTeamToShowdown(myTeam.picks, myTeam.username)}
-                        title="Copiar equipo en formato Pokémon Showdown"
-                      >
-                        {copiedTeam === myTeam.username ? '✓ Copiado' : '📋 Showdown'}
-                      </button>
-                    )}
-                    <button
-                      className="btn-ghost own-team-collapse-btn"
-                      onClick={() => setOwnTeamCollapsed((c) => !c)}
-                    >
-                      {ownTeamCollapsed ? '▶' : '▼'}
-                    </button>
-                  </div>
-                </div>
-                {!ownTeamCollapsed && (
-                  <div className="own-team-panel-grid">{renderPicks(myTeam, true)}</div>
-                )}
-              </div>
+              <OwnTeamPanel
+                team={myTeam}
+                maxTeamSize={maxTeamSize}
+                myCoins={myCoins?.coins}
+                isDraftCompleted={isDraftCompleted}
+                collapsed={ownTeamCollapsed}
+                onToggleCollapse={() => setOwnTeamCollapsed((c) => !c)}
+                copied={copiedTeam === myTeam.username}
+                onExportShowdown={() => exportTeamToShowdown(myTeam.picks, myTeam.username)}
+                tierByName={tierByName}
+                stealWindowOpen={stealWindowOpen}
+                swapWindowClosed={swapWindowClosed}
+                effectiveStealPrice={effectiveStealPrice}
+                onRaisePrice={(pick) => setModalSetPrice(pick)}
+                onRelease={(pick) => setReleaseModalPick(pick)}
+                onInfo={showDetail}
+              />
             )}
 
-            {/* ── Filter bar (rivals only) ── */}
             {teams.some((t) => t.username !== username) && (
-              <div style={{ marginBottom: '1rem' }}>
-                <input
-                  className="search-input"
-                  type="text"
-                  placeholder="Buscar pokémon en equipos rivales..."
-                  value={filterName}
-                  onChange={(e) => setFilterName(e.target.value)}
-                  style={{ marginBottom: '0.5rem' }}
-                />
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginRight: '0.1rem' }}>
-                    Tier:
-                  </span>
-                  {(['S', 'A', 'B', 'C', 'D'] as Tier[]).map((tier) => (
-                    <button
-                      key={tier}
-                      className={`gen-tab${filterTiers.has(tier) ? ' active' : ''}`}
-                      onClick={() =>
-                        setFilterTiers((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(tier)) next.delete(tier);
-                          else next.add(tier);
-                          return next;
-                        })
-                      }
-                    >
-                      {tier}
-                    </button>
-                  ))}
-                  {filterActive && (
-                    <button
-                      className="gen-tab"
-                      style={{ color: 'var(--red)', borderColor: 'rgba(248,113,113,0.3)' }}
-                      onClick={() => { setFilterName(''); setFilterTiers(new Set()); }}
-                    >
-                      ✕ Limpiar
-                    </button>
-                  )}
-                </div>
-                {filterActive && (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.45rem' }}>
-                    {filteredRivals.length}{' '}
-                    {filteredRivals.length === 1 ? 'rival' : 'rivales'} ·{' '}
-                    {filteredRivals.reduce((acc, t) => acc + t.picks.length, 0)} pokémon
-                  </p>
-                )}
-              </div>
+              <TeamFilterBar
+                filterName={filterName}
+                onFilterNameChange={setFilterName}
+                filterTiers={filterTiers}
+                onToggleTier={(tier) => setFilterTiers((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(tier)) next.delete(tier);
+                  else next.add(tier);
+                  return next;
+                })}
+                onClear={() => { setFilterName(''); setFilterTiers(new Set()); }}
+                filterActive={filterActive}
+                filteredTeamCount={filteredRivals.length}
+                filteredPokemonCount={filteredRivals.reduce((acc, t) => acc + t.picks.length, 0)}
+              />
             )}
 
-            {filteredRivals.map((team) => (
-              <div key={team.username}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <div className="member-avatar">{team.username[0]}</div>
-                  <span style={{ fontWeight: 600, fontSize: '1rem' }}>{team.username}</span>
-                  <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                    {team.picks.length}/{maxTeamSize}
-                  </span>
-                  {isDraftCompleted && team.picks.length > 0 && (
-                    <button
-                      className="btn-ghost"
-                      style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem', marginLeft: 'auto' }}
-                      onClick={() => exportTeamToShowdown(team.picks, team.username)}
-                      title="Copiar equipo en formato Pokémon Showdown"
-                    >
-                      {copiedTeam === team.username ? '✓ Copiado' : '📋 Showdown'}
-                    </button>
-                  )}
-                </div>
-                {renderPicks(team, false)}
-              </div>
-            ))}
+            <RivalTeamsList
+              teams={filteredRivals}
+              maxTeamSize={maxTeamSize}
+              isDraftCompleted={isDraftCompleted}
+              copiedTeam={copiedTeam}
+              onExportShowdown={(team) => exportTeamToShowdown(team.picks, team.username)}
+              tierByName={tierByName}
+              stealWindowOpen={stealWindowOpen}
+              effectiveStealPrice={effectiveStealPrice}
+              myBalance={myBalance}
+              onInfo={showDetail}
+              onSteal={(pick, responder) => setRivalModalPick({ pick, responder })}
+              onProposeTrade={(pick, responder) => setModalProposeTrade({
+                responder,
+                responderPokemon: { name: pick.pokemonName, id: pick.pokemonId },
+              })}
+            />
           </div>
         )}
 
-        {/* ── Bench ── */}
         {isDraftCompleted && (
-          <div style={{ marginTop: '3rem' }}>
-            <hr className="divider" />
-            <p className="section-label">Banca</p>
-
-            {bench.length === 0 ? (
-              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-                No quedan pokémons en la banca.
-              </p>
-            ) : (
-              <>
-                {!swapWindowClosed && myTeam && (
-                  <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                    Haz click en un pokémon de la banca para intercambiarlo o comprarlo.
-                  </p>
-                )}
-                <div className="pokemon-grid">
-                  {bench.map((entry) => {
-                    const price = entry.price ?? 0;
-                    const canAfford = price === 0 || myBalance >= price;
-                    const isClickable = !swapWindowClosed && !!myTeam;
-                    const tier = (entry.tier as Tier | undefined) ?? tierByName.get(entry.pokemonName);
-
-                    return (
-                      <div
-                        key={entry.pokemonName}
-                        className="pokemon-card"
-                        style={{
-                          cursor: isClickable ? 'pointer' : 'default',
-                          opacity: isClickable && !canAfford ? 0.5 : 1,
-                        }}
-                        title={
-                          swapWindowClosed
-                            ? 'Intercambios cerrados'
-                            : isClickable
-                            ? 'Intercambiar o comprar'
-                            : undefined
-                        }
-                        onClick={() => isClickable && handleBenchCardClick(entry)}
-                      >
-                        <img
-                          src={spriteUrl(entry.pokemonId)}
-                          alt={entry.pokemonName}
-                          className="pokemon-sprite"
-                          loading="lazy"
-                        />
-                        <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={tier} />
-
-                        {/* Price badge — always visible */}
-                        {price > 0 ? (
-                          <span
-                            className="coin-badge"
-                            style={{
-                              marginTop: '0.3rem',
-                              fontSize: '0.7rem',
-                              background: canAfford
-                                ? 'rgba(251,191,36,0.12)'
-                                : 'rgba(107,114,128,0.15)',
-                              borderColor: canAfford
-                                ? 'rgba(251,191,36,0.3)'
-                                : 'rgba(107,114,128,0.25)',
-                              color: canAfford ? 'var(--accent)' : '#9ca3af',
-                            }}
-                          >
-                            💰 {price}
-                          </span>
-                        ) : (
-                          <span style={{
-                            marginTop: '0.3rem',
-                            fontSize: '0.68rem',
-                            color: 'var(--green)',
-                            fontWeight: 600,
-                          }}>
-                            Gratis
-                          </span>
-                        )}
-                        <button
-                          className="pokemon-info-btn"
-                          onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(entry.pokemonName) ?? null); }}
-                          title="Ver detalles"
-                        >
-                          i
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+          <BenchSection
+            bench={bench}
+            swapWindowClosed={swapWindowClosed}
+            canInteract={!!myTeam}
+            myBalance={myBalance}
+            tierByName={tierByName}
+            entryByName={entryByName}
+            onCardClick={handleBenchCardClick}
+            onInfo={setDetailEntry}
+          />
         )}
       </main>
     </div>
