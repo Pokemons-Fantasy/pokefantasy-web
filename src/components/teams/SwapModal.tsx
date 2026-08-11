@@ -159,14 +159,10 @@ export default function SwapModal({
                 return (
                   <div
                     key={pick.pokemonName}
-                    className="pokemon-card"
+                    className={`pokemon-card${isChosen ? ' chosen' : ''}`}
                     style={{
                       cursor: isInvalidTier ? 'not-allowed' : 'pointer',
                       opacity: isInvalidTier ? 0.4 : 1,
-                      border: isChosen ? '1px solid var(--accent)' : undefined,
-                      background: isChosen ? 'var(--accent-dim)' : undefined,
-                      transform: isChosen ? 'translateY(-2px)' : undefined,
-                      boxShadow: isChosen ? '0 0 14px var(--accent-glow)' : undefined,
                     }}
                     title={isInvalidTier ? `Tier ${giveTier ?? '?'} — no puedes dar un tier inferior` : undefined}
                     onClick={() => !isInvalidTier && setGiveTarget(isChosen ? null : pick.pokemonName)}

@@ -611,6 +611,33 @@ body {
 
 .pokemon-card.nominated { opacity: 0.35; cursor: default; }
 
+/* Selección real dentro de un picker (ProposeTradeModal, SwapModal) —
+   deliberadamente distinta del hover (var(--accent)) para no confundir
+   "el mouse está encima" con "esto está elegido". */
+.pokemon-card.chosen {
+  border-color: var(--green) !important;
+  background: var(--green-dim) !important;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.28) !important;
+  transform: translateY(-2px);
+}
+.pokemon-card.chosen::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .pokemon-card.own {
   border-color: var(--green);
   background: var(--green-dim);

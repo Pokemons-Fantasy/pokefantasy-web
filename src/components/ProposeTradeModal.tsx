@@ -98,8 +98,8 @@ export default function ProposeTradeModal({
             {/* Give side */}
             <div
               style={{
-                background: selected ? 'var(--accent-dim)' : 'var(--surface-2)',
-                border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                background: selected ? 'var(--green-dim)' : 'var(--surface-2)',
+                border: `1px solid ${selected ? 'var(--green)' : 'var(--border)'}`,
                 borderRadius: 12,
                 padding: '0.75rem',
                 textAlign: 'center',
@@ -224,15 +224,8 @@ export default function ProposeTradeModal({
                   return (
                     <div
                       key={p.name}
-                      className="pokemon-card"
-                      style={{
-                        cursor: 'pointer',
-                        border: isChosen ? '1px solid var(--accent)' : undefined,
-                        background: isChosen ? 'var(--accent-dim)' : undefined,
-                        transform: isChosen ? 'translateY(-2px)' : undefined,
-                        boxShadow: isChosen ? '0 0 14px var(--accent-glow)' : undefined,
-                        transition: 'transform 0.15s, box-shadow 0.15s',
-                      }}
+                      className={`pokemon-card${isChosen ? ' chosen' : ''}`}
+                      style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
                       onClick={() => setSelected(isChosen ? null : p.name)}
                     >
                       <img
