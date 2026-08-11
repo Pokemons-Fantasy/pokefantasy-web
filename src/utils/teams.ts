@@ -18,3 +18,9 @@ export function deriveTeams(draft: DraftStatus | null | undefined): Team[] {
       .sort((a, b) => a.pokemonId - b.pokemonId),
   }));
 }
+
+/** Un pick robado/tradeado queda bloqueado 7 días — lockedUntil es la fuente de verdad. */
+export function isPickLocked(pick: Pick<DraftPick, 'lockedUntil'>): boolean {
+  if (!pick.lockedUntil) return false;
+  return new Date(pick.lockedUntil) > new Date();
+}
