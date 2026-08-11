@@ -11,18 +11,9 @@ import { SkeletonGrid } from '../components/SkeletonGrid';
 import PageHeader from '../components/PageHeader';
 import { spriteUrl } from '../utils/sprites';
 import { tierRank } from '../utils/tiers';
+import { TIER_COLORS } from '../utils/colors';
 
 const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
-
-// ── Tier color helpers ────────────────────────────────────────────────────────
-
-const TIER_COLORS: Record<Tier, { bg: string; border: string; text: string }> = {
-  S: { bg: 'rgba(248,113,113,0.1)',  border: 'rgba(248,113,113,0.3)',  text: '#f87171' },
-  A: { bg: 'rgba(251,191,36,0.1)',   border: 'rgba(251,191,36,0.3)',   text: '#fbbf24' },
-  B: { bg: 'rgba(52,211,153,0.1)',   border: 'rgba(52,211,153,0.3)',   text: '#34d399' },
-  C: { bg: 'rgba(129,140,248,0.1)',  border: 'rgba(129,140,248,0.3)',  text: '#818cf8' },
-  D: { bg: 'var(--surface-2)',       border: 'var(--border)',          text: 'var(--text-3)' },
-};
 
 // ── TierAdjustModal ───────────────────────────────────────────────────────────
 

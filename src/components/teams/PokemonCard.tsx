@@ -44,6 +44,7 @@ export default function PokemonCard({
               <button
                 onClick={onRaisePrice}
                 title="Subir precio de robo"
+                aria-label="Subir precio de robo"
                 style={{
                   marginTop: '0.2rem',
                   padding: '0.15rem 0.4rem',
@@ -64,6 +65,7 @@ export default function PokemonCard({
           <button
             onClick={(e) => { e.stopPropagation(); onRelease(); }}
             title="Liberar a la banca"
+            aria-label="Liberar a la banca"
             style={{
               marginTop: '0.2rem',
               padding: '0.15rem 0.4rem',
@@ -78,7 +80,7 @@ export default function PokemonCard({
             🔓 liberar
           </button>
         )}
-        <button className="pokemon-info-btn" onClick={(e) => { e.stopPropagation(); onInfo(); }} title="Ver detalles">
+        <button className="pokemon-info-btn" onClick={(e) => { e.stopPropagation(); onInfo(); }} title="Ver detalles" aria-label="Ver detalles">
           i
         </button>
       </div>
@@ -130,7 +132,7 @@ export default function PokemonCard({
           ⇄ proponer
         </span>
       )}
-      <button className="pokemon-info-btn" onClick={(e) => { e.stopPropagation(); onInfo(); }} title="Ver detalles">
+      <button className="pokemon-info-btn" onClick={(e) => { e.stopPropagation(); onInfo(); }} title="Ver detalles" aria-label="Ver detalles">
         i
       </button>
     </div>

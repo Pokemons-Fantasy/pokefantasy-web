@@ -1,0 +1,4 @@
+# android/*.gradle son regenerados por `cap sync` (Capacitor) con LF.
+# Sin esto, core.autocrlf=true los marca como modificados en cada sync
+# sin ningún cambio de contenido real (solo ruido de fin de línea).
+android/**/*.gradle text eol=lf

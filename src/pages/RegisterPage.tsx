@@ -25,14 +25,18 @@ export default function RegisterPage() {
           <p>Crea tu cuenta para jugar</p>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+          <label htmlFor="register-username" className="sr-only">Usuario</label>
           <input
+            id="register-username"
             placeholder="Usuario"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             autoComplete="username"
           />
+          <label htmlFor="register-password" className="sr-only">Contraseña</label>
           <input
+            id="register-password"
             type="password"
             placeholder="Contraseña"
             value={password}
