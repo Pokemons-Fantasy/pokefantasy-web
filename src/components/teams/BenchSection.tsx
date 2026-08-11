@@ -42,7 +42,7 @@ export default function BenchSection({
               return (
                 <div
                   key={entry.pokemonName}
-                  className="pokemon-card"
+                  className={`pokemon-card${isClickable ? '' : ' static'}`}
                   style={{
                     cursor: isClickable ? 'pointer' : 'default',
                     opacity: isClickable && !canAfford ? 0.5 : 1,

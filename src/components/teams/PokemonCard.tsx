@@ -26,7 +26,7 @@ export default function PokemonCard({
 }: PokemonCardProps) {
   if (isMine) {
     return (
-      <div className="pokemon-card" style={{ cursor: 'default', position: 'relative' }}>
+      <div className="pokemon-card static" style={{ cursor: 'default', position: 'relative' }}>
         <img src={spriteUrl(pick.pokemonId)} alt={pick.pokemonName} className="pokemon-sprite" loading="lazy" />
         <span className="pokemon-name">{pick.pokemonName}</span>
         <TierBadge tier={tier} />
@@ -92,7 +92,7 @@ export default function PokemonCard({
   const isClickable = (stealWindowOpen && !locked) || isTradeable;
   return (
     <div
-      className="pokemon-card"
+      className={`pokemon-card${isClickable ? '' : ' static'}`}
       style={{
         cursor: isClickable ? 'pointer' : 'default',
         opacity: stealWindowOpen && locked ? 0.5 : 1,

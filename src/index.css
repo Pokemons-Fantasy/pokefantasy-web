@@ -614,6 +614,14 @@ body {
 /* Selección real dentro de un picker (ProposeTradeModal, SwapModal) —
    deliberadamente distinta del hover (var(--accent)) para no confundir
    "el mouse está encima" con "esto está elegido". */
+/* Tarjeta sin interacción en el cuerpo (equipo propio, banca/rival no clickeables) —
+   evita que el glow de hover sugiera que se puede clickear cuando no hace nada. */
+.pokemon-card.static:hover {
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+}
+
 .pokemon-card.chosen {
   border-color: var(--green) !important;
   background: var(--green-dim) !important;
