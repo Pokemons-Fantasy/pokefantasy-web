@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { useToastStore } from '../store/toastStore';
 import type { Toast, ToastType } from '../store/toastStore';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const DISMISS_MS: Record<ToastType, number> = {
   error: 5000,
@@ -47,7 +49,6 @@ function ToastItem({ toast }: { toast: Toast }) {
         boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
         minWidth: 260,
         maxWidth: 360,
-        animation: 'slideInRight 0.22s ease-out',
         cursor: persistent ? 'pointer' : 'default',
       }}
       onClick={handleBodyClick}
@@ -118,12 +119,22 @@ export default function ToastContainer() {
   const toasts = useToastStore((s) => s.toasts);
   const clearPersistent = useToastStore((s) => s.clearPersistent);
   const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     clearPersistent();
   }, [location.pathname, clearPersistent]);
 
-  if (toasts.length === 0) return null;
+  const toastVariants = {
+    initial: prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: 60, scale: 0.95 },
+    animate: {
+      opacity: 1, x: 0, scale: 1,
+      transition: prefersReducedMotion ? { duration: 0.15 } : { type: 'spring' as const, stiffness: 350, damping: 26 },
+    },
+    exit: prefersReducedMotion
+      ? { opacity: 0 }
+      : { opacity: 0, x: 60, scale: 0.9, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] as const } },
+  };
 
   return (
     <div
@@ -140,11 +151,22 @@ export default function ToastContainer() {
       aria-live="polite"
       aria-label="Notificaciones"
     >
-      {toasts.map((toast) => (
-        <div key={toast.id} style={{ pointerEvents: 'auto' }}>
-          <ToastItem toast={toast} />
-        </div>
-      ))}
+      <AnimatePresence mode="popLayout">
+        {toasts.map((toast) => (
+          <motion.div
+            key={toast.id}
+            layout={!prefersReducedMotion}
+            variants={toastVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ layout: { type: 'spring', stiffness: 300, damping: 20 } }}
+            style={{ pointerEvents: 'auto' }}
+          >
+            <ToastItem toast={toast} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
