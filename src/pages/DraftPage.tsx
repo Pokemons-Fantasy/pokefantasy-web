@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft, autoPickDraft } from '../api/pokemons';
 import type { ClosedListEntry } from '../api/pokemons';
@@ -13,6 +14,7 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { spriteUrl } from '../utils/sprites';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -25,6 +27,7 @@ export default function DraftPage() {
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
   const [pendingPick, setPendingPick] = useState<ClosedListEntry | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const { data: draft, isLoading } = useQuery({
     queryKey: ['draft-status', leagueId],
@@ -189,15 +192,29 @@ export default function DraftPage() {
                 <div className="draft-stat-label">Turno actual</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <div className="draft-stat-value accent">{draft.currentTurn}</div>
-                  {secondsLeft !== null && (
-                    <span style={{
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: secondsLeft <= 10 ? 'var(--red, #ef4444)' : 'var(--text-2)',
-                    }}>
-                      ⏱ {secondsLeft}s
-                    </span>
-                  )}
+                  {secondsLeft !== null && (() => {
+                    const urgent = secondsLeft <= 10;
+                    const urgency = urgent ? (10 - secondsLeft) / 10 : 0; // 0..1
+                    return (
+                      <motion.span
+                        key={urgent ? 'urgent' : 'calm'}
+                        animate={urgent && !prefersReducedMotion ? { scale: [1, 1.06 + urgency * 0.14, 1] } : { scale: 1 }}
+                        transition={
+                          urgent && !prefersReducedMotion
+                            ? { duration: 0.9 - urgency * 0.5, repeat: Infinity, ease: 'easeInOut' }
+                            : { duration: 0.2 }
+                        }
+                        style={{
+                          display: 'inline-block',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: urgent ? 'var(--red, #ef4444)' : 'var(--text-2)',
+                        }}
+                      >
+                        ⏱ {secondsLeft}s
+                      </motion.span>
+                    );
+                  })()}
                 </div>
               </div>
             )}

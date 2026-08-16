@@ -2,6 +2,7 @@ import type { DraftPick, Tier } from '../../api/pokemons';
 import type { Team } from '../../utils/teams';
 import { isPickLocked } from '../../utils/teams';
 import PokemonCard from './PokemonCard';
+import CoinBadge from './CoinBadge';
 
 interface OwnTeamPanelProps {
   team: Team;
@@ -35,9 +36,7 @@ export default function OwnTeamPanel({
             {team.picks.length}/{maxTeamSize}
           </span>
           <span className="badge badge-green">Tú</span>
-          {myCoins !== undefined && (
-            <span className="coin-badge">💰 {myCoins}</span>
-          )}
+          {myCoins !== undefined && <CoinBadge coins={myCoins} />}
         </div>
         <div className="own-team-header-actions">
           {isDraftCompleted && team.picks.length > 0 && (
