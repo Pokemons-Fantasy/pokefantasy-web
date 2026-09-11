@@ -5,7 +5,7 @@ import { logout as apiLogout } from '../api/auth';
 interface AuthState {
   username: string | null;
   setAuth: (username: string) => void;
-  logout: () => Promise<void>;
+  logout: () => void;
   isAuthenticated: () => boolean;
 }
 
@@ -14,9 +14,9 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       username: null,
       setAuth: (username) => set({ username }),
-      logout: async () => {
-        try { await apiLogout(); } catch { /* cookie cleared server-side si puede */ }
+      logout: () => {
         set({ username: null });
+        apiLogout().catch(() => {});
       },
       isAuthenticated: () => !!get().username,
     }),
