@@ -1,0 +1,2464 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "PokeFantasy API",
+        "description": "Ligas fantasy de Pok\u00e9mon: draft, equipos, robos, trades, banca y calendario. Los errores siguen RFC 9457 (application/problem+json) con un `code` estable.",
+        "version": "v1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:18080",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "cookie": []
+        },
+        {
+            "bearer": []
+        }
+    ],
+    "paths": {
+        "/v1/leagues/{leagueId}/steal-price": {
+            "put": {
+                "tags": [
+                    "steal-controller"
+                ],
+                "operationId": "setStealPrice",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SetStealPriceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/settings": {
+            "get": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "getSettings",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueSettingsResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "updateSettings",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLeagueSettingsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/schedule/matches/{matchId}/result": {
+            "put": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "correctResult",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecordMatchResultRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "recordResult",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecordMatchResultRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "revertResult",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/my-mvp": {
+            "put": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "setMyMvp",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SetLeagueMvpRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/closed-list/{entryId}/tier": {
+            "put": {
+                "tags": [
+                    "closed-list-controller"
+                ],
+                "operationId": "assignTier",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "entryId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignTierRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TierAdjustmentResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/push-token": {
+            "post": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "registerPushToken",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterPushTokenRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/user": {
+            "post": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "createUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/user/logout": {
+            "post": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "logout",
+                "parameters": [
+                    {
+                        "name": "refresh",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/user/login": {
+            "post": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "loginUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues": {
+            "post": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "createLeague",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateLeagueRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/trades": {
+            "get": {
+                "tags": [
+                    "trade-controller"
+                ],
+                "operationId": "getTrades",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "history",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TradeResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "trade-controller"
+                ],
+                "operationId": "propose",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProposeTradeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/trades/{tradeId}/respond": {
+            "post": {
+                "tags": [
+                    "trade-controller"
+                ],
+                "operationId": "respond",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RespondToTradeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/steal": {
+            "post": {
+                "tags": [
+                    "steal-controller"
+                ],
+                "operationId": "steal",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StealPokemonRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/members": {
+            "post": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "addMember",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddMemberRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/invite/generate": {
+            "post": {
+                "tags": [
+                    "invite-controller"
+                ],
+                "operationId": "generate",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GenerateInviteLinkResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/start": {
+            "post": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "startDraft",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StartDraftRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/pick": {
+            "post": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "pick",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPickRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/auto-pick": {
+            "post": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "autoPick",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/closed-list/nominate": {
+            "post": {
+                "tags": [
+                    "closed-list-controller"
+                ],
+                "operationId": "nominate",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NominatePokemonRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/bench/swap": {
+            "post": {
+                "tags": [
+                    "bench-controller"
+                ],
+                "operationId": "swap",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SwapWithBenchRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/bench/release": {
+            "post": {
+                "tags": [
+                    "bench-controller"
+                ],
+                "operationId": "release",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReleasePokemonRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/bench/buy": {
+            "post": {
+                "tags": [
+                    "bench-controller"
+                ],
+                "operationId": "buy",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BuyFromBenchRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/invite/{token}/redeem": {
+            "post": {
+                "tags": [
+                    "invite-controller"
+                ],
+                "operationId": "redeem",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/search": {
+            "get": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "searchUsers",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "leagueId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/events": {
+            "get": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "streamUserEvents",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SseEmitter"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/trades/pending": {
+            "get": {
+                "tags": [
+                    "my-trades-controller"
+                ],
+                "operationId": "myPendingTrades",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TradeResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pokemons/available": {
+            "get": {
+                "tags": [
+                    "pkmn-controller"
+                ],
+                "operationId": "getAvailablePokemons",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AvailablePokemonResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}": {
+            "get": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "getLeagueDetail",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeagueDetailResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/standings": {
+            "get": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "getStandings",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandingsResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/season-stats": {
+            "get": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "getSeasonStats",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeasonStatsResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/schedule": {
+            "get": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "getSchedule",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ScheduleResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/my-coins": {
+            "get": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "getMyCoinBalance",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CoinBalanceResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft": {
+            "get": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "getStatus",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftStatusResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "cancelDraft",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/events": {
+            "get": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "streamEvents",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SseEmitter"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/closed-list": {
+            "get": {
+                "tags": [
+                    "closed-list-controller"
+                ],
+                "operationId": "getClosedList",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ClosedListEntryResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/bench": {
+            "get": {
+                "tags": [
+                    "bench-controller"
+                ],
+                "operationId": "getBench",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BenchEntryResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/activity": {
+            "get": {
+                "tags": [
+                    "activity-controller"
+                ],
+                "operationId": "getActivityFeed",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "username",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ActivityFeedResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/my": {
+            "get": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "getMyLeagues",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/LeagueResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/trades/{tradeId}": {
+            "delete": {
+                "tags": [
+                    "trade-controller"
+                ],
+                "operationId": "cancel",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/members/{username}": {
+            "delete": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "removeMember",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/closed-list/nominate/{pokemonName}": {
+            "delete": {
+                "tags": [
+                    "closed-list-controller"
+                ],
+                "operationId": "denominate",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pokemonName",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SetStealPriceRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "newPrice": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "UpdateLeagueSettingsRequest": {
+                "type": "object",
+                "properties": {
+                    "coinsPerWin": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "coinsPerLoss": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "seasonStartDate": {
+                        "type": "string"
+                    },
+                    "maxTeamSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "turnTimerSeconds": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stealWindowCloseDay": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stealWindowCloseTime": {
+                        "type": "string"
+                    },
+                    "swapWindowCloseDay": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "swapWindowCloseTime": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RecordMatchResultRequest": {
+                "type": "object",
+                "properties": {
+                    "winnerUsername": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SetLeagueMvpRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "AssignTierRequest": {
+                "type": "object",
+                "properties": {
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    }
+                }
+            },
+            "TierAdjustmentResponse": {
+                "type": "object",
+                "properties": {
+                    "changes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TierChangeDto"
+                        }
+                    }
+                }
+            },
+            "TierChangeDto": {
+                "type": "object",
+                "properties": {
+                    "pokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "oldTier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    },
+                    "newTier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    }
+                }
+            },
+            "RegisterPushTokenRequest": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LoginResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateLeagueRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ProposeTradeRequest": {
+                "type": "object",
+                "properties": {
+                    "responder": {
+                        "type": "string"
+                    },
+                    "proposerPokemonName": {
+                        "type": "string"
+                    },
+                    "responderPokemonName": {
+                        "type": "string"
+                    },
+                    "coinsOffered": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "RespondToTradeRequest": {
+                "type": "object",
+                "properties": {
+                    "accept": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "StealPokemonRequest": {
+                "type": "object",
+                "properties": {
+                    "targetPokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "AddMemberRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "GenerateInviteLinkResponse": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "StartDraftRequest": {
+                "type": "object",
+                "properties": {
+                    "turnOrder": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "DraftPickRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "NominatePokemonRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SwapWithBenchRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonToGive": {
+                        "type": "string"
+                    },
+                    "pokemonToTake": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ReleasePokemonRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "BuyFromBenchRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonName": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SseEmitter": {
+                "type": "object",
+                "properties": {
+                    "timeout": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "TradeResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "leagueId": {
+                        "type": "string"
+                    },
+                    "proposer": {
+                        "type": "string"
+                    },
+                    "responder": {
+                        "type": "string"
+                    },
+                    "proposerPokemonName": {
+                        "type": "string"
+                    },
+                    "proposerPokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "responderPokemonName": {
+                        "type": "string"
+                    },
+                    "responderPokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "coinsOffered": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "resolvedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "AvailablePokemonResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "spriteUrl": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LeagueDetailResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "members": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LeagueMemberResponse"
+                        }
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SETUP",
+                            "ACTIVE"
+                        ]
+                    }
+                }
+            },
+            "LeagueMemberResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "leagueRole": {
+                        "type": "string",
+                        "enum": [
+                            "ADMIN",
+                            "USER"
+                        ]
+                    }
+                }
+            },
+            "PlayerStandingResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "played": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "wins": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "losses": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "coins": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "StandingsResponse": {
+                "type": "object",
+                "properties": {
+                    "standings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PlayerStandingResponse"
+                        }
+                    }
+                }
+            },
+            "LeagueSettingsResponse": {
+                "type": "object",
+                "properties": {
+                    "coinsPerWin": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "coinsPerLoss": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceTierD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "seasonStartDate": {
+                        "type": "string"
+                    },
+                    "maxTeamSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tierPctD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "turnTimerSeconds": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stealWindowCloseDay": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stealWindowCloseTime": {
+                        "type": "string"
+                    },
+                    "swapWindowCloseDay": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "swapWindowCloseTime": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PlayerSeasonStats": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "wins": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "losses": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "played": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "winPct": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "currentStreak": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mvpPokemon": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SeasonStatsResponse": {
+                "type": "object",
+                "properties": {
+                    "players": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PlayerSeasonStats"
+                        }
+                    }
+                }
+            },
+            "JornadaResponse": {
+                "type": "object",
+                "properties": {
+                    "roundNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "matches": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MatchResponse"
+                        }
+                    },
+                    "startDate": {
+                        "type": "string"
+                    },
+                    "stealDeadline": {
+                        "type": "string"
+                    },
+                    "swapDeadline": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MatchResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "player1": {
+                        "type": "string"
+                    },
+                    "player2": {
+                        "type": "string"
+                    },
+                    "winnerUsername": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "COMPLETED"
+                        ]
+                    }
+                }
+            },
+            "ScheduleResponse": {
+                "type": "object",
+                "properties": {
+                    "leagueId": {
+                        "type": "string"
+                    },
+                    "jornadas": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JornadaResponse"
+                        }
+                    },
+                    "stealWindowOpen": {
+                        "type": "boolean"
+                    },
+                    "swapWindowOpen": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "CoinBalanceResponse": {
+                "type": "object",
+                "properties": {
+                    "coins": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "DraftPickResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "pokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "round": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pickedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "customStealPrice": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "lockedUntil": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "DraftStatusResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "turnOrder": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "currentTurn": {
+                        "type": "string"
+                    },
+                    "currentRound": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "picks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftPickResponse"
+                        }
+                    },
+                    "draftHistory": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftPickResponse"
+                        }
+                    },
+                    "turnDeadline": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ClosedListEntryResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "pokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    },
+                    "stats": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Stat"
+                        }
+                    },
+                    "types": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Type"
+                        }
+                    },
+                    "nominatedBy": {
+                        "type": "string"
+                    },
+                    "sprite": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Stat": {
+                "type": "object",
+                "properties": {
+                    "stat": {
+                        "$ref": "#/components/schemas/StatData"
+                    },
+                    "base_stat": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "StatData": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Type": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "$ref": "#/components/schemas/TypeData"
+                    },
+                    "doubleDamageFrom": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "doubleDamageTo": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "halfDamageFrom": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "halfDamageTo": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "noDamageFrom": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "noDamageTo": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "TypeData": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "BenchEntryResponse": {
+                "type": "object",
+                "properties": {
+                    "pokemonId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "sprite": {
+                        "type": "string"
+                    },
+                    "tier": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "ActivityEventResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "leagueId": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "STEAL",
+                            "BENCH_SWAP",
+                            "BENCH_PURCHASE",
+                            "POKEMON_RELEASED",
+                            "TRADE_COMPLETED",
+                            "MATCH_RESULT",
+                            "MATCH_RESULT_REVERTED",
+                            "TIER_CHANGE",
+                            "COIN_EARNED",
+                            "COIN_REVOKED"
+                        ]
+                    },
+                    "actorUsername": {
+                        "type": "string"
+                    },
+                    "targetUsername": {
+                        "type": "string"
+                    },
+                    "pokemonName": {
+                        "type": "string"
+                    },
+                    "pokemonName2": {
+                        "type": "string"
+                    },
+                    "coinsAmount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "fromTier": {
+                        "type": "string"
+                    },
+                    "toTier": {
+                        "type": "string"
+                    },
+                    "roundNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ActivityFeedResponse": {
+                "type": "object",
+                "properties": {
+                    "events": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityEventResponse"
+                        }
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "hasMore": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LeagueResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "memberCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SETUP",
+                            "ACTIVE"
+                        ]
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "cookie": {
+                "type": "apiKey",
+                "name": "jwt",
+                "in": "cookie"
+            },
+            "bearer": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

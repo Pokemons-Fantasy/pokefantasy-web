@@ -1,11 +1,6 @@
 import axios from 'axios';
 import { apiClient } from './client';
 
-export interface Pokemon {
-  name: string;
-  id: number;
-}
-
 export interface AvailablePokemon {
   id: number;
   name: string;
@@ -56,11 +51,6 @@ export interface DraftStatus {
   /** ISO Instant deadline for current turn. null if timer disabled or draft not IN_PROGRESS. */
   turnDeadline?: string | null;
 }
-
-export const getPokemons = async (): Promise<Pokemon[]> => {
-  const { data } = await apiClient.get<Pokemon[]>('/v1/pokemons');
-  return data;
-};
 
 export const getAvailablePokemons = async (): Promise<AvailablePokemon[]> => {
   const { data } = await apiClient.get<AvailablePokemon[]>('/v1/pokemons/available');
