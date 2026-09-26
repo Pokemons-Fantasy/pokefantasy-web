@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { MatchScore } from '../utils/score';
 
 export interface League {
   id: string;
@@ -99,6 +100,9 @@ export interface MatchDto {
   player2: string;
   winnerUsername?: string;
   status: 'PENDING' | 'COMPLETED';
+  /** Marcador desde el punto de vista del ganador; ausente si no se indicó. */
+  winnerScore?: number | null;
+  loserScore?: number | null;
 }
 
 export interface JornadaDto {
@@ -128,18 +132,23 @@ export const getSchedule = async (leagueId: string): Promise<ScheduleResponse | 
 export const recordMatchResult = async (
   leagueId: string,
   matchId: string,
-  winnerUsername: string
+  winnerUsername: string,
+  score: MatchScore | null = null
 ): Promise<void> => {
-  await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
+  await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername, ...score });
 };
 
-/** Admin: cambia el ganador de un partido ya registrado (devuelve las monedas dadas y reparte las nuevas). */
+/**
+ * Admin: cambia el ganador de un partido ya registrado (devuelve las monedas dadas y reparte las nuevas),
+ * o solo el marcador si el ganador es el mismo (sin mover monedas).
+ */
 export const correctMatchResult = async (
   leagueId: string,
   matchId: string,
-  winnerUsername: string
+  winnerUsername: string,
+  score: MatchScore | null = null
 ): Promise<void> => {
-  await apiClient.put(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
+  await apiClient.put(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername, ...score });
 };
 
 /** Admin: deshace el resultado; el partido vuelve a pendiente y se devuelven las monedas. */
@@ -153,6 +162,10 @@ export interface PlayerStanding {
   wins: number;
   losses: number;
   coins: number;
+  /** Suma de marcadores a favor/en contra (solo partidos con marcador) y diferencia: desempata tras las victorias. */
+  scoreFor: number;
+  scoreAgainst: number;
+  scoreDiff: number;
 }
 
 export const getStandings = async (leagueId: string): Promise<PlayerStanding[]> => {

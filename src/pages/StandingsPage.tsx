@@ -5,6 +5,7 @@ import { getStandings, getLeagueDetail } from '../api/leagues';
 import type { PlayerStanding } from '../api/leagues';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PageHeader from '../components/PageHeader';
+import { formatDiff } from '../utils/score';
 
 export default function StandingsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -24,6 +25,9 @@ export default function StandingsPage() {
     enabled: !!leagueId,
     staleTime: 60_000,
   });
+
+  // La columna "Dif" solo aparece cuando algún partido tiene marcador.
+  const hasScores = !!standings?.some((s) => s.scoreFor > 0 || s.scoreAgainst > 0);
 
   return (
     <div className="page-wrapper">
@@ -66,6 +70,7 @@ export default function StandingsPage() {
                   <th style={{ textAlign: 'center' }}>PJ</th>
                   <th style={{ textAlign: 'center' }}>V</th>
                   <th style={{ textAlign: 'center' }}>D</th>
+                  {hasScores && <th style={{ textAlign: 'center' }} title="Diferencia de marcador (desempata tras las victorias)">Dif</th>}
                   <th style={{ textAlign: 'right' }}>Monedas</th>
                 </tr>
               </thead>
@@ -76,6 +81,7 @@ export default function StandingsPage() {
                     row={row}
                     pos={i + 1}
                     isMe={row.username === username}
+                    showDiff={hasScores}
                     onNavigate={() => navigate(`/leagues/${leagueId}/players/${row.username}`)}
                   />
                 ))}
@@ -92,11 +98,13 @@ function StandingRow({
   row,
   pos,
   isMe,
+  showDiff,
   onNavigate,
 }: {
   row: PlayerStanding;
   pos: number;
   isMe: boolean;
+  showDiff: boolean;
   onNavigate: () => void;
 }) {
   const posLabel = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : String(pos);
@@ -145,6 +153,15 @@ function StandingRow({
       <td style={{ textAlign: 'center', color: row.losses > 0 ? '#f87171' : 'var(--text-3)', fontWeight: row.losses > 0 ? 600 : 400 }}>
         {row.losses}
       </td>
+      {showDiff && (
+        <td
+          style={{ textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '0.85rem',
+            color: row.scoreDiff > 0 ? 'var(--green)' : row.scoreDiff < 0 ? '#f87171' : 'var(--text-3)' }}
+          title={`${row.scoreFor} a favor, ${row.scoreAgainst} en contra`}
+        >
+          {formatDiff(row.scoreDiff)}
+        </td>
+      )}
       <td style={{ textAlign: 'right' }}>
         <span className="coin-badge" style={{ fontSize: '0.75rem' }}>
           💰 {row.coins}

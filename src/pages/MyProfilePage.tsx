@@ -8,6 +8,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
 import { SkeletonGrid } from '../components/SkeletonGrid';
+import ChangePasswordForm from '../components/ChangePasswordForm';
 
 export default function MyProfilePage() {
   const username = useAuthStore((s) => s.username);
@@ -190,6 +191,10 @@ export default function MyProfilePage() {
             })}
           </div>
         )}
+
+        {/* ── Cuenta ── */}
+        <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>
+        <ChangePasswordForm />
 
       </main>
     </div>

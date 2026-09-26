@@ -200,6 +200,28 @@ body {
 .auth-card .field-hint-error { color: var(--red); }
 .auth-card input[aria-invalid="true"] { border-color: var(--red); }
 
+/* Marcador opcional en los modales de resultado (SchedulePage) */
+.score-fields { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.25rem; }
+.score-fields-label { font-size: 0.8rem; color: var(--text-2); }
+.score-fields-inputs { display: flex; align-items: center; gap: 0.5rem; }
+.score-fields-inputs input {
+  width: 5.5rem; padding: 0.5rem 0.6rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  font-family: 'Space Mono', monospace; font-size: 0.95rem; text-align: center;
+}
+.score-fields-inputs input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.score-fields-inputs input[aria-invalid="true"] { border-color: var(--red); }
+.score-fields .field-hint { margin: 0; font-size: 0.75rem; }
+.score-fields .field-hint-error { color: var(--red); }
+
+/* Cambio de contraseña (MyProfilePage) */
+.password-form { display: flex; flex-direction: column; max-width: 420px; padding: 1.25rem; }
+.password-form label { font-size: 0.8rem; color: var(--text-2); margin-bottom: 0.35rem; }
+.password-form .search-input { margin-bottom: 0.4rem; }
+.password-form .field-hint { margin: 0 0 0.85rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
+.password-form .field-hint-error { color: var(--red); }
+.password-form input[aria-invalid="true"] { border-color: var(--red); }
+
 .sr-only {
   position: absolute;
   width: 1px;

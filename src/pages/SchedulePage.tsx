@@ -14,6 +14,7 @@ import {
 } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { parseScore, scoreLabel, SCORE_MAX } from '../utils/score';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PageHeader from '../components/PageHeader';
 
@@ -26,6 +27,22 @@ export default function SchedulePage() {
   const addToast = useToastStore((s) => s.addToast);
   const [pendingMatch, setPendingMatch] = useState<MatchDto | null>(null);
   const [editingMatch, setEditingMatch] = useState<MatchDto | null>(null);
+  // Marcador del modal abierto (texto de los inputs): ganador – perdedor.
+  const [winnerScore, setWinnerScore] = useState('');
+  const [loserScore, setLoserScore] = useState('');
+  const { score, error: scoreError } = parseScore(winnerScore, loserScore);
+
+  function openRecord(match: MatchDto) {
+    setWinnerScore('');
+    setLoserScore('');
+    setPendingMatch(match);
+  }
+
+  function openEdit(match: MatchDto) {
+    setWinnerScore(match.winnerScore != null ? String(match.winnerScore) : '');
+    setLoserScore(match.loserScore != null ? String(match.loserScore) : '');
+    setEditingMatch(match);
+  }
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -52,12 +69,13 @@ export default function SchedulePage() {
 
   const { mutate: recordResult, isPending: recording } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
-      recordMatchResult(leagueId!, matchId, winner),
+      recordMatchResult(leagueId!, matchId, winner, score),
     onSuccess: () => {
       setPendingMatch(null);
       addToast('success', 'Resultado guardado');
       queryClient.invalidateQueries({ queryKey: ['schedule', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['standings', leagueId] });
     },
     onError: (err) => {
       addToast('error', extractErrorMessage(err, 'Error al registrar el resultado'));
@@ -75,7 +93,7 @@ export default function SchedulePage() {
 
   const { mutate: correctResult, isPending: correcting } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
-      correctMatchResult(leagueId!, matchId, winner),
+      correctMatchResult(leagueId!, matchId, winner, score),
     onSuccess: () => {
       setEditingMatch(null);
       addToast('success', 'Resultado corregido');
@@ -242,8 +260,8 @@ export default function SchedulePage() {
                         key={match.id}
                         match={match}
                         isAdmin={!!isAdmin}
-                        onRecord={() => setPendingMatch(match)}
-                        onEdit={() => setEditingMatch(match)}
+                        onRecord={() => openRecord(match)}
+                        onEdit={() => openEdit(match)}
                       />
                     ))}
                   </div>
@@ -259,9 +277,16 @@ export default function SchedulePage() {
         <div className="modal-overlay">
           <div className="modal">
             <h2>¿Quién ganó?</h2>
-            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1rem' }}>
               {pendingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {pendingMatch.player2}
             </p>
+            <ScoreFields
+              winner={winnerScore}
+              loser={loserScore}
+              error={scoreError}
+              onWinner={setWinnerScore}
+              onLoser={setLoserScore}
+            />
             <div className="modal-actions">
               <button
                 className="btn-ghost"
@@ -272,14 +297,14 @@ export default function SchedulePage() {
               </button>
               <button
                 className="btn-primary"
-                disabled={recording}
+                disabled={recording || !!scoreError}
                 onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player1 })}
               >
                 {recording ? '...' : `✓ ${pendingMatch.player1}`}
               </button>
               <button
                 className="btn-primary"
-                disabled={recording}
+                disabled={recording || !!scoreError}
                 onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player2 })}
               >
                 {recording ? '...' : `✓ ${pendingMatch.player2}`}
@@ -291,19 +316,30 @@ export default function SchedulePage() {
 
       {/* Correct / undo result modal (admin) */}
       {editingMatch && (() => {
-        const winner = editingMatch.winnerUsername;
+        const winner = editingMatch.winnerUsername!;
         const other = winner === editingMatch.player1 ? editingMatch.player2 : editingMatch.player1;
+        const currentLabel = scoreLabel(editingMatch);
+        const scoreChanged = !!score && (score.winnerScore !== editingMatch.winnerScore
+          || score.loserScore !== editingMatch.loserScore);
         return (
           <div className="modal-overlay">
             <div className="modal" role="dialog" aria-label="Corregir resultado">
               <h2>Corregir resultado</h2>
               <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                 {editingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {editingMatch.player2}
-                {' · '}ganó <strong>{winner}</strong>
+                {' · '}ganó <strong>{winner}</strong>{currentLabel && <> ({currentLabel})</>}
               </p>
-              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
-                Se devuelven las monedas que dio este resultado (el saldo puede quedar en negativo si ya se gastaron).
+              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                Cambiar el ganador o deshacer devuelve las monedas que dio este resultado (el saldo puede quedar en
+                negativo si ya se gastaron). Cambiar solo el marcador no mueve monedas.
               </p>
+              <ScoreFields
+                winner={winnerScore}
+                loser={loserScore}
+                error={scoreError}
+                onWinner={setWinnerScore}
+                onLoser={setLoserScore}
+              />
               <div className="modal-actions">
                 <button className="btn-ghost" onClick={() => setEditingMatch(null)} disabled={editing}>
                   Cancelar
@@ -316,8 +352,16 @@ export default function SchedulePage() {
                   {reverting ? '...' : '↩ Deshacer resultado'}
                 </button>
                 <button
+                  className="btn-ghost"
+                  disabled={editing || !!scoreError || !scoreChanged}
+                  title="Mismo ganador, otro marcador"
+                  onClick={() => correctResult({ matchId: editingMatch.id, winner })}
+                >
+                  {correcting ? '...' : '✓ Guardar marcador'}
+                </button>
+                <button
                   className="btn-primary"
-                  disabled={editing}
+                  disabled={editing || !!scoreError}
                   onClick={() => correctResult({ matchId: editingMatch.id, winner: other })}
                 >
                   {correcting ? '...' : `✓ Ganó ${other}`}
@@ -327,6 +371,53 @@ export default function SchedulePage() {
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+/** Marcador opcional del modal: ganador – perdedor (los dos o ninguno). */
+function ScoreFields({
+  winner,
+  loser,
+  error,
+  onWinner,
+  onLoser,
+}: {
+  winner: string;
+  loser: string;
+  error: string | null;
+  onWinner: (v: string) => void;
+  onLoser: (v: string) => void;
+}) {
+  return (
+    <div className="score-fields">
+      <span className="score-fields-label">Marcador (opcional)</span>
+      <div className="score-fields-inputs">
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={SCORE_MAX}
+          aria-label="Marcador del ganador"
+          placeholder="Ganador"
+          value={winner}
+          onChange={(e) => onWinner(e.target.value)}
+          aria-invalid={!!error}
+        />
+        <span aria-hidden="true">–</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={SCORE_MAX}
+          aria-label="Marcador del perdedor"
+          placeholder="Perdedor"
+          value={loser}
+          onChange={(e) => onLoser(e.target.value)}
+          aria-invalid={!!error}
+        />
+      </div>
+      {error && <p className="field-hint field-hint-error" role="alert">{error}</p>}
     </div>
   );
 }
@@ -402,7 +493,7 @@ function MatchRow({
           textAlign: 'center',
         }}
       >
-        {completed ? 'FIN' : 'vs'}
+        {completed ? scoreLabel(match) ?? 'FIN' : 'vs'}
       </span>
 
       {/* Player 2 */}
