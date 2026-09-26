@@ -15,6 +15,7 @@ function coinDelta(event: ActivityEvent, username: string): number {
   const a = event.coinsAmount ?? 0;
   switch (event.type) {
     case 'COIN_EARNED':    return a;
+    case 'COIN_REVOKED':   return -a;
     case 'BENCH_SWAP':     return a;
     case 'BENCH_PURCHASE': return -a;
     case 'POKEMON_RELEASED': return a;
@@ -29,6 +30,7 @@ function coinDelta(event: ActivityEvent, username: string): number {
 function coinEventIcon(event: ActivityEvent, username: string): string {
   switch (event.type) {
     case 'COIN_EARNED':    return '🏆';
+    case 'COIN_REVOKED':   return '↩';
     case 'BENCH_PURCHASE': return '🛒';
     case 'POKEMON_RELEASED': return '🕊️';
     case 'BENCH_SWAP':     return '↔';
@@ -44,6 +46,8 @@ function coinEventLabel(event: ActivityEvent, username: string): string {
   switch (event.type) {
     case 'COIN_EARNED':
       return `+${a} jornada ${event.roundNumber ?? '?'}`;
+    case 'COIN_REVOKED':
+      return `-${a} jornada ${event.roundNumber ?? '?'} (resultado anulado)`;
     case 'BENCH_PURCHASE':
       return `Compré ${event.pokemonName ?? ''} (-${a})`;
     case 'POKEMON_RELEASED':
