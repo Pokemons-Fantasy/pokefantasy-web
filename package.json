@@ -10,6 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
+    "api:spec": "node scripts/fetch-openapi.mjs",
+    "api:types": "openapi-typescript openapi.json -o src/api/schema.d.ts",
+    "api:check": "openapi-typescript openapi.json -o src/api/schema.d.ts --check",
     "cap:sync": "npm run build && npx cap sync android",
     "cap:open": "npx cap open android",
     "generate:assets": "node scripts/generate-assets.mjs && npx @capacitor/assets generate --android"
@@ -46,10 +49,16 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jsdom": "^30.0.1",
+    "openapi-typescript": "^7.13.0",
     "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
   }
 }

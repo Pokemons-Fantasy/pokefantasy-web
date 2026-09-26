@@ -27,6 +27,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # src/api/schema.d.ts debe corresponder a openapi.json (npm run api:types)
+      - name: API types up to date
+        run: npm run api:check
+
       - name: Test
         run: npm test
 
