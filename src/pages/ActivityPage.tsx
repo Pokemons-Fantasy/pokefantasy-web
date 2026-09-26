@@ -88,6 +88,13 @@ function formatEvent(event: ActivityEvent): EventDisplay {
         icon: '●',
         label: 'Monedas',
       };
+    case 'COIN_REVOKED':
+      return {
+        text: `${actor} devolvió ${coins} monedas por el resultado anulado de la jornada ${round}`,
+        color: '#94a3b8',
+        icon: '●',
+        label: 'Monedas',
+      };
     default:
       return { text: 'Evento desconocido', color: '#52525b', icon: '?', label: 'Desconocido' };
   }

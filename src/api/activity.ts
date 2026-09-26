@@ -11,7 +11,8 @@ export interface ActivityEvent {
     | 'MATCH_RESULT'
     | 'MATCH_RESULT_REVERTED'
     | 'TIER_CHANGE'
-    | 'COIN_EARNED';
+    | 'COIN_EARNED'
+    | 'COIN_REVOKED';
   actorUsername: string;
   targetUsername?: string;
   pokemonName?: string;
