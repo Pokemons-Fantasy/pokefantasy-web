@@ -39,7 +39,8 @@ export default function DraftPage() {
   useEffect(() => {
     if (!leagueId) return;
     const BASE = import.meta.env.VITE_API_URL ?? 'https://pokefantasy.onrender.com';
-    const es = new EventSource(`${BASE}/v1/leagues/${leagueId}/draft/events`);
+    // withCredentials: el backend exige sesión (cookie httpOnly) y ser miembro de la liga.
+    const es = new EventSource(`${BASE}/v1/leagues/${leagueId}/draft/events`, { withCredentials: true });
 
     es.addEventListener('draft-updated', () => {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });

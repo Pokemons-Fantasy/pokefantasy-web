@@ -2,12 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { extractErrorMessage } from './errorMessage';
 
 describe('extractErrorMessage', () => {
-  it('returns the plain-text backend body — ApiExceptionHandler responds text/plain, not JSON', () => {
+  it('reads `message` from a ProblemDetail (current backend format)', () => {
+    const err = { response: { data: {
+      type: 'about:blank', title: 'Conflict', status: 409, detail: 'La ventana de robos no está abierta.',
+      code: 'CONFLICT', message: 'La ventana de robos no está abierta.', requestId: 'abc',
+    } } };
+    expect(extractErrorMessage(err)).toBe('La ventana de robos no está abierta.');
+  });
+
+  it('returns a plain-text body (older backend format)', () => {
     const err = { response: { data: 'Invalid username or password' } };
     expect(extractErrorMessage(err)).toBe('Invalid username or password');
   });
 
-  it('falls back to data.message when the body is a JSON object (defensive, not the current backend shape)', () => {
+  it('falls back to data.message when the body is a JSON object', () => {
     const err = { response: { data: { message: 'Something went wrong' } } };
     expect(extractErrorMessage(err)).toBe('Something went wrong');
   });

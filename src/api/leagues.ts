@@ -133,6 +133,20 @@ export const recordMatchResult = async (
   await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
 };
 
+/** Admin: cambia el ganador de un partido ya registrado (devuelve las monedas dadas y reparte las nuevas). */
+export const correctMatchResult = async (
+  leagueId: string,
+  matchId: string,
+  winnerUsername: string
+): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`, { winnerUsername });
+};
+
+/** Admin: deshace el resultado; el partido vuelve a pendiente y se devuelven las monedas. */
+export const revertMatchResult = async (leagueId: string, matchId: string): Promise<void> => {
+  await apiClient.delete(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/result`);
+};
+
 export interface PlayerStanding {
   username: string;
   played: number;

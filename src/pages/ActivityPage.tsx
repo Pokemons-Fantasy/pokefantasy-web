@@ -60,6 +60,20 @@ function formatEvent(event: ActivityEvent): EventDisplay {
         icon: '🏆',
         label: 'Partido',
       };
+    case 'MATCH_RESULT_REVERTED':
+      return {
+        text: `Se anuló el resultado ${actor} vs ${target} de la jornada ${round} · monedas devueltas`,
+        color: '#94a3b8',
+        icon: '↩',
+        label: 'Resultado anulado',
+      };
+    case 'POKEMON_RELEASED':
+      return {
+        text: `${actor} liberó a ${pokemon} a la banca · +${coins} monedas`,
+        color: '#64748b',
+        icon: '🕊️',
+        label: 'Liberado',
+      };
     case 'TIER_CHANGE':
       return {
         text: `${pokemon} cambiado de tier ${fromTier} → ${toTier}`,
