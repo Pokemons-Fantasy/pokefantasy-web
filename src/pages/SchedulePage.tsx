@@ -6,6 +6,8 @@ import { getLeagueDetail } from '../api/leagues';
 import {
   getSchedule,
   recordMatchResult,
+  correctMatchResult,
+  revertMatchResult,
   getMyCoinBalance,
   type MatchDto,
   type JornadaDto,
@@ -23,6 +25,7 @@ export default function SchedulePage() {
 
   const addToast = useToastStore((s) => s.addToast);
   const [pendingMatch, setPendingMatch] = useState<MatchDto | null>(null);
+  const [editingMatch, setEditingMatch] = useState<MatchDto | null>(null);
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -60,6 +63,38 @@ export default function SchedulePage() {
       addToast('error', extractErrorMessage(err, 'Error al registrar el resultado'));
     },
   });
+
+  /** Tras cambiar un resultado se mueven monedas, clasificación, estadísticas y feed. */
+  function invalidateAfterResultChange() {
+    queryClient.invalidateQueries({ queryKey: ['schedule', leagueId] });
+    queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+    queryClient.invalidateQueries({ queryKey: ['standings', leagueId] });
+    queryClient.invalidateQueries({ queryKey: ['season-stats', leagueId] });
+    queryClient.invalidateQueries({ queryKey: ['activity', leagueId] });
+  }
+
+  const { mutate: correctResult, isPending: correcting } = useMutation({
+    mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
+      correctMatchResult(leagueId!, matchId, winner),
+    onSuccess: () => {
+      setEditingMatch(null);
+      addToast('success', 'Resultado corregido');
+      invalidateAfterResultChange();
+    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al corregir el resultado')),
+  });
+
+  const { mutate: revertResult, isPending: reverting } = useMutation({
+    mutationFn: (matchId: string) => revertMatchResult(leagueId!, matchId),
+    onSuccess: () => {
+      setEditingMatch(null);
+      addToast('success', 'Resultado anulado: el partido vuelve a estar pendiente');
+      invalidateAfterResultChange();
+    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al anular el resultado')),
+  });
+
+  const editing = correcting || reverting;
 
   // Determine half-way point to label primera/segunda vuelta
   const totalJornadas = schedule?.jornadas?.length ?? 0;
@@ -208,6 +243,7 @@ export default function SchedulePage() {
                         match={match}
                         isAdmin={!!isAdmin}
                         onRecord={() => setPendingMatch(match)}
+                        onEdit={() => setEditingMatch(match)}
                       />
                     ))}
                   </div>
@@ -252,6 +288,45 @@ export default function SchedulePage() {
           </div>
         </div>
       )}
+
+      {/* Correct / undo result modal (admin) */}
+      {editingMatch && (() => {
+        const winner = editingMatch.winnerUsername;
+        const other = winner === editingMatch.player1 ? editingMatch.player2 : editingMatch.player1;
+        return (
+          <div className="modal-overlay">
+            <div className="modal" role="dialog" aria-label="Corregir resultado">
+              <h2>Corregir resultado</h2>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                {editingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {editingMatch.player2}
+                {' · '}ganó <strong>{winner}</strong>
+              </p>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                Se devuelven las monedas que dio este resultado (el saldo puede quedar en negativo si ya se gastaron).
+              </p>
+              <div className="modal-actions">
+                <button className="btn-ghost" onClick={() => setEditingMatch(null)} disabled={editing}>
+                  Cancelar
+                </button>
+                <button
+                  className="btn-danger"
+                  disabled={editing}
+                  onClick={() => revertResult(editingMatch.id)}
+                >
+                  {reverting ? '...' : '↩ Deshacer resultado'}
+                </button>
+                <button
+                  className="btn-primary"
+                  disabled={editing}
+                  onClick={() => correctResult({ matchId: editingMatch.id, winner: other })}
+                >
+                  {correcting ? '...' : `✓ Ganó ${other}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -273,10 +348,12 @@ function MatchRow({
   match,
   isAdmin,
   onRecord,
+  onEdit,
 }: {
   match: MatchDto;
   isAdmin: boolean;
   onRecord: () => void;
+  onEdit: () => void;
 }) {
   const completed = match.status === 'COMPLETED';
 
@@ -363,6 +440,27 @@ function MatchRow({
           }}
         >
           ▶ Resultado
+        </button>
+      )}
+
+      {/* Correct / undo button (admin, completed only) */}
+      {isAdmin && completed && (
+        <button
+          onClick={onEdit}
+          aria-label={`Corregir resultado ${match.player1} vs ${match.player2}`}
+          style={{
+            padding: '0.25rem 0.6rem',
+            fontSize: '0.75rem',
+            borderRadius: '6px',
+            border: '1px solid var(--border)',
+            background: 'transparent',
+            color: 'var(--text-3)',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+        >
+          ✎ Corregir
         </button>
       )}
     </div>

@@ -195,6 +195,11 @@ body {
 }
 .auth-card input::placeholder { color: var(--text-3); }
 
+/* Ayuda bajo un campo (reglas de registro); en rojo si el valor no las cumple */
+.auth-card .field-hint { margin: -0.4rem 0 0.1rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
+.auth-card .field-hint-error { color: var(--red); }
+.auth-card input[aria-invalid="true"] { border-color: var(--red); }
+
 .sr-only {
   position: absolute;
   width: 1px;
