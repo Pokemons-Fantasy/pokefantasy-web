@@ -16,3 +16,8 @@ export const register = async (username: string, password: string): Promise<void
 export const logout = async (): Promise<void> => {
   await apiClient.post('/v1/user/logout');
 };
+
+/** Cambia la contraseña. El backend cierra las demás sesiones y renueva las cookies de esta. */
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  await apiClient.put('/v1/user/password', { currentPassword, newPassword });
+};

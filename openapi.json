@@ -2,7 +2,7 @@
     "openapi": "3.1.0",
     "info": {
         "title": "PokeFantasy API",
-        "description": "Ligas fantasy de Pok\u00e9mon: draft, equipos, robos, trades, banca y calendario. Los errores siguen RFC 9457 (application/problem+json) con un `code` estable.",
+        "description": "Ligas fantasy de Pokémon: draft, equipos, robos, trades, banca y calendario. Los errores siguen RFC 9457 (application/problem+json) con un `code` estable.",
         "version": "v1"
     },
     "servers": [
@@ -20,6 +20,29 @@
         }
     ],
     "paths": {
+        "/v1/user/password": {
+            "put": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "changePassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/steal-price": {
             "put": {
                 "tags": [
@@ -1479,6 +1502,17 @@
     },
     "components": {
         "schemas": {
+            "ChangePasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "currentPassword": {
+                        "type": "string"
+                    },
+                    "newPassword": {
+                        "type": "string"
+                    }
+                }
+            },
             "SetStealPriceRequest": {
                 "type": "object",
                 "properties": {
@@ -1574,6 +1608,14 @@
                 "properties": {
                     "winnerUsername": {
                         "type": "string"
+                    },
+                    "winnerScore": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "loserScore": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },
@@ -1913,6 +1955,18 @@
                     "coins": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "scoreFor": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "scoreAgainst": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "scoreDiff": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },
@@ -2092,6 +2146,14 @@
                             "PENDING",
                             "COMPLETED"
                         ]
+                    },
+                    "winnerScore": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "loserScore": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },

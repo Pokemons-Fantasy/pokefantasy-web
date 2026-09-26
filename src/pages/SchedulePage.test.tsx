@@ -15,6 +15,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   getMyCoinBalance: vi.fn(),
   correctMatchResult: vi.fn(),
   revertMatchResult: vi.fn(),
+  recordMatchResult: vi.fn(),
 }));
 const api = vi.mocked(leaguesApi);
 
@@ -37,6 +38,8 @@ const SCHEDULE: ScheduleResponse = {
     roundNumber: 1,
     matches: [
       { id: 'm1', player1: 'ash', player2: 'misty', winnerUsername: 'ash', status: 'COMPLETED' },
+      { id: 'm3', player1: 'brock', player2: 'ash', winnerUsername: 'ash', status: 'COMPLETED',
+        winnerScore: 3, loserScore: 1 },
       { id: 'm2', player1: 'brock', player2: 'misty', status: 'PENDING' },
     ],
   }],
@@ -62,6 +65,7 @@ describe('SchedulePage — corregir resultados', () => {
     api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
     api.correctMatchResult.mockResolvedValue(undefined);
     api.revertMatchResult.mockResolvedValue(undefined);
+    api.recordMatchResult.mockResolvedValue(undefined);
   });
 
   it('admin can switch the winner of a completed match', async () => {
@@ -72,7 +76,7 @@ describe('SchedulePage — corregir resultados', () => {
     await user.click(await screen.findByRole('button', { name: 'Corregir resultado ash vs misty' }));
     await user.click(screen.getByRole('button', { name: '✓ Ganó misty' }));
 
-    await waitFor(() => expect(api.correctMatchResult).toHaveBeenCalledWith('league-1', 'm1', 'misty'));
+    await waitFor(() => expect(api.correctMatchResult).toHaveBeenCalledWith('league-1', 'm1', 'misty', null));
     expect(api.revertMatchResult).not.toHaveBeenCalled();
   });
 
@@ -96,7 +100,68 @@ describe('SchedulePage — corregir resultados', () => {
 
     useAuthStore.setState({ username: 'misty' });
     renderPage();
-    await screen.findByText('brock');
+    await screen.findAllByText('brock');
     expect(screen.queryByRole('button', { name: /Corregir resultado/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage — marcador', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getSchedule.mockResolvedValue(SCHEDULE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+    api.correctMatchResult.mockResolvedValue(undefined);
+    api.recordMatchResult.mockResolvedValue(undefined);
+  });
+
+  it('shows the score in player order instead of FIN', async () => {
+    renderPage();
+    // m3: brock vs ash, ganó ash 3–1 → "1–3"
+    expect(await screen.findByText('1–3')).toBeInTheDocument();
+    expect(screen.getByText('FIN')).toBeInTheDocument(); // m1, sin marcador
+  });
+
+  it('records a result with score', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: '▶ Resultado' }));
+    await user.type(screen.getByLabelText('Marcador del ganador'), '2');
+    await user.type(screen.getByLabelText('Marcador del perdedor'), '0');
+    await user.click(screen.getByRole('button', { name: '✓ misty' }));
+
+    await waitFor(() => expect(api.recordMatchResult).toHaveBeenCalledWith(
+      'league-1', 'm2', 'misty', { winnerScore: 2, loserScore: 0 }));
+  });
+
+  it('blocks an invalid score', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: '▶ Resultado' }));
+    await user.type(screen.getByLabelText('Marcador del ganador'), '1');
+    await user.type(screen.getByLabelText('Marcador del perdedor'), '2');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('El ganador debe tener más que el perdedor.');
+    expect(screen.getByRole('button', { name: '✓ misty' })).toBeDisabled();
+  });
+
+  it('corrects only the score, keeping the winner', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Corregir resultado brock vs ash' }));
+    const saveScore = screen.getByRole('button', { name: '✓ Guardar marcador' });
+    expect(screen.getByLabelText('Marcador del ganador')).toHaveValue(3);
+    expect(saveScore).toBeDisabled(); // sin cambios
+
+    await user.clear(screen.getByLabelText('Marcador del perdedor'));
+    await user.type(screen.getByLabelText('Marcador del perdedor'), '2');
+    await user.click(saveScore);
+
+    await waitFor(() => expect(api.correctMatchResult).toHaveBeenCalledWith(
+      'league-1', 'm3', 'ash', { winnerScore: 3, loserScore: 2 }));
   });
 });

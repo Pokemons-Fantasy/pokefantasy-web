@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/v1/user/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changePassword"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/steal-price": {
         parameters: {
             query?: never;
@@ -664,6 +680,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ChangePasswordRequest: {
+            currentPassword?: string;
+            newPassword?: string;
+        };
         SetStealPriceRequest: {
             pokemonName?: string;
             /** Format: int32 */
@@ -708,6 +728,10 @@ export interface components {
         };
         RecordMatchResultRequest: {
             winnerUsername?: string;
+            /** Format: int32 */
+            winnerScore?: number;
+            /** Format: int32 */
+            loserScore?: number;
         };
         SetLeagueMvpRequest: {
             pokemonName?: string;
@@ -829,6 +853,12 @@ export interface components {
             losses?: number;
             /** Format: int32 */
             coins?: number;
+            /** Format: int32 */
+            scoreFor?: number;
+            /** Format: int32 */
+            scoreAgainst?: number;
+            /** Format: int32 */
+            scoreDiff?: number;
         };
         StandingsResponse: {
             standings?: components["schemas"]["PlayerStandingResponse"][];
@@ -902,6 +932,10 @@ export interface components {
             winnerUsername?: string;
             /** @enum {string} */
             status?: "PENDING" | "COMPLETED";
+            /** Format: int32 */
+            winnerScore?: number;
+            /** Format: int32 */
+            loserScore?: number;
         };
         ScheduleResponse: {
             leagueId?: string;
@@ -1027,6 +1061,28 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     setStealPrice: {
         parameters: {
             query?: never;
