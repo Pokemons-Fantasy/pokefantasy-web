@@ -88,6 +88,7 @@ Antes de cambiarlas, leer la nota en `vault/70 Decisiones/` y preguntar.
 - **El código usa los tipos escritos a mano de `src/api/*.ts`**, no `schema.d.ts` directamente; `contract.ts` comprueba en compilación que cuadran con el backend (solo campos primitivos; la nulabilidad no se compara porque springdoc no marca `required`) (ADR-010).
 - **SSE + polling de respaldo**: si el `EventSource` se cierra, se vuelve a polling (10 s draft, 120 s usuario). No quitar el fallback.
 - **Sin `VITE_API_URL` se apunta a producción** a propósito (build de Netlify y APK); en local se usa `.env.local`.
+- **Router de datos** (`createBrowserRouter`): las subrutas de liga cuelgan de `LeagueLayout` y Configuración bloquea la salida con `useBlocker`. El error boundary global se reinicia con `resetKey`, no con `key={pathname}` (remontaría los layouts). Tests de páginas con `useBlocker`: `createMemoryRouter` (ADR-012).
 
 ### 4. Qué puede tocar qué
 
