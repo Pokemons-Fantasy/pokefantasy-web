@@ -8,6 +8,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import PageHeader from '../components/PageHeader';
+import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
 export default function LeaguesPage() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ export default function LeaguesPage() {
               <div key={league.id} className="card" onClick={() => navigate(`/leagues/${league.id}`)}>
                 <h3>{league.name}</h3>
                 <div className="league-card-meta">
-                  <span className={`league-card-dot${league.status === 'ACTIVE' ? ' active' : ''}`} />
+                  <LeaguePhaseBadge draftStatus={league.draftStatus} />
                   <p style={{ margin: 0 }}>
                     {league.memberCount} {league.memberCount === 1 ? 'jugador' : 'jugadores'}
                   </p>

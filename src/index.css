@@ -618,11 +618,13 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .badge-yellow { background: var(--accent-dim); color: var(--accent); }
 .badge-green  { background: var(--success-bg);  color: var(--success); }
 .badge-red    { background: var(--danger-bg);  color: var(--danger); }
 .badge-gray   { background: var(--surface-2); color: var(--text-2); }
+.badge-info   { background: var(--info-bg);    color: var(--info); }
 
 /* ─── NOMINATION COUNTER ─── */
 
@@ -933,18 +935,6 @@ body {
 
 .inline-form { display: flex; gap: 0.5rem; align-items: stretch; }
 .inline-form .search-input { flex: 1; margin-bottom: 0; }
-
-.draft-active-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.75rem;
-  border-radius: 100px;
-  background: var(--info-bg);
-  border: 1px solid var(--info-border);
-  color: var(--info);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
 
 /* ─── GEN TABS ─── */
 
@@ -1340,20 +1330,11 @@ body {
 
 .league-card-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.25rem;
 }
-
-.league-card-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-3);
-  flex-shrink: 0;
-}
-
-.league-card-dot.active { background: var(--success); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
 
 /* ─── SCHEDULE / JORNADAS ─── */
 

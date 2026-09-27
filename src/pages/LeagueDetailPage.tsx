@@ -11,6 +11,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PageHeader from '../components/PageHeader';
+import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
 export default function LeagueDetailPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -160,15 +161,7 @@ export default function LeagueDetailPage() {
             <p className="page-subtitle">Creada por {league.createdBy}</p>
           </div>
           <div className="section-actions">
-            {draft && (
-              <span className={`badge ${
-                draft.status === 'IN_PROGRESS' ? 'badge-green' :
-                draft.status === 'COMPLETED'   ? 'badge-gray'  : 'badge-yellow'
-              }`}>
-                {draft.status === 'IN_PROGRESS' ? 'Draft activo' :
-                 draft.status === 'COMPLETED'   ? 'Draft completado' : 'Draft pendiente'}
-              </span>
-            )}
+            <LeaguePhaseBadge draftStatus={draft?.status ?? null} />
             <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
               Pool
             </button>

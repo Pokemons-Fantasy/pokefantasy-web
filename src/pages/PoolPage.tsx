@@ -17,6 +17,7 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import PageHeader from '../components/PageHeader';
 import { spriteUrl } from '../utils/sprites';
+import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
 const MAX_NOMINATIONS = 16;
 
@@ -80,8 +81,9 @@ export default function PoolPage() {
   const nominatedNames = new Set(closedList.map((e) => e.pokemonName));
   const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
   const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
-  const isDraftActive = draftStatus && draftStatus.status !== 'PENDING';
-  const canNominate = !isDraftActive && myNominations.length < MAX_NOMINATIONS;
+  // Misma regla que NominatePokemonCommandHandler: solo se nomina con el draft sin empezar
+  const nominationsClosed = !!draftStatus && draftStatus.status !== 'PENDING';
+  const canNominate = !nominationsClosed && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
 
   const { mutate: nominate, isPending } = useMutation({
@@ -130,7 +132,7 @@ export default function PoolPage() {
               </div>
             </div>
           </div>
-          {isDraftActive && <span className="draft-active-badge">Draft activo</span>}
+          <LeaguePhaseBadge draftStatus={draftStatus?.status ?? null} />
         </div>
 
         <div className="gen-tabs">
@@ -164,14 +166,14 @@ export default function PoolPage() {
                 key={pokemon.id}
                 className={`pokemon-card ${isNominated ? 'nominated' : ''} ${isOwn ? 'own' : ''}`}
                 onClick={() => {
-                  if (isDraftActive || isPending) return;
+                  if (nominationsClosed || isPending) return;
                   if (isOwn) denominate(pokemon.name);
                   else if (!isNominated && canNominate) nominate(pokemon.name);
                 }}
                 title={
                   isOwn ? 'Clic para quitar'
                   : isNominated ? 'Ya nominado'
-                  : !canNominate ? (isDraftActive ? 'Draft activo' : 'Límite alcanzado')
+                  : !canNominate ? (nominationsClosed ? 'Nominaciones cerradas' : 'Límite alcanzado')
                   : 'Clic para nominar'
                 }
               >
