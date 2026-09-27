@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getMyLeagues, createLeague } from '../api/leagues';
 import CreateLeagueModal from '../components/CreateLeagueModal';
 import PendingTradesBanner from '../components/PendingTradesBanner';
@@ -11,7 +11,6 @@ import PageHeader from '../components/PageHeader';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
 export default function LeaguesPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [showModal, setShowModal] = useState(false);
@@ -50,7 +49,7 @@ export default function LeaguesPage() {
         {!isLoading && (
           <div className="cards-grid stagger">
             {leagues.map((league) => (
-              <div key={league.id} className="card" onClick={() => navigate(`/leagues/${league.id}`)}>
+              <Link key={league.id} className="card" to={`/leagues/${league.id}`}>
                 <h3>{league.name}</h3>
                 <div className="league-card-meta">
                   <LeaguePhaseBadge draftStatus={league.draftStatus} />
@@ -59,7 +58,7 @@ export default function LeaguesPage() {
                   </p>
                 </div>
                 <span className="card-cta">Entrar →</span>
-              </div>
+              </Link>
             ))}
           </div>
         )}

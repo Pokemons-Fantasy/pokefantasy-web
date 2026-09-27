@@ -559,6 +559,8 @@ body {
   transform: translateY(-2px);
 }
 
+a.card, a.nav-card, a.header-user { color: inherit; text-decoration: none; }
+
 .card-static { cursor: default; }
 .card-static:hover { border-color: var(--border); box-shadow: none; transform: none; }
 
