@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -66,6 +66,50 @@ function DeepLinkHandler() {
   return null;
 }
 
+/** Todo lo que necesita estar dentro del router (navegación, ubicación) vive aquí. */
+function RootLayout() {
+  return (
+    <>
+      <ToastContainer />
+      <DeepLinkHandler />
+      <GlobalNotifications />
+      <ErrorBoundaryWithReset>
+        <Outlet />
+      </ErrorBoundaryWithReset>
+    </>
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: '/', element: <HomePage /> },
+          { path: '/profile', element: <MyProfilePage /> },
+          { path: '/leagues', element: <LeaguesPage /> },
+          { path: '/leagues/:leagueId', element: <LeagueDetailPage /> },
+          { path: '/leagues/:leagueId/pool', element: <PoolPage /> },
+          { path: '/leagues/:leagueId/draft', element: <DraftPage /> },
+          { path: '/leagues/:leagueId/teams', element: <TeamsPage /> },
+          { path: '/leagues/:leagueId/config', element: <LeagueConfigPage /> },
+          { path: '/leagues/:leagueId/schedule', element: <SchedulePage /> },
+          { path: '/leagues/:leagueId/tiers', element: <TierManagementPage /> },
+          { path: '/leagues/:leagueId/activity', element: <ActivityPage /> },
+          { path: '/leagues/:leagueId/standings', element: <StandingsPage /> },
+          { path: '/leagues/:leagueId/players/:username', element: <PlayerProfilePage /> },
+          { path: '/invite/:token', element: <InvitePage /> },
+        ],
+      },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
 export default function App() {
   const authUsername = useAuthStore(state => state.username);
 
@@ -77,34 +121,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastContainer />
-        <DeepLinkHandler />
-        <GlobalNotifications />
-        <ErrorBoundaryWithReset>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={<MyProfilePage />} />
-            <Route path="/leagues" element={<LeaguesPage />} />
-            <Route path="/leagues/:leagueId" element={<LeagueDetailPage />} />
-            <Route path="/leagues/:leagueId/pool" element={<PoolPage />} />
-            <Route path="/leagues/:leagueId/draft" element={<DraftPage />} />
-            <Route path="/leagues/:leagueId/teams" element={<TeamsPage />} />
-            <Route path="/leagues/:leagueId/config" element={<LeagueConfigPage />} />
-            <Route path="/leagues/:leagueId/schedule" element={<SchedulePage />} />
-            <Route path="/leagues/:leagueId/tiers" element={<TierManagementPage />} />
-            <Route path="/leagues/:leagueId/activity" element={<ActivityPage />} />
-            <Route path="/leagues/:leagueId/standings" element={<StandingsPage />} />
-            <Route path="/leagues/:leagueId/players/:username" element={<PlayerProfilePage />} />
-            <Route path="/invite/:token" element={<InvitePage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        </ErrorBoundaryWithReset>
-      </BrowserRouter>
+      <RouterProvider router={router} />
       <div style={{
         position: 'fixed',
         bottom: '0.6rem',
