@@ -71,7 +71,7 @@ export default function RivalTeamsList({
                 onClick={() => toggle(team.username)}
               >
                 <span className={`rival-team-chevron${open ? ' open' : ''}`} aria-hidden="true">▸</span>
-                <span className="member-avatar">{team.username[0]}</span>
+                <span className="member-avatar" aria-hidden="true">{team.username[0]}</span>
                 <span className="rival-team-name">{team.username}</span>
                 <span className="rival-team-size">{team.picks.length}/{maxTeamSize}</span>
                 {counts.length > 0 && (
