@@ -560,6 +560,7 @@ body {
 }
 
 a.card, a.nav-card, a.header-user { color: inherit; text-decoration: none; }
+a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decoration: none; }
 
 .card-static { cursor: default; }
 .card-static:hover { border-color: var(--border); box-shadow: none; transform: none; }
@@ -939,6 +940,105 @@ a.card, a.nav-card, a.header-user { color: inherit; text-decoration: none; }
 
 .inline-form { display: flex; gap: 0.5rem; align-items: stretch; }
 .inline-form .search-input { flex: 1; margin-bottom: 0; }
+
+/* ─── DRAFT BOARD (components/draft/DraftBoard.tsx) ─── */
+
+.draft-board {
+  overflow: auto;
+  max-height: 70vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.draft-board:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.draft-board table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+.draft-board th,
+.draft-board td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+.draft-board thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  padding: 0.55rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-align: center;
+  white-space: nowrap;
+}
+.draft-board tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface-2);
+  padding: 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-3);
+}
+.draft-board .draft-board-corner { left: 0; z-index: 3; }
+.draft-board thead th.mine { color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.draft-board td.mine { background: var(--accent-dim); }
+.draft-board td { min-width: 92px; height: 92px; padding: 0; vertical-align: top; }
+.draft-board tbody th,
+.draft-board .draft-board-corner { width: 3rem; min-width: 3rem; }
+
+.draft-board-pick {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.35rem 0.25rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.draft-board-pick:hover { background: var(--surface-2); }
+.draft-board-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.draft-board-pick .tier-badge { top: 4px; left: 4px; width: 16px; height: 16px; font-size: 0.6rem; }
+.draft-board-number { position: absolute; top: 4px; right: 6px; font-size: 0.6rem; color: var(--text-3); }
+.draft-board-sprite { width: 44px; height: 44px; image-rendering: pixelated; }
+.draft-board-name {
+  max-width: 100%;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.draft-board-owner { font-size: 0.6rem; font-weight: 600; color: var(--info); white-space: nowrap; }
+
+.draft-board-empty.current {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+.draft-board-turn {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draft-board-empty.current { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .draft-board td { min-width: 76px; height: 80px; }
+  .draft-board-sprite { width: 36px; height: 36px; }
+}
 
 /* ─── GEN TABS ─── */
 
