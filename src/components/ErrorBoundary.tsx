@@ -1,8 +1,11 @@
 import { Component } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { ReactNode, ErrorInfo } from 'react';
 
 interface Props {
   children: ReactNode;
+  /** Si cambia mientras se muestra el error, se vuelve a intentar pintar children (sin remontar nada si no hay error). */
+  resetKey?: unknown;
 }
 
 interface State {
@@ -76,10 +79,26 @@ export default class ErrorBoundary extends Component<Props, State> {
     console.error('[ErrorBoundary]', error, info.componentStack);
   }
 
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return <FallbackScreen error={this.state.error} />;
     }
     return this.props.children;
   }
+}
+
+/**
+ * Error boundary de la app: al navegar a otra ruta vuelve a intentar pintar el contenido.
+ * Usa resetKey y no key: una key por ruta remontaría los layouts anidados (LeagueLayout) en cada
+ * cambio de pestaña, repitiendo sus queries y perdiendo el foco.
+ */
+export function RouteErrorBoundary({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  return <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>;
 }

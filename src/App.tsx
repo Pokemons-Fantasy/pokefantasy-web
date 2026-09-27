@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -24,7 +24,7 @@ import PlayerProfilePage from './pages/PlayerProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
 import InvitePage from './pages/InvitePage';
 import ProtectedRoute from './components/ProtectedRoute';
-import ErrorBoundary from './components/ErrorBoundary';
+import { RouteErrorBoundary } from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { useNotificationSse } from './hooks/useNotificationSse';
 
@@ -39,11 +39,6 @@ function deepLinkPath(url: string): string {
 function GlobalNotifications() {
   useNotificationSse();
   return null;
-}
-
-function ErrorBoundaryWithReset({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  return <ErrorBoundary key={location.pathname}>{children}</ErrorBoundary>;
 }
 
 function DeepLinkHandler() {
@@ -75,9 +70,9 @@ function RootLayout() {
       <ToastContainer />
       <DeepLinkHandler />
       <GlobalNotifications />
-      <ErrorBoundaryWithReset>
+      <RouteErrorBoundary>
         <Outlet />
-      </ErrorBoundaryWithReset>
+      </RouteErrorBoundary>
     </>
   );
 }
