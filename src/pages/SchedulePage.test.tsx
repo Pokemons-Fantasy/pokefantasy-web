@@ -165,3 +165,80 @@ describe('SchedulePage — marcador', () => {
       'league-1', 'm3', 'ash', { winnerScore: 3, loserScore: 2 }));
   });
 });
+
+describe('SchedulePage — jornadas', () => {
+  const SEASON: ScheduleResponse = {
+    leagueId: 'league-1',
+    stealWindowOpen: false,
+    swapWindowOpen: true,
+    jornadas: [
+      {
+        roundNumber: 1,
+        startDate: '2026-05-22',
+        matches: [
+          { id: 'j1a', player1: 'ash', player2: 'misty', winnerUsername: 'ash', status: 'COMPLETED',
+            winnerScore: 6, loserScore: 0 },
+        ],
+      },
+      {
+        roundNumber: 2,
+        startDate: '2026-05-29',
+        swapDeadline: '2026-06-05T16:00:00',
+        matches: [
+          { id: 'j2a', player1: 'misty', player2: 'brock', status: 'PENDING' },
+          { id: 'j2b', player1: 'ash', player2: 'gary', winnerUsername: 'gary', status: 'COMPLETED' },
+        ],
+      },
+      {
+        roundNumber: 3,
+        startDate: '2026-06-05',
+        matches: [{ id: 'j3a', player1: 'brock', player2: 'ash', status: 'PENDING' }],
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getSchedule.mockResolvedValue(SEASON);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('las jornadas jugadas salen plegadas con tu resultado y se despliegan', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const toggle = await screen.findByRole('button', { name: /Jornada 1/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAccessibleName('Jornada 1 · Primera vuelta, vie 22 may, Ganaste a misty 6–0');
+    expect(toggle).toHaveTextContent('vie 22 may');
+    expect(toggle).toHaveTextContent('Ganaste a misty 6–0');
+    expect(screen.queryByRole('button', { name: 'Corregir resultado ash vs misty' })).not.toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Corregir resultado ash vs misty' })).toBeInTheDocument();
+  });
+
+  it('destaca la jornada actual y la muestra desplegada', async () => {
+    renderPage();
+    const current = await screen.findByRole('region', { name: /Jornada 2/ });
+    expect(current).toHaveTextContent('Jornada actual');
+    expect(current).toHaveTextContent('vie 29 may');
+    expect(screen.getByRole('button', { name: 'Corregir resultado ash vs gary' })).toBeInTheDocument();
+  });
+
+  it('muestra el estado del mercado y tu próximo partido', async () => {
+    renderPage();
+    expect(await screen.findByRole('status', { name: 'Estado del mercado' })).toHaveTextContent('Intercambios y banquillo');
+    expect(screen.getByText('Tu próximo partido').parentElement).toHaveTextContent('Jornada 3 · contra brock · vie 5 jun');
+  });
+
+  it('resalta tus partidos', async () => {
+    renderPage();
+    const mine = await screen.findByTestId('match-j2b');
+    expect(mine).toHaveClass('mine');
+    expect(screen.getByTestId('match-j2a')).not.toHaveClass('mine');
+  });
+});
