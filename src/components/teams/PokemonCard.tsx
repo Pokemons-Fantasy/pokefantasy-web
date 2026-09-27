@@ -9,6 +9,8 @@ interface PokemonCardProps {
   locked: boolean;
   isDraftCompleted: boolean;
   stealWindowOpen: boolean;
+  /** Rival: con el mercado cerrado un trade se puede proponer, pero solo se acepta cuando abra. */
+  swapWindowOpen?: boolean;
   stealPrice: number;
   canAffordSteal: boolean;
   onInfo: () => void;
@@ -21,7 +23,7 @@ interface PokemonCardProps {
 }
 
 export default function PokemonCard({
-  pick, tier, isMine, locked, isDraftCompleted, stealWindowOpen, stealPrice, canAffordSteal,
+  pick, tier, isMine, locked, isDraftCompleted, stealWindowOpen, swapWindowOpen, stealPrice, canAffordSteal,
   onInfo, onCardClick, onRaisePrice, onRelease,
 }: PokemonCardProps) {
   if (isMine) {
@@ -90,6 +92,13 @@ export default function PokemonCard({
   // Rival pokemon card
   const isTradeable = isDraftCompleted && !locked;
   const isClickable = (stealWindowOpen && !locked) || isTradeable;
+  const lockedTitle = locked && pick.lockedUntil
+    ? `🔒 Bloqueado hasta ${new Date(pick.lockedUntil).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+    : undefined;
+  // Sin robos, la card lleva a proponer; el backend acepta la propuesta pero solo la ejecuta con el mercado abierto
+  const proposeTitle = !stealWindowOpen && isTradeable && swapWindowOpen === false
+    ? 'Proponer intercambio: se podrá aceptar cuando abra el mercado'
+    : undefined;
   return (
     <div
       className="pokemon-card"
@@ -97,9 +106,7 @@ export default function PokemonCard({
         cursor: isClickable ? 'pointer' : 'default',
         opacity: stealWindowOpen && locked ? 0.5 : 1,
       }}
-      title={locked && pick.lockedUntil
-        ? `🔒 Bloqueado hasta ${new Date(pick.lockedUntil).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
-        : undefined}
+      title={lockedTitle ?? proposeTitle}
       onClick={() => { if (isClickable) onCardClick?.(); }}
     >
       <img src={spriteUrl(pick.pokemonId)} alt={pick.pokemonName} className="pokemon-sprite" loading="lazy" />

@@ -1,6 +1,6 @@
 import type { Tier } from '../../api/pokemons';
+import { TIER_ORDER } from '../../utils/tiers';
 
-const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
 
 interface TeamFilterBarProps {
   filterName: string;
@@ -31,7 +31,7 @@ export default function TeamFilterBar({
         <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginRight: '0.1rem' }}>
           Tier:
         </span>
-        {TIERS.map((tier) => (
+        {TIER_ORDER.map((tier) => (
           <button
             key={tier}
             className={`gen-tab${filterTiers.has(tier) ? ' active' : ''}`}

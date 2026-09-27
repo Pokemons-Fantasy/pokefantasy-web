@@ -9,10 +9,9 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { spriteUrl } from '../utils/sprites';
-import { tierRank } from '../utils/tiers';
+import { tierRank, TIER_ORDER } from '../utils/tiers';
 import { TIER_COLORS } from '../utils/colors';
 
-const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D'];
 
 // ── TierAdjustModal ───────────────────────────────────────────────────────────
 
@@ -86,7 +85,7 @@ function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustMod
             Nuevo tier:
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {TIERS.filter((t) => t !== currentTier).map((t) => {
+            {TIER_ORDER.filter((t) => t !== currentTier).map((t) => {
               const c = TIER_COLORS[t];
               const isSelected = selected === t;
               return (
@@ -231,7 +230,7 @@ export default function TierManagementPage() {
           <>
             {/* Tier tabs */}
             <div className="gen-tabs" style={{ marginBottom: '1.5rem' }}>
-              {TIERS.map((t) => {
+              {TIER_ORDER.map((t) => {
                 const c = TIER_COLORS[t];
                 const isActive = activeTab === t;
                 const count = countByTier(t);

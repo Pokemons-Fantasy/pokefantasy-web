@@ -4,6 +4,7 @@ import { proposeTrade } from '../api/trades';
 import { spriteUrl } from '../utils/sprites';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import Notice from './Notice';
 
 interface PokemonRef {
   name: string;
@@ -15,6 +16,8 @@ interface Props {
   responder: string;
   responderPokemon: PokemonRef;
   myTeam: PokemonRef[];
+  /** Ventana de intercambios: con ella cerrada la propuesta se envía, pero solo se puede aceptar cuando abra. */
+  marketOpen?: boolean;
   onClose: () => void;
 }
 
@@ -23,6 +26,7 @@ export default function ProposeTradeModal({
   responder,
   responderPokemon,
   myTeam,
+  marketOpen = true,
   onClose,
 }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -85,6 +89,11 @@ export default function ProposeTradeModal({
         </div>
 
         <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowX: 'hidden' }}>
+          {!marketOpen && (
+            <Notice variant="info">
+              El mercado está cerrado: puedes enviar la propuesta, pero {responder} solo podrá aceptarla cuando abra el mercado.
+            </Notice>
+          )}
 
           {/* ── Trade preview: give ↔ receive ── */}
           <div
