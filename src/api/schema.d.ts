@@ -837,6 +837,8 @@ export interface components {
             members?: components["schemas"]["LeagueMemberResponse"][];
             /** @enum {string} */
             status?: "SETUP" | "ACTIVE";
+            /** @enum {string} */
+            draftStatus?: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
         };
         LeagueMemberResponse: {
             username?: string;
@@ -1051,6 +1053,8 @@ export interface components {
             memberCount?: number;
             /** @enum {string} */
             status?: "SETUP" | "ACTIVE";
+            /** @enum {string} */
+            draftStatus?: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
         };
     };
     responses: never;

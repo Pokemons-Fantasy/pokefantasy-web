@@ -28,11 +28,11 @@ export default function PendingChangesSidebar({
           gap: '0.5rem',
           padding: '0.6rem 0.9rem',
           borderRadius: 'var(--radius-sm)',
-          background: 'rgba(251,191,36,0.07)',
-          border: '1px solid rgba(251,191,36,0.3)',
+          background: 'var(--accent-dim)',
+          border: '1px solid var(--accent-glow)',
           fontSize: '0.8rem',
           fontWeight: 600,
-          color: '#fbbf24',
+          color: 'var(--accent)',
         }}>
           <span style={{ fontSize: '0.6rem' }}>●</span>
           {pendingChanges.length} cambio{pendingChanges.length !== 1 ? 's' : ''} sin guardar

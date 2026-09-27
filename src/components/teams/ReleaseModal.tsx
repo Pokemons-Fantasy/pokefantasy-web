@@ -65,8 +65,8 @@ export default function ReleaseModal({
 
         {/* Reward summary */}
         <div style={{
-          background: 'rgba(52,211,153,0.05)',
-          border: '1px solid rgba(52,211,153,0.18)',
+          background: 'var(--success-bg)',
+          border: '1px solid var(--success-border)',
           borderRadius: 10,
           padding: '0.75rem 1rem',
           display: 'flex',
@@ -75,7 +75,7 @@ export default function ReleaseModal({
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>Recibirás</span>
-            <span className="coin-badge" style={{ background: 'rgba(52,211,153,0.12)' }}>
+            <span className="coin-badge" style={{ background: 'var(--success-bg)' }}>
               💰 +{rewardCoins}
             </span>
           </div>

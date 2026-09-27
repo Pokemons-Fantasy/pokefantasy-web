@@ -43,7 +43,7 @@ export default function TeamFilterBar({
         {filterActive && (
           <button
             className="gen-tab"
-            style={{ color: 'var(--red)', borderColor: 'rgba(248,113,113,0.3)' }}
+            style={{ color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
             onClick={onClear}
           >
             ✕ Limpiar

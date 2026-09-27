@@ -66,15 +66,15 @@ export default function BenchSection({
                       style={{
                         marginTop: '0.3rem',
                         fontSize: '0.7rem',
-                        background: canAfford ? 'rgba(251,191,36,0.12)' : 'rgba(107,114,128,0.15)',
-                        borderColor: canAfford ? 'rgba(251,191,36,0.3)' : 'rgba(107,114,128,0.25)',
-                        color: canAfford ? 'var(--accent)' : '#9ca3af',
+                        background: canAfford ? 'var(--accent-dim)' : 'rgba(107,114,128,0.15)',
+                        borderColor: canAfford ? 'var(--accent-glow)' : 'rgba(107,114,128,0.25)',
+                        color: canAfford ? 'var(--accent)' : 'var(--text-3)',
                       }}
                     >
                       💰 {price}
                     </span>
                   ) : (
-                    <span style={{ marginTop: '0.3rem', fontSize: '0.68rem', color: 'var(--green)', fontWeight: 600 }}>
+                    <span style={{ marginTop: '0.3rem', fontSize: '0.68rem', color: 'var(--success)', fontWeight: 600 }}>
                       Gratis
                     </span>
                   )}

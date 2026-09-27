@@ -1916,6 +1916,15 @@
                             "SETUP",
                             "ACTIVE"
                         ]
+                    },
+                    "draftStatus": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "CANCELLED"
+                        ]
                     }
                 }
             },
@@ -2505,6 +2514,15 @@
                         "enum": [
                             "SETUP",
                             "ACTIVE"
+                        ]
+                    },
+                    "draftStatus": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "CANCELLED"
                         ]
                     }
                 }

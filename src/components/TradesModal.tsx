@@ -16,8 +16,8 @@ interface Props {
 
 function StatusBadge({ status }: { status: Trade['status'] }) {
   const cfg: Record<Trade['status'], { label: string; color: string; bg: string }> = {
-    ACCEPTED: { label: 'Aceptado', color: 'var(--green)', bg: 'rgba(52,211,153,0.12)' },
-    REJECTED: { label: 'Rechazado', color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
+    ACCEPTED: { label: 'Aceptado', color: 'var(--success)', bg: 'var(--success-bg)' },
+    REJECTED: { label: 'Rechazado', color: 'var(--danger)', bg: 'var(--danger-bg)' },
     CANCELLED: { label: 'Cancelado', color: '#6b7280', bg: 'rgba(107,114,128,0.12)' },
     PENDING: { label: 'Pendiente', color: 'var(--accent)', bg: 'var(--accent-dim)' },
   };
@@ -182,8 +182,8 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
             {incoming.length > 0 && (
               <span
                 style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
+                  background: 'var(--accent-fill)',
+                  color: '#0a0a0f',
                   fontSize: '0.7rem',
                   fontWeight: 700,
                   borderRadius: '50%',
@@ -255,8 +255,8 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
                             style={{
                               fontSize: '0.75rem',
                               padding: '0.3rem 0.65rem',
-                              color: '#f87171',
-                              borderColor: 'rgba(248,113,113,0.3)',
+                              color: 'var(--danger)',
+                              borderColor: 'var(--danger-border)',
                             }}
                             disabled={isMutating}
                             onClick={() => doReject(trade.id)}
@@ -293,8 +293,8 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
                           style={{
                             fontSize: '0.75rem',
                             padding: '0.3rem 0.65rem',
-                            color: '#f87171',
-                            borderColor: 'rgba(248,113,113,0.3)',
+                            color: 'var(--danger)',
+                            borderColor: 'var(--danger-border)',
                             flexShrink: 0,
                           }}
                           disabled={isMutating}

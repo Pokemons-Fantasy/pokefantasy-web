@@ -175,11 +175,11 @@ export default function PlayerProfilePage() {
         {player && (
           <div className="stat-pills animate-in" style={{ marginBottom: '2rem' }}>
             <div className="stat-pill">
-              <span className="stat-pill-value" style={{ color: 'var(--green)' }}>{player.wins}</span>
+              <span className="stat-pill-value" style={{ color: 'var(--success)' }}>{player.wins}</span>
               <span className="stat-pill-label">Victorias</span>
             </div>
             <div className="stat-pill">
-              <span className="stat-pill-value" style={{ color: 'var(--red)' }}>{player.losses}</span>
+              <span className="stat-pill-value" style={{ color: 'var(--danger)' }}>{player.losses}</span>
               <span className="stat-pill-label">Derrotas</span>
             </div>
             <div className="stat-pill">
@@ -263,7 +263,7 @@ export default function PlayerProfilePage() {
                       style={{
                         fontWeight: 700,
                         fontSize: '0.9rem',
-                        color: positive ? 'var(--green)' : 'var(--red)',
+                        color: positive ? 'var(--success)' : 'var(--danger)',
                         flexShrink: 0,
                       }}
                     >

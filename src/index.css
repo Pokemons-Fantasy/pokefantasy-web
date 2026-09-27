@@ -6,13 +6,45 @@
   --surface-2: #1c1c24;
   --border: rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.15);
+  /* Acento de marca: --accent para texto y líneas, --accent-fill para fondos
+     (siempre amarillo, con texto oscuro encima) */
   --accent: #fbbf24;
+  --accent-fill: #fbbf24;
   --accent-dim: rgba(251, 191, 36, 0.08);
   --accent-glow: rgba(251, 191, 36, 0.22);
-  --green: #34d399;
-  --green-dim: rgba(52, 211, 153, 0.06);
-  --red: #f87171;
-  --blue: #818cf8;
+
+  /* Semántica: danger = error o acción destructiva, warning = aviso,
+     info = información neutra, success = completado o en curso */
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.1);
+  --danger-border: rgba(248, 113, 113, 0.3);
+  --warning: #fb923c;
+  --warning-bg: rgba(251, 146, 60, 0.1);
+  --warning-border: rgba(251, 146, 60, 0.3);
+  --info: #818cf8;
+  --info-bg: rgba(129, 140, 248, 0.1);
+  --info-border: rgba(129, 140, 248, 0.3);
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.1);
+  --success-border: rgba(52, 211, 153, 0.3);
+
+  /* Tiers (única fuente; utils/colors.ts los referencia) */
+  --tier-s: #fbbf24;
+  --tier-s-bg: rgba(251, 191, 36, 0.15);
+  --tier-s-border: rgba(251, 191, 36, 0.35);
+  --tier-a: #c084fc;
+  --tier-a-bg: rgba(192, 132, 252, 0.15);
+  --tier-a-border: rgba(192, 132, 252, 0.35);
+  --tier-b: #60a5fa;
+  --tier-b-bg: rgba(96, 165, 250, 0.15);
+  --tier-b-border: rgba(96, 165, 250, 0.35);
+  --tier-c: #4ade80;
+  --tier-c-bg: rgba(74, 222, 128, 0.15);
+  --tier-c-border: rgba(74, 222, 128, 0.35);
+  --tier-d: #a1a1aa;
+  --tier-d-bg: rgba(161, 161, 170, 0.12);
+  --tier-d-border: rgba(161, 161, 170, 0.3);
+
   --text: #f4f4f5;
   --text-2: #a1a1aa;
   --text-3: #52525b;
@@ -21,6 +53,8 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+/* Tema claro: los colores usados como texto se oscurecen para cumplir AA
+   (4.5:1) sobre --surface y --bg */
 .theme-light {
   --bg: #f4f4f8;
   --surface: #ffffff;
@@ -29,13 +63,46 @@
   --border-hover: rgba(0, 0, 0, 0.15);
   --text: #18181b;
   --text-2: #52525b;
-  --text-3: #a1a1aa;
+  --text-3: #6b6b75;
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --accent: #b45309;
   --accent-dim: rgba(251, 191, 36, 0.15);
   --accent-glow: rgba(251, 191, 36, 0.3);
+
+  --danger: #b91c1c;
+  --danger-bg: rgba(185, 28, 28, 0.07);
+  --danger-border: rgba(185, 28, 28, 0.3);
+  --warning: #c2410c;
+  --warning-bg: rgba(194, 65, 12, 0.07);
+  --warning-border: rgba(194, 65, 12, 0.3);
+  --info: #4338ca;
+  --info-bg: rgba(67, 56, 202, 0.07);
+  --info-border: rgba(67, 56, 202, 0.3);
+  --success: #047857;
+  --success-bg: rgba(4, 120, 87, 0.07);
+  --success-border: rgba(4, 120, 87, 0.3);
+
+  --tier-s: #b45309;
+  --tier-s-bg: rgba(180, 83, 9, 0.08);
+  --tier-s-border: rgba(180, 83, 9, 0.35);
+  --tier-a: #7e22ce;
+  --tier-a-bg: rgba(126, 34, 206, 0.08);
+  --tier-a-border: rgba(126, 34, 206, 0.35);
+  --tier-b: #1d4ed8;
+  --tier-b-bg: rgba(29, 78, 216, 0.08);
+  --tier-b-border: rgba(29, 78, 216, 0.35);
+  --tier-c: #15803d;
+  --tier-c-bg: rgba(21, 128, 61, 0.08);
+  --tier-c-border: rgba(21, 128, 61, 0.35);
+  --tier-d: #52525b;
+  --tier-d-bg: rgba(82, 82, 91, 0.08);
+  --tier-d-border: rgba(82, 82, 91, 0.3);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Los controles de formulario no heredan la tipografía del body por defecto */
+button, input, select, textarea { font-family: inherit; }
 
 body {
   font-family: 'Outfit', system-ui, sans-serif;
@@ -197,8 +264,8 @@ body {
 
 /* Ayuda bajo un campo (reglas de registro); en rojo si el valor no las cumple */
 .auth-card .field-hint { margin: -0.4rem 0 0.1rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
-.auth-card .field-hint-error { color: var(--red); }
-.auth-card input[aria-invalid="true"] { border-color: var(--red); }
+.auth-card .field-hint-error { color: var(--danger); }
+.auth-card input[aria-invalid="true"] { border-color: var(--danger); }
 
 /* Marcador opcional en los modales de resultado (SchedulePage) */
 .score-fields { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.25rem; }
@@ -210,17 +277,17 @@ body {
   font-family: 'Space Mono', monospace; font-size: 0.95rem; text-align: center;
 }
 .score-fields-inputs input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-.score-fields-inputs input[aria-invalid="true"] { border-color: var(--red); }
+.score-fields-inputs input[aria-invalid="true"] { border-color: var(--danger); }
 .score-fields .field-hint { margin: 0; font-size: 0.75rem; }
-.score-fields .field-hint-error { color: var(--red); }
+.score-fields .field-hint-error { color: var(--danger); }
 
 /* Cambio de contraseña (MyProfilePage) */
 .password-form { display: flex; flex-direction: column; max-width: 420px; padding: 1.25rem; }
 .password-form label { font-size: 0.8rem; color: var(--text-2); margin-bottom: 0.35rem; }
 .password-form .search-input { margin-bottom: 0.4rem; }
 .password-form .field-hint { margin: 0 0 0.85rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
-.password-form .field-hint-error { color: var(--red); }
-.password-form input[aria-invalid="true"] { border-color: var(--red); }
+.password-form .field-hint-error { color: var(--danger); }
+.password-form input[aria-invalid="true"] { border-color: var(--danger); }
 
 .sr-only {
   position: absolute;
@@ -239,7 +306,7 @@ body {
   padding: 0.8rem;
   border-radius: var(--radius-sm);
   border: none;
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #0a0a0f;
   font-size: 0.95rem;
   font-weight: 700;
@@ -310,7 +377,7 @@ body {
   top: calc(60px + env(safe-area-inset-top));  /* header-inner 60px + status bar */
   z-index: 40;              /* below header (z-50), above rival teams */
   background: var(--surface);
-  border: 1px solid rgba(52, 211, 153, 0.28);
+  border: 1px solid var(--success-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   padding: 0.9rem 1.1rem;
@@ -400,7 +467,7 @@ body {
   padding: 0.5rem 1.2rem;
   border-radius: var(--radius-sm);
   border: none;
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #0a0a0f;
   font-size: 0.875rem;
   font-weight: 700;
@@ -454,16 +521,16 @@ body {
 .btn-danger {
   padding: 0.5rem 1.2rem;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  background: rgba(248, 113, 113, 0.08);
-  color: var(--red);
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
   font-size: 0.875rem;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, background 0.15s;
 }
-.btn-danger:hover { border-color: var(--red); background: rgba(248, 113, 113, 0.15); }
+.btn-danger:hover { border-color: var(--danger); background: var(--danger-bg); }
 .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ─── CARDS ─── */
@@ -551,11 +618,13 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
-.badge-yellow { background: rgba(251,191,36,0.12); color: var(--accent); }
-.badge-green  { background: rgba(52,211,153,0.12);  color: var(--green); }
-.badge-red    { background: rgba(248,113,113,0.12);  color: var(--red); }
+.badge-yellow { background: var(--accent-dim); color: var(--accent); }
+.badge-green  { background: var(--success-bg);  color: var(--success); }
+.badge-red    { background: var(--danger-bg);  color: var(--danger); }
 .badge-gray   { background: var(--surface-2); color: var(--text-2); }
+.badge-info   { background: var(--info-bg);    color: var(--info); }
 
 /* ─── NOMINATION COUNTER ─── */
 
@@ -568,7 +637,7 @@ body {
 
 .nom-label { font-size: 0.875rem; color: var(--text-2); }
 .nom-count { font-weight: 700; color: var(--text); }
-.nom-count.full { color: var(--red); }
+.nom-count.full { color: var(--success); }
 
 .nom-bar {
   flex: 1;
@@ -580,11 +649,11 @@ body {
 }
 .nom-bar-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--accent-fill);
   border-radius: 100px;
   transition: width 0.3s ease;
 }
-.nom-bar-fill.full { background: var(--red); }
+.nom-bar-fill.full { background: var(--success); }
 
 /* ─── SEARCH ─── */
 
@@ -639,12 +708,12 @@ body {
 .pokemon-card.nominated { opacity: 0.35; cursor: default; }
 
 .pokemon-card.own {
-  border-color: var(--green);
-  background: var(--green-dim);
+  border-color: var(--success);
+  background: var(--success-bg);
   opacity: 1;
 }
 .pokemon-card.own:hover {
-  border-color: var(--green);
+  border-color: var(--success);
   box-shadow: 0 0 14px rgba(52, 211, 153, 0.15);
   transform: translateY(-2px);
 }
@@ -674,7 +743,7 @@ body {
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
-.pokemon-tag-own   { background: rgba(52,211,153,0.18); color: var(--green); }
+.pokemon-tag-own   { background: var(--success-bg); color: var(--success); }
 .pokemon-tag-taken { background: var(--surface-2); color: var(--text-3); }
 
 /* ─── TIER BADGES ─── */
@@ -694,11 +763,11 @@ body {
   letter-spacing: 0;
   pointer-events: none;
 }
-.tier-badge-s { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
-.tier-badge-a { background: rgba(251,191,36,0.15);  color: var(--accent); border: 1px solid rgba(251,191,36,0.35); }
-.tier-badge-b { background: rgba(52,211,153,0.15);  color: var(--green); border: 1px solid rgba(52,211,153,0.35); }
-.tier-badge-c { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.35); }
-.tier-badge-d { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+.tier-badge-s { background: var(--tier-s-bg); color: var(--tier-s); border: 1px solid var(--tier-s-border); }
+.tier-badge-a { background: var(--tier-a-bg); color: var(--tier-a); border: 1px solid var(--tier-a-border); }
+.tier-badge-b { background: var(--tier-b-bg); color: var(--tier-b); border: 1px solid var(--tier-b-border); }
+.tier-badge-c { background: var(--tier-c-bg); color: var(--tier-c); border: 1px solid var(--tier-c-border); }
+.tier-badge-d { background: var(--tier-d-bg); color: var(--tier-d); border: 1px solid var(--tier-d-border); }
 
 /* ─── DRAFT ─── */
 
@@ -725,8 +794,27 @@ body {
 
 .draft-stat-value { font-size: 1rem; font-weight: 700; }
 .draft-stat-value.accent { color: var(--accent); }
-.draft-stat-value.green  { color: var(--green); }
+.draft-stat-value.green  { color: var(--success); }
 .draft-stat-value.muted  { color: var(--text-2); }
+
+/* ─── NOTICE (components/Notice.tsx) ─── */
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid;
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.notice-info    { background: var(--info-bg);    border-color: var(--info-border);    border-left-color: var(--info);    color: var(--info); }
+.notice-success { background: var(--success-bg); border-color: var(--success-border); border-left-color: var(--success); color: var(--success); }
+.notice-warning { background: var(--warning-bg); border-color: var(--warning-border); border-left-color: var(--warning); color: var(--warning); }
+.notice-danger  { background: var(--danger-bg);  border-color: var(--danger-border);  border-left-color: var(--danger);  color: var(--danger); }
 
 .my-turn-banner {
   background: rgba(251, 191, 36, 0.07);
@@ -750,7 +838,7 @@ body {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: var(--accent);
+  background: var(--accent-fill);
   border-radius: 2px 0 0 2px;
 }
 
@@ -758,7 +846,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-fill);
   flex-shrink: 0;
   box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
   animation: pulseGlow 1.5s ease-in-out infinite;
@@ -821,8 +909,8 @@ body {
 
 /* ─── MISC ─── */
 
-.error   { color: var(--red);   font-size: 0.875rem; }
-.success { color: var(--green); font-size: 0.875rem; }
+.error   { color: var(--danger);   font-size: 0.875rem; }
+.success { color: var(--success); font-size: 0.875rem; }
 
 .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
@@ -847,18 +935,6 @@ body {
 
 .inline-form { display: flex; gap: 0.5rem; align-items: stretch; }
 .inline-form .search-input { flex: 1; margin-bottom: 0; }
-
-.draft-active-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.75rem;
-  border-radius: 100px;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  color: var(--red);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
 
 /* ─── GEN TABS ─── */
 
@@ -995,7 +1071,7 @@ body {
   display: inline-block;
   width: 20px;
   height: 2px;
-  background: var(--accent);
+  background: var(--accent-fill);
   border-radius: 1px;
 }
 
@@ -1065,7 +1141,7 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--accent);
+  background: var(--accent-fill);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1100,8 +1176,8 @@ body {
 }
 
 .nav-card-gold h3  { color: var(--accent); }
-.nav-card-live h3  { color: var(--green); }
-.nav-card-setup h3 { color: var(--blue); }
+.nav-card-live h3  { color: var(--success); }
+.nav-card-setup h3 { color: var(--info); }
 
 .nav-card p {
   font-size: 0.825rem;
@@ -1141,7 +1217,7 @@ body {
   box-shadow: 0 0 28px rgba(251,191,36,0.1), 0 4px 20px rgba(0,0,0,0.3);
   transform: translateY(-3px);
 }
-.nav-card-gold::after { background: var(--accent); }
+.nav-card-gold::after { background: var(--accent-fill); }
 
 .nav-card-icon-gold {
   background: rgba(251, 191, 36, 0.1) !important;
@@ -1156,11 +1232,11 @@ body {
 }
 .nav-card-live:hover {
   border-color: rgba(52,211,153,0.45);
-  border-left-color: var(--green);
+  border-left-color: var(--success);
   box-shadow: 0 0 28px rgba(52,211,153,0.09), 0 4px 20px rgba(0,0,0,0.3);
   transform: translateY(-3px);
 }
-.nav-card-live::after { background: var(--green); }
+.nav-card-live::after { background: var(--success); }
 
 .nav-card-live-dot {
   position: absolute;
@@ -1169,7 +1245,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--green);
+  background: var(--success);
   animation: livePulse 1.8s ease-in-out infinite;
 }
 
@@ -1177,7 +1253,7 @@ body {
   background: rgba(52, 211, 153, 0.1) !important;
   border-color: rgba(52, 211, 153, 0.25) !important;
 }
-.nav-card-arrow-green { color: var(--green) !important; }
+.nav-card-arrow-green { color: var(--success) !important; }
 
 /* Blue — Setup en curso */
 .nav-card-setup {
@@ -1187,17 +1263,17 @@ body {
 }
 .nav-card-setup:hover {
   border-color: rgba(129,140,248,0.4);
-  border-left-color: var(--blue);
+  border-left-color: var(--info);
   box-shadow: 0 0 28px rgba(129,140,248,0.08), 0 4px 20px rgba(0,0,0,0.3);
   transform: translateY(-3px);
 }
-.nav-card-setup::after { background: var(--blue); }
+.nav-card-setup::after { background: var(--info); }
 
 .nav-card-icon-blue {
   background: rgba(129, 140, 248, 0.1) !important;
   border-color: rgba(129, 140, 248, 0.25) !important;
 }
-.nav-card-arrow-blue { color: var(--blue) !important; }
+.nav-card-arrow-blue { color: var(--info) !important; }
 
 /* League count badge */
 .nav-card-count {
@@ -1207,8 +1283,8 @@ body {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(52, 211, 153, 0.15);
-  color: var(--green);
+  background: var(--success-bg);
+  color: var(--success);
   font-size: 0.65rem;
   font-weight: 800;
   margin-left: 0.4rem;
@@ -1254,20 +1330,11 @@ body {
 
 .league-card-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.25rem;
 }
-
-.league-card-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-3);
-  flex-shrink: 0;
-}
-
-.league-card-dot.active { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
 
 /* ─── SCHEDULE / JORNADAS ─── */
 

@@ -147,16 +147,16 @@ function StandingRow({
         )}
       </td>
       <td style={{ textAlign: 'center', color: 'var(--text-3)' }}>{row.played}</td>
-      <td style={{ textAlign: 'center', color: row.wins > 0 ? 'var(--green)' : 'var(--text-3)', fontWeight: row.wins > 0 ? 600 : 400 }}>
+      <td style={{ textAlign: 'center', color: row.wins > 0 ? 'var(--success)' : 'var(--text-3)', fontWeight: row.wins > 0 ? 600 : 400 }}>
         {row.wins}
       </td>
-      <td style={{ textAlign: 'center', color: row.losses > 0 ? '#f87171' : 'var(--text-3)', fontWeight: row.losses > 0 ? 600 : 400 }}>
+      <td style={{ textAlign: 'center', color: row.losses > 0 ? 'var(--danger)' : 'var(--text-3)', fontWeight: row.losses > 0 ? 600 : 400 }}>
         {row.losses}
       </td>
       {showDiff && (
         <td
           style={{ textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '0.85rem',
-            color: row.scoreDiff > 0 ? 'var(--green)' : row.scoreDiff < 0 ? '#f87171' : 'var(--text-3)' }}
+            color: row.scoreDiff > 0 ? 'var(--success)' : row.scoreDiff < 0 ? 'var(--danger)' : 'var(--text-3)' }}
           title={`${row.scoreFor} a favor, ${row.scoreAgainst} en contra`}
         >
           {formatDiff(row.scoreDiff)}

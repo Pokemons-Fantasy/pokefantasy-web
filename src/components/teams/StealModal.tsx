@@ -68,8 +68,8 @@ export default function StealModal({
 
         {/* Balance + rival gets */}
         <div style={{
-          background: canAfford ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.05)',
-          border: `1px solid ${canAfford ? 'rgba(52,211,153,0.18)' : 'rgba(248,113,113,0.18)'}`,
+          background: canAfford ? 'var(--success-bg)' : 'var(--danger-bg)',
+          border: `1px solid ${canAfford ? 'var(--success-border)' : 'var(--danger-border)'}`,
           borderRadius: 10,
           padding: '0.75rem 1rem',
           display: 'flex',
@@ -81,7 +81,7 @@ export default function StealModal({
             <span className="coin-badge" style={!canAfford ? {
               background: 'rgba(107,114,128,0.15)',
               borderColor: 'rgba(107,114,128,0.25)',
-              color: '#9ca3af',
+              color: 'var(--text-3)',
             } : {}}>
               💰 {myBalance}
             </span>
@@ -91,13 +91,13 @@ export default function StealModal({
               <span style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
                 ⚠️ {pick.username} recibirá
               </span>
-              <span className="coin-badge" style={{ background: 'rgba(251,191,36,0.08)' }}>
+              <span className="coin-badge" style={{ background: 'var(--accent-dim)' }}>
                 💰 {stealPrice * 2}
               </span>
             </div>
           )}
           {!canAfford && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 600 }}>
               Te faltan {stealPrice - myBalance} monedas
             </span>
           )}

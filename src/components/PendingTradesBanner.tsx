@@ -46,8 +46,8 @@ export default function PendingTradesBanner() {
   return (
     <div
       style={{
-        background: 'rgba(251, 191, 36, 0.07)',
-        border: '1px solid rgba(251, 191, 36, 0.25)',
+        background: 'var(--accent-dim)',
+        border: '1px solid var(--accent-glow)',
         borderRadius: 'var(--radius)',
         marginBottom: '1.25rem',
         overflow: 'hidden',
@@ -93,7 +93,7 @@ export default function PendingTradesBanner() {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                borderTop: '1px solid rgba(251, 191, 36, 0.15)',
+                borderTop: '1px solid var(--accent-dim)',
               }}
             >
               {[...countByLeague.entries()].map(([leagueId, count]) => (

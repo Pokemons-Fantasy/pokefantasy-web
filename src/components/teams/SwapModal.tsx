@@ -91,7 +91,7 @@ export default function SwapModal({
             ) : (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                color: 'var(--green)', fontSize: '0.85rem', fontWeight: 600,
+                color: 'var(--success)', fontSize: '0.85rem', fontWeight: 600,
               }}>
                 ✓ Gratis
               </span>
@@ -102,8 +102,8 @@ export default function SwapModal({
         {/* Balance row (only shown when there's a base cost) */}
         {basePrice > 0 && (
           <div style={{
-            background: canAffordBase ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.05)',
-            border: `1px solid ${canAffordBase ? 'rgba(52,211,153,0.18)' : 'rgba(248,113,113,0.18)'}`,
+            background: canAffordBase ? 'var(--success-bg)' : 'var(--danger-bg)',
+            border: `1px solid ${canAffordBase ? 'var(--success-border)' : 'var(--danger-border)'}`,
             borderRadius: 10,
             padding: '0.75rem 1rem',
             display: 'flex',
@@ -117,17 +117,17 @@ export default function SwapModal({
               <span className="coin-badge" style={!canAffordBase ? {
                 background: 'rgba(107,114,128,0.15)',
                 borderColor: 'rgba(107,114,128,0.25)',
-                color: '#9ca3af',
+                color: 'var(--text-3)',
               } : {}}>
                 💰 {myBalance}
               </span>
             </div>
             {canAffordBase ? (
-              <span style={{ fontSize: '0.8rem', color: 'var(--green)', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: 600 }}>
                 ✓ Saldo suficiente
               </span>
             ) : (
-              <span style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 600 }}>
                 Te faltan {basePrice - myBalance} monedas
               </span>
             )}
@@ -193,34 +193,34 @@ export default function SwapModal({
                 padding: '0.6rem 0.9rem',
                 borderRadius: 8,
                 background: netCostAbovePrice > 0
-                  ? 'rgba(52,211,153,0.07)'
+                  ? 'var(--success-bg)'
                   : netCostAbovePrice < 0
-                  ? 'rgba(248,113,113,0.07)'
+                  ? 'var(--danger-bg)'
                   : 'rgba(255,255,255,0.04)',
                 border: `1px solid ${
                   netCostAbovePrice > 0
-                    ? 'rgba(52,211,153,0.2)'
+                    ? 'var(--success-border)'
                     : netCostAbovePrice < 0
-                    ? 'rgba(248,113,113,0.2)'
+                    ? 'var(--danger-border)'
                     : 'rgba(255,255,255,0.1)'
                 }`,
                 fontSize: '0.82rem',
               }}>
                 {netCostAbovePrice > 0 ? (
                   <>
-                    <span style={{ color: 'var(--green)', fontWeight: 700 }}>+💰 {netCostAbovePrice}</span>
+                    <span style={{ color: 'var(--success)', fontWeight: 700 }}>+💰 {netCostAbovePrice}</span>
                     <span style={{ color: 'var(--text-2)' }}>— recibes monedas por dar un tier superior</span>
                   </>
                 ) : netCostAbovePrice < 0 ? (
                   <>
-                    <span style={{ color: 'var(--red)', fontWeight: 700 }}>−💰 {-netCostAbovePrice}</span>
+                    <span style={{ color: 'var(--danger)', fontWeight: 700 }}>−💰 {-netCostAbovePrice}</span>
                     <span style={{ color: 'var(--text-2)' }}>— pagas la diferencia de tier</span>
                   </>
                 ) : (
                   <span style={{ color: 'var(--text-3)' }}>Sin coste adicional</span>
                 )}
                 {netCostAbovePrice < 0 && myBalance < totalCost && (
-                  <span style={{ color: 'var(--red)', marginLeft: 'auto' }}>
+                  <span style={{ color: 'var(--danger)', marginLeft: 'auto' }}>
                     Saldo insuficiente
                   </span>
                 )}

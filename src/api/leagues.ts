@@ -1,12 +1,18 @@
 import { apiClient } from './client';
 import type { MatchScore } from '../utils/score';
+import type { DraftStatus } from './pokemons';
+
+/** Estado del draft vigente de la liga; null si no tiene draft. Opcional: el backend antiguo no lo envía. */
+export type LeagueDraftStatus = DraftStatus['status'] | null;
 
 export interface League {
   id: string;
   name: string;
   createdBy: string;
   memberCount: number;
+  /** Obsoleto: el backend nunca lo pasa a ACTIVE. Usar draftStatus. */
   status: 'SETUP' | 'ACTIVE';
+  draftStatus?: LeagueDraftStatus;
 }
 
 export interface LeagueMember {
@@ -19,7 +25,9 @@ export interface LeagueDetail {
   name: string;
   createdBy: string;
   members: LeagueMember[];
+  /** Obsoleto: el backend nunca lo pasa a ACTIVE. Usar draftStatus. */
   status: 'SETUP' | 'ACTIVE';
+  draftStatus?: LeagueDraftStatus;
 }
 
 export const createLeague = async (name: string): Promise<string> => {

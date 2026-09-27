@@ -26,7 +26,7 @@ function FallbackScreen({ error }: { error: Error | null }) {
         }}
       >
         <div style={{ fontSize: '3rem' }}>⚠️</div>
-        <h1 className="page-title" style={{ color: 'var(--red)' }}>Algo ha ido mal</h1>
+        <h1 className="page-title" style={{ color: 'var(--danger)' }}>Algo ha ido mal</h1>
         <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: '28rem' }}>
           Se ha producido un error inesperado. Puedes intentar recargar la página o volver al inicio.
         </p>

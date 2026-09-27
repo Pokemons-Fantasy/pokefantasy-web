@@ -99,8 +99,8 @@ export default function SetPriceModal({
           <div style={{
             padding: '0.6rem 0.9rem',
             borderRadius: 8,
-            background: canAfford ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.05)',
-            border: `1px solid ${canAfford ? 'rgba(52,211,153,0.18)' : 'rgba(248,113,113,0.18)'}`,
+            background: canAfford ? 'var(--success-bg)' : 'var(--danger-bg)',
+            border: `1px solid ${canAfford ? 'var(--success-border)' : 'var(--danger-border)'}`,
             display: 'flex',
             flexDirection: 'column',
             gap: '0.35rem',
@@ -108,7 +108,7 @@ export default function SetPriceModal({
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-2)' }}>Inversión</span>
-              <span style={{ color: canAfford ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>💰 {investment}</span>
+              <span style={{ color: canAfford ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>💰 {investment}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-2)' }}>Tu saldo</span>
@@ -116,10 +116,10 @@ export default function SetPriceModal({
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-3)' }}>Si te roban, recibirías</span>
-              <span style={{ color: 'var(--green)', fontWeight: 600 }}>💰 {newPrice * 2}</span>
+              <span style={{ color: 'var(--success)', fontWeight: 600 }}>💰 {newPrice * 2}</span>
             </div>
             {!canAfford && (
-              <span style={{ color: 'var(--red)', fontWeight: 600 }}>
+              <span style={{ color: 'var(--danger)', fontWeight: 600 }}>
                 Saldo insuficiente — te faltan {investment - myBalance} monedas
               </span>
             )}

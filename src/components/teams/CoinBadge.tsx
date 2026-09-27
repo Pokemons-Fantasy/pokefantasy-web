@@ -21,7 +21,7 @@ export default function CoinBadge({ coins }: CoinBadgeProps) {
     return () => clearTimeout(t);
   }, [coins, prefersReducedMotion]);
 
-  const flashColor = flash === 'up' ? 'var(--green, #34d399)' : 'var(--red, #f87171)';
+  const flashColor = flash === 'up' ? 'var(--success)' : 'var(--danger)';
 
   return (
     <motion.span

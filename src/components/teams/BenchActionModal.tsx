@@ -125,14 +125,14 @@ export default function BenchActionModal({
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
                 <span style={{ color: 'var(--text-2)' }}>Coste</span>
-                <span style={{ color: '#f87171', fontWeight: 600 }}>−💰 {price}</span>
+                <span style={{ color: 'var(--danger)', fontWeight: 600 }}>−💰 {price}</span>
               </div>
               <div style={{
                 borderTop: '1px solid var(--border)', paddingTop: '0.5rem',
                 display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem',
               }}>
                 <span style={{ fontWeight: 700 }}>Saldo tras compra</span>
-                <span style={{ color: 'var(--green)', fontWeight: 700 }}>💰 {myBalance - price}</span>
+                <span style={{ color: 'var(--success)', fontWeight: 700 }}>💰 {myBalance - price}</span>
               </div>
             </div>
             <div className="modal-actions">

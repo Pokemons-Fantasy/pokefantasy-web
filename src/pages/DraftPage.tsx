@@ -209,7 +209,7 @@ export default function DraftPage() {
                           display: 'inline-block',
                           fontWeight: 600,
                           fontSize: '0.875rem',
-                          color: urgent ? 'var(--red, #ef4444)' : 'var(--text-2)',
+                          color: urgent ? 'var(--danger)' : 'var(--text-2)',
                         }}
                       >
                         ⏱ {secondsLeft}s

@@ -4,6 +4,25 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyLeagues } from '../api/leagues';
 import PendingTradesBanner from '../components/PendingTradesBanner';
 import PageHeader from '../components/PageHeader';
+import { homeFocus, leaguePhase } from '../utils/leaguePhase';
+
+const FOCUS_CARDS = {
+  draft: {
+    live: true, icon: '⚡', title: 'Draft en curso', path: '/draft', cta: 'Ir al draft',
+    single: 'ir directamente al draft.',
+    many: (n: number) => `${n} ligas con draft en curso.`,
+  },
+  setup: {
+    live: false, icon: '🎯', title: 'Continuar setup', path: '', cta: 'Continuar',
+    single: 'nominar Pokémon y arrancar.',
+    many: () => 'Continúa preparando tus ligas.',
+  },
+  season: {
+    live: false, icon: '📅', title: 'Temporada en curso', path: '/schedule', cta: 'Ver calendario',
+    single: 'consulta la jornada y la clasificación.',
+    many: (n: number) => `${n} ligas en temporada.`,
+  },
+} as const;
 
 export default function HomePage() {
   const username = useAuthStore((s) => s.username);
@@ -14,23 +33,15 @@ export default function HomePage() {
     queryFn: getMyLeagues,
   });
 
-  const activeLeagues = leagues.filter((l) => l.status === 'ACTIVE');
+  const activeLeagues = leagues.filter((l) => ['draft', 'season'].includes(leaguePhase(l.draftStatus)));
+  const focus = homeFocus(leagues);
+  const card = focus && FOCUS_CARDS[focus.phase];
+  const single = focus?.leagues.length === 1 ? focus.leagues[0] : null;
 
-  // Navigate to draft: active league → directly to its draft page
-  // No active leagues yet → leagues list to continue setup
-  const handleDraftNav = () => {
-    if (activeLeagues.length === 1) {
-      navigate(`/leagues/${activeLeagues[0].id}/draft`);
-    } else if (activeLeagues.length > 1) {
-      navigate('/leagues');
-    } else if (leagues.length === 1) {
-      navigate(`/leagues/${leagues[0].id}`);
-    } else {
-      navigate('/leagues');
-    }
+  // Una liga en esa fase → directo a su pantalla; varias → lista de ligas
+  const handleFocusNav = () => {
+    navigate(single && card ? `/leagues/${single.id}${card.path}` : '/leagues');
   };
-
-  const draftIsLive = activeLeagues.length > 0;
 
   return (
     <div className="page-wrapper">
@@ -67,7 +78,7 @@ export default function HomePage() {
             </div>
             {activeLeagues.length > 0 && (
               <div className="stat-pill">
-                <span className="stat-pill-value" style={{ color: 'var(--green)' }}>
+                <span className="stat-pill-value" style={{ color: 'var(--success)' }}>
                   {activeLeagues.length}
                 </span>
                 <span className="stat-pill-label">Activa{activeLeagues.length !== 1 ? 's' : ''}</span>
@@ -87,37 +98,28 @@ export default function HomePage() {
             <span className="nav-card-arrow">Ver ligas <span>→</span></span>
           </button>
 
-          {/* ── Draft / Setup ── shown when user has at least one league */}
-          {leagues.length > 0 && (
-            <button
-              className={`nav-card ${draftIsLive ? 'nav-card-live' : 'nav-card-setup'}`}
-              onClick={handleDraftNav}
-            >
-              {draftIsLive && <span className="nav-card-live-dot" aria-hidden="true" />}
+          {/* ── Fase destacada: draft en curso > setup > temporada ── */}
+          {focus && card && (
+            <button className={`nav-card ${card.live ? 'nav-card-live' : 'nav-card-setup'}`} onClick={handleFocusNav}>
+              {card.live && <span className="nav-card-live-dot" aria-hidden="true" />}
 
-              <div className={`nav-card-icon ${draftIsLive ? 'nav-card-icon-green' : 'nav-card-icon-blue'}`}>
-                {draftIsLive ? '⚡' : '🎯'}
+              <div className={`nav-card-icon ${card.live ? 'nav-card-icon-green' : 'nav-card-icon-blue'}`}>
+                {card.icon}
               </div>
 
               <h3>
-                {draftIsLive ? 'Draft activo' : 'Continuar setup'}
-                {draftIsLive && activeLeagues.length > 1 && (
-                  <span className="nav-card-count">{activeLeagues.length}</span>
-                )}
+                {card.title}
+                {focus.leagues.length > 1 && <span className="nav-card-count">{focus.leagues.length}</span>}
               </h3>
 
               <p>
-                {draftIsLive
-                  ? activeLeagues.length === 1
-                    ? <><strong style={{ color: 'var(--text)' }}>{activeLeagues[0].name}</strong> — ir directamente al draft.</>
-                    : `${activeLeagues.length} ligas con draft en curso.`
-                  : leagues.length === 1
-                    ? <><strong style={{ color: 'var(--text)' }}>{leagues[0].name}</strong> — nominar Pokémon y arrancar.</>
-                    : 'Continúa preparando tus ligas.'}
+                {single
+                  ? <><strong style={{ color: 'var(--text)' }}>{single.name}</strong> — {card.single}</>
+                  : card.many(focus.leagues.length)}
               </p>
 
-              <span className={`nav-card-arrow ${draftIsLive ? 'nav-card-arrow-green' : 'nav-card-arrow-blue'}`}>
-                {draftIsLive ? 'Ir al draft' : 'Continuar'} <span>→</span>
+              <span className={`nav-card-arrow ${card.live ? 'nav-card-arrow-green' : 'nav-card-arrow-blue'}`}>
+                {card.cta} <span>→</span>
               </span>
             </button>
           )}

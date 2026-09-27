@@ -48,7 +48,7 @@ export default function TierDistributionSection({ form, setField, disabled, tier
         marginBottom: '0.25rem',
         fontSize: '0.85rem',
         fontWeight: 600,
-        color: tierSumOk ? 'var(--green)' : 'var(--red)',
+        color: tierSumOk ? 'var(--success)' : 'var(--danger)',
       }}>
         {tierSumOk ? '✓' : '✗'} Suma: {tierSum}% {tierSumOk ? '— correcto' : '(debe ser 100%)'}
       </div>
