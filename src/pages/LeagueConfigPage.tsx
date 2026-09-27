@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useBlocker, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
   getLeagueDetail,
@@ -12,7 +12,6 @@ import { getDraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
-import PageHeader from '../components/PageHeader';
 import GeneralSettingsSection from '../components/leagueConfig/GeneralSettingsSection';
 import TierPricesSection from '../components/leagueConfig/TierPricesSection';
 import TierDistributionSection from '../components/leagueConfig/TierDistributionSection';
@@ -95,14 +94,12 @@ const FIELD_KEYS = Object.keys(FIELD_LABELS) as (keyof LeagueSettings)[];
 export default function LeagueConfigPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
 
   const [form, setForm] = useState<LeagueSettings>(DEFAULT_SETTINGS);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -173,20 +170,19 @@ export default function LeagueConfigPage() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasChanges]);
 
-  const guardedNavigate = (target: string) => {
-    if (hasChanges) {
-      setLeaveTarget(target);
-    } else {
-      navigate(target);
-    }
-  };
+  // Cualquier salida (pestañas, menú, enlaces, atrás del navegador o de Android) pasa por aquí.
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => hasChanges && currentLocation.pathname !== nextLocation.pathname,
+  );
 
   // ── Mutations ────────────────────────────────────────────────────────────────
   const { mutate: save, isPending: saving } = useMutation({
     mutationFn: (payload: LeagueSettings) => updateLeagueSettings(leagueId!, payload),
-    onSuccess: () => {
+    onSuccess: (_data, payload) => {
       setError('');
       setSavedAt(Date.now());
+      // Lo guardado pasa a ser la referencia ya: sin esto, salir antes del refetch pediría confirmación
+      queryClient.setQueryData(['league-settings', leagueId], payload);
       queryClient.invalidateQueries({ queryKey: ['league-settings', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
@@ -226,19 +222,11 @@ export default function LeagueConfigPage() {
   };
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => guardedNavigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => guardedNavigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header" style={{ marginBottom: '1.5rem' }}>
           <div>
             <h1 className="page-title">⚙️ Configuración de liga</h1>
-            {league && <p className="page-subtitle">{league.name}</p>}
           </div>
         </div>
 
@@ -296,8 +284,8 @@ export default function LeagueConfigPage() {
         )}
       </main>
 
-      {leaveTarget && (
-        <div className="modal-overlay" onClick={() => setLeaveTarget(null)}>
+      {blocker.state === 'blocked' && (
+        <div className="modal-overlay" onClick={() => blocker.reset()}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2 className="modal-title">Cambios sin guardar</h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
@@ -305,16 +293,16 @@ export default function LeagueConfigPage() {
               Si sales ahora se perderán.
             </p>
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setLeaveTarget(null)}>
+              <button className="btn-secondary" onClick={() => blocker.reset()}>
                 Seguir editando
               </button>
-              <button className="btn-danger" onClick={() => navigate(leaveTarget)}>
+              <button className="btn-danger" onClick={() => blocker.proceed()}>
                 Descartar cambios
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
