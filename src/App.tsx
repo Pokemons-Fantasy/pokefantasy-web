@@ -10,7 +10,9 @@ import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
-import LeagueDetailPage from './pages/LeagueDetailPage';
+import LeagueMembersPage from './pages/LeagueMembersPage';
+import LeagueLayout from './components/league/LeagueLayout';
+import LeagueIndexRedirect from './components/league/LeagueIndexRedirect';
 import DraftPage from './pages/DraftPage';
 import TeamsPage from './pages/TeamsPage';
 import LeagueConfigPage from './pages/LeagueConfigPage';
@@ -92,16 +94,23 @@ const router = createBrowserRouter([
           { path: '/', element: <HomePage /> },
           { path: '/profile', element: <MyProfilePage /> },
           { path: '/leagues', element: <LeaguesPage /> },
-          { path: '/leagues/:leagueId', element: <LeagueDetailPage /> },
-          { path: '/leagues/:leagueId/pool', element: <PoolPage /> },
-          { path: '/leagues/:leagueId/draft', element: <DraftPage /> },
-          { path: '/leagues/:leagueId/teams', element: <TeamsPage /> },
-          { path: '/leagues/:leagueId/config', element: <LeagueConfigPage /> },
-          { path: '/leagues/:leagueId/schedule', element: <SchedulePage /> },
-          { path: '/leagues/:leagueId/tiers', element: <TierManagementPage /> },
-          { path: '/leagues/:leagueId/activity', element: <ActivityPage /> },
-          { path: '/leagues/:leagueId/standings', element: <StandingsPage /> },
-          { path: '/leagues/:leagueId/players/:username', element: <PlayerProfilePage /> },
+          {
+            path: '/leagues/:leagueId',
+            element: <LeagueLayout />,
+            children: [
+              { index: true, element: <LeagueIndexRedirect /> },
+              { path: 'members', element: <LeagueMembersPage /> },
+              { path: 'pool', element: <PoolPage /> },
+              { path: 'draft', element: <DraftPage /> },
+              { path: 'teams', element: <TeamsPage /> },
+              { path: 'config', element: <LeagueConfigPage /> },
+              { path: 'schedule', element: <SchedulePage /> },
+              { path: 'tiers', element: <TierManagementPage /> },
+              { path: 'activity', element: <ActivityPage /> },
+              { path: 'standings', element: <StandingsPage /> },
+              { path: 'players/:username', element: <PlayerProfilePage /> },
+            ],
+          },
           { path: '/invite/:token', element: <InvitePage /> },
         ],
       },
