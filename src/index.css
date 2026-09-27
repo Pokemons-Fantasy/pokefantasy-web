@@ -374,7 +374,7 @@ body {
 /* Sticky own-team panel (TeamsPage) */
 .own-team-panel {
   position: sticky;
-  top: calc(60px + env(safe-area-inset-top));  /* header-inner 60px + status bar */
+  top: calc(60px + var(--league-tabs-h, 0px) + env(safe-area-inset-top));  /* cabecera 60px + pestañas de liga + status bar */
   z-index: 40;              /* below header (z-50), above rival teams */
   background: var(--surface);
   border: 1px solid var(--success-border);
@@ -870,6 +870,8 @@ body {
 }
 .picks-table tr:last-child td { border-bottom: none; }
 .picks-table tr:hover td { background: rgba(255,255,255,0.02); }
+.row-link { color: inherit; text-decoration: none; }
+.row-link:hover, .row-link:focus-visible { text-decoration: underline; }
 
 /* ─── MODAL ─── */
 
