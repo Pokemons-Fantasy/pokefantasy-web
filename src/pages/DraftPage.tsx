@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft, autoPickDraft } from '../api/pokemons';
@@ -8,7 +8,10 @@ import type { ClosedListEntry } from '../api/pokemons';
 import TierBadge from '../components/TierBadge';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PokemonDetailModal from '../components/PokemonDetailModal';
-import { getLeagueDetail } from '../api/leagues';
+import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
+import DraftBoard from '../components/draft/DraftBoard';
+import Notice from '../components/Notice';
+import { buildDraftBoard } from '../utils/draftBoard';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -68,6 +71,15 @@ export default function DraftPage() {
     enabled: !!leagueId,
   });
 
+  // Rondas del draft = maxTeamSize (mismo valor por defecto que DraftPickCommandHandler)
+  const { data: settings } = useQuery({
+    queryKey: ['league-settings', leagueId],
+    queryFn: () => getLeagueSettings(leagueId!),
+    enabled: !!leagueId,
+    staleTime: 120_000,
+  });
+  const totalRounds = settings?.maxTeamSize ?? 10;
+
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
@@ -79,6 +91,19 @@ export default function DraftPage() {
   );
 
   const isMyTurn = draft?.status === 'IN_PROGRESS' && draft.currentTurn === username;
+
+  // draftHistory es el draft tal como se jugó; draft.picks son los equipos de ahora (con robos y trades)
+  const history = draft?.draftHistory ?? [];
+  const draftInProgress = draft?.status === 'IN_PROGRESS';
+  const board = draft && buildDraftBoard({
+    history,
+    turnOrder: draft.turnOrder,
+    currentPicks: draft.picks,
+    totalRounds: draftInProgress ? totalRounds : 0,
+    current: draftInProgress ? { round: draft.currentRound, username: draft.currentTurn } : null,
+  });
+  const tierByName = new Map(pool.map((p) => [p.pokemonName, p.tier]));
+  const entryByName = new Map(pool.map((p) => [p.pokemonName, p]));
 
   const { mutate: pick, isPending: picking } = useMutation({
     mutationFn: (pokemonName: string) => draftPick(leagueId!, pokemonName),
@@ -207,8 +232,12 @@ export default function DraftPage() {
               </div>
             )}
             <div>
-              <div className="draft-stat-label">Picks totales</div>
-              <div className="draft-stat-value">{draft.picks?.length ?? 0}</div>
+              <div className="draft-stat-label">Picks del draft</div>
+              <div className="draft-stat-value">
+                {draftInProgress
+                  ? `${history.length} de ${draft.turnOrder.length * totalRounds}`
+                  : history.length}
+              </div>
             </div>
           </div>
         )}
@@ -255,29 +284,24 @@ export default function DraftPage() {
           )
         )}
 
-        {draft && ((draft.draftHistory ?? draft.picks)?.length ?? 0) > 0 && (
+        {board && (history.length > 0 || draftInProgress) && (
           <div style={{ marginTop: '2.5rem' }}>
-            <p className="section-label">Historial de picks</p>
-            <div className="picks-table-container">
-              <table className="picks-table">
-                <thead>
-                  <tr>
-                    <th>Ronda</th>
-                    <th>Jugador</th>
-                    <th>Pokémon</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(draft.draftHistory ?? draft.picks).map((p, i) => (
-                    <tr key={i}>
-                      <td style={{ color: 'var(--text-3)' }}>{p.round}</td>
-                      <td style={{ fontWeight: 600 }}>{p.username}</td>
-                      <td style={{ textTransform: 'capitalize' }}>{p.pokemonName}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <p className="section-label">Tablero</p>
+            <DraftBoard
+              board={board}
+              me={username}
+              tierByName={tierByName}
+              onSelect={(name) => setDetailEntry(entryByName.get(name) ?? null)}
+            />
+          </div>
+        )}
+
+        {draft?.status === 'COMPLETED' && history.length === 0 && (
+          <div style={{ marginTop: '2rem' }}>
+            <Notice variant="info">
+              Esta liga se drafteó antes de que se guardara el historial del draft, así que no hay tablero.
+            </Notice>
+            <Link className="btn-ghost" to={`/leagues/${leagueId}/teams`}>Ver equipos</Link>
           </div>
         )}
       </main>

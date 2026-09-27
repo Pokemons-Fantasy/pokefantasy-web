@@ -64,7 +64,7 @@ export interface LeagueSettings {
   priceTierC: number;
   priceTierD: number;
   seasonStartDate?: string; // ISO "YYYY-MM-DD"
-  maxTeamSize?: number;     // default 20
+  maxTeamSize?: number;     // default 10 (DraftPickCommandHandler); también son las rondas del draft
   tierPctS: number;         // % of pool → S tier (default 20)
   tierPctA: number;         // % of pool → A tier (default 20)
   tierPctB: number;         // % of pool → B tier (default 20)
