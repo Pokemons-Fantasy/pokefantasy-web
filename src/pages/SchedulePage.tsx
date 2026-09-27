@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -15,7 +15,11 @@ import {
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { parseScore, scoreLabel, SCORE_MAX } from '../utils/score';
+import { formatDay } from '../utils/dates';
+import { jornadaStates, nextMatchFor } from '../utils/schedule';
 import { SkeletonTable } from '../components/SkeletonTable';
+import MarketStatus from '../components/teams/MarketStatus';
+import JornadaCard from '../components/schedule/JornadaCard';
 
 export default function SchedulePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -25,6 +29,8 @@ export default function SchedulePage() {
   const addToast = useToastStore((s) => s.addToast);
   const [pendingMatch, setPendingMatch] = useState<MatchDto | null>(null);
   const [editingMatch, setEditingMatch] = useState<MatchDto | null>(null);
+  // Jornadas jugadas desplegadas (van plegadas por defecto)
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   // Marcador del modal abierto (texto de los inputs): ganador – perdedor.
   const [winnerScore, setWinnerScore] = useState('');
   const [loserScore, setLoserScore] = useState('');
@@ -112,29 +118,38 @@ export default function SchedulePage() {
 
   const editing = correcting || reverting;
 
-  // Determine half-way point to label primera/segunda vuelta
-  const totalJornadas = schedule?.jornadas?.length ?? 0;
-  const halfPoint = Math.ceil(totalJornadas / 2);
+  const jornadas = schedule?.jornadas ?? [];
+  const states = jornadaStates(jornadas);
+  const currentIndex = states.indexOf('current');
+  const next = nextMatchFor(jornadas, username);
+
+  // Mitad del calendario para etiquetar primera / segunda vuelta
+  const halfPoint = Math.ceil(jornadas.length / 2);
 
   function jornadaLabel(j: JornadaDto) {
     const vuelta = j.roundNumber <= halfPoint ? 'Primera vuelta' : 'Segunda vuelta';
     return `Jornada ${j.roundNumber} · ${vuelta}`;
   }
 
-  /** Swap window status for the active jornada — el backend es la única fuente de verdad
-   *  para "abierto/cerrado" (schedule.swapWindowOpen); aquí solo se resuelven los casos
-   *  que ese booleano no cubre (jornada ya completada / sin fecha de swap). */
-  function swapWindowStatus(j: JornadaDto): 'open' | 'closed' | 'no-dates' | 'completed' {
-    const allDone = j.matches.every((m) => m.status === 'COMPLETED');
-    if (allDone) return 'completed';
-    if (!j.swapDeadline) return 'no-dates';
-    return schedule?.swapWindowOpen ? 'open' : 'closed';
+  function toggleJornada(roundNumber: number) {
+    setExpanded((prev) => {
+      const nextSet = new Set(prev);
+      if (nextSet.has(roundNumber)) nextSet.delete(roundNumber);
+      else nextSet.add(roundNumber);
+      return nextSet;
+    });
   }
 
-  // Active jornada = first with at least one PENDING match
-  const activeJornada = schedule?.jornadas?.find(
-    (j) => j.matches.some((m) => m.status === 'PENDING')
-  );
+  // Al llegar, se lleva la jornada actual a la vista (una sola vez; 'nearest' no mueve si ya se ve)
+  const currentRef = useRef<HTMLElement>(null);
+  const scrolledToCurrent = useRef(false);
+  useEffect(() => {
+    const el = currentRef.current;
+    if (!el || scrolledToCurrent.current) return;
+    scrolledToCurrent.current = true;
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView?.({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+  }, [currentIndex]);
 
   return (
     <>
@@ -159,102 +174,42 @@ export default function SchedulePage() {
           </div>
         )}
 
-        {!isLoading && schedule && schedule.jornadas.length === 0 && (
+        {!isLoading && schedule && jornadas.length === 0 && (
           <div className="empty-state">
             <span className="empty-state-icon">⚽</span>
             <p>No hay jornadas generadas todavía.</p>
           </div>
         )}
 
-        {!isLoading && schedule && schedule.jornadas.length > 0 && (
-          <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {schedule.jornadas.map((jornada) => {
-              const isActive = jornada.roundNumber === activeJornada?.roundNumber;
-              const windowStatus = isActive ? swapWindowStatus(jornada) : null;
+        {!isLoading && schedule && jornadas.length > 0 && (
+          <div className="schedule animate-in">
+            <MarketStatus schedule={schedule} />
 
-              return (
-                <div key={jornada.roundNumber} className="jornada-card">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                    <p className="section-label" style={{ margin: 0 }}>
-                      {jornadaLabel(jornada)}
-                    </p>
-                    {jornada.startDate && (
-                      <span style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--text-3)',
-                        background: 'var(--surface-2)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '4px',
-                        padding: '0.1rem 0.4rem',
-                      }}>
-                        📅 {jornada.startDate}
-                      </span>
-                    )}
-                    {windowStatus === 'open' && (
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        color: 'var(--success)',
-                        background: 'rgba(74,222,128,0.1)',
-                        border: '1px solid rgba(74,222,128,0.3)',
-                        borderRadius: '4px',
-                        padding: '0.1rem 0.45rem',
-                      }}>
-                        🟢 Swap abierto
-                      </span>
-                    )}
-                    {windowStatus === 'closed' && (
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        color: 'var(--danger)',
-                        background: 'var(--danger-bg)',
-                        border: '1px solid var(--danger-border)',
-                        borderRadius: '4px',
-                        padding: '0.1rem 0.45rem',
-                      }}>
-                        🔴 Swap cerrado
-                      </span>
-                    )}
-                    {windowStatus === 'no-dates' && (
-                      <span style={{
-                        fontSize: '0.72rem',
-                        color: 'var(--text-3)',
-                        background: 'var(--surface-2)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '4px',
-                        padding: '0.1rem 0.45rem',
-                      }}>
-                        🟡 Sin fechas
-                      </span>
-                    )}
-                  </div>
+            {next && (
+              <div className="next-match">
+                <span className="next-match-label">Tu próximo partido</span>
+                <strong>
+                  Jornada {next.jornada.roundNumber} · contra {next.opponent}
+                  {next.jornada.startDate && ` · ${formatDay(next.jornada.startDate)}`}
+                </strong>
+              </div>
+            )}
 
-                  {isActive && jornada.swapDeadline && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '0.6rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                      <span>🗡️ Robo hasta: <strong style={{ color: 'var(--text-2)' }}>{formatDeadline(jornada.stealDeadline)}</strong></span>
-                      <span>🔄 Swap hasta: <strong style={{ color: 'var(--text-2)' }}>{formatDeadline(jornada.swapDeadline)}</strong></span>
-                    </div>
-                  )}
-
-                  {jornada.matches.length === 0 && (
-                    <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>Sin partidos esta jornada.</p>
-                  )}
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {jornada.matches.map((match) => (
-                      <MatchRow
-                        key={match.id}
-                        match={match}
-                        isAdmin={!!isAdmin}
-                        onRecord={() => openRecord(match)}
-                        onEdit={() => openEdit(match)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {jornadas.map((jornada, i) => (
+              <JornadaCard
+                key={jornada.roundNumber}
+                ref={i === currentIndex ? currentRef : undefined}
+                jornada={jornada}
+                state={states[i]}
+                label={jornadaLabel(jornada)}
+                username={username}
+                isAdmin={!!isAdmin}
+                expanded={expanded.has(jornada.roundNumber)}
+                onToggle={() => toggleJornada(jornada.roundNumber)}
+                onRecord={openRecord}
+                onEdit={openEdit}
+              />
+            ))}
           </div>
         )}
       </main>
@@ -405,142 +360,6 @@ function ScoreFields({
         />
       </div>
       {error && <p className="field-hint field-hint-error" role="alert">{error}</p>}
-    </div>
-  );
-}
-
-function formatDeadline(iso?: string): string {
-  if (!iso) return '—';
-  // "2026-06-04T23:59:00" → "jue 04/06 23:59"
-  const d = new Date(iso);
-  const days = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
-  const day = days[d.getDay()];
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${day} ${dd}/${mm} ${hh}:${min}`;
-}
-
-function MatchRow({
-  match,
-  isAdmin,
-  onRecord,
-  onEdit,
-}: {
-  match: MatchDto;
-  isAdmin: boolean;
-  onRecord: () => void;
-  onEdit: () => void;
-}) {
-  const completed = match.status === 'COMPLETED';
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        padding: '0.6rem 0.9rem',
-        borderRadius: '8px',
-        background: 'var(--surface-2)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      {/* Player 1 */}
-      <span
-        style={{
-          flex: 1,
-          textAlign: 'right',
-          fontWeight: completed && match.winnerUsername === match.player1 ? 700 : 400,
-          color:
-            completed && match.winnerUsername === match.player1
-              ? 'var(--accent)'
-              : completed && match.winnerUsername !== match.player1
-              ? 'var(--text-3)'
-              : 'var(--text)',
-          fontSize: '0.9rem',
-        }}
-      >
-        {completed && match.winnerUsername === match.player1 && '✓ '}
-        {match.player1}
-      </span>
-
-      {/* VS / result badge */}
-      <span
-        style={{
-          padding: '0.2rem 0.5rem',
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          background: completed ? 'rgba(74,222,128,0.1)' : 'var(--surface-3, var(--surface-2))',
-          color: completed ? 'var(--success)' : 'var(--text-3)',
-          border: `1px solid ${completed ? 'rgba(74,222,128,0.3)' : 'var(--border)'}`,
-          minWidth: 36,
-          textAlign: 'center',
-        }}
-      >
-        {completed ? scoreLabel(match) ?? 'FIN' : 'vs'}
-      </span>
-
-      {/* Player 2 */}
-      <span
-        style={{
-          flex: 1,
-          fontWeight: completed && match.winnerUsername === match.player2 ? 700 : 400,
-          color:
-            completed && match.winnerUsername === match.player2
-              ? 'var(--accent)'
-              : completed && match.winnerUsername !== match.player2
-              ? 'var(--text-3)'
-              : 'var(--text)',
-          fontSize: '0.9rem',
-        }}
-      >
-        {completed && match.winnerUsername === match.player2 && '✓ '}
-        {match.player2}
-      </span>
-
-      {/* Record button (admin, pending only) */}
-      {isAdmin && !completed && (
-        <button
-          onClick={onRecord}
-          style={{
-            padding: '0.25rem 0.6rem',
-            fontSize: '0.75rem',
-            borderRadius: '6px',
-            border: '1px solid var(--border)',
-            background: 'transparent',
-            color: 'var(--text-2)',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          ▶ Resultado
-        </button>
-      )}
-
-      {/* Correct / undo button (admin, completed only) */}
-      {isAdmin && completed && (
-        <button
-          onClick={onEdit}
-          aria-label={`Corregir resultado ${match.player1} vs ${match.player2}`}
-          style={{
-            padding: '0.25rem 0.6rem',
-            fontSize: '0.75rem',
-            borderRadius: '6px',
-            border: '1px solid var(--border)',
-            background: 'transparent',
-            color: 'var(--text-3)',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          ✎ Corregir
-        </button>
-      )}
     </div>
   );
 }

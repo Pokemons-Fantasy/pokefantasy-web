@@ -1,4 +1,5 @@
 import type { JornadaDto, ScheduleResponse } from '../api/leagues';
+import { formatWeekdayTime } from './dates';
 
 export type MarketWindow = 'steal' | 'swap';
 
@@ -14,18 +15,11 @@ function activeJornada(schedule: ScheduleResponse): JornadaDto | undefined {
   return schedule.jornadas.find((j) => j.matches.some((m) => m.status === 'PENDING'));
 }
 
-/** "jue 23:59". Las horas del backend son de Madrid, sin zona; se leen como hora local. */
-function formatDeadline(deadline: Date): string {
-  const day = deadline.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-  const time = deadline.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  return `${day} ${time}`;
-}
-
 function closesText(deadline: Date, now: Date): string {
   const left = deadline.getTime() - now.getTime();
   if (left > 0 && left < HOUR) return `cierran en ${Math.max(1, Math.round(left / 60_000))} min`;
   if (left > 0 && left < 24 * HOUR) return `cierran en ${Math.floor(left / HOUR)} h`;
-  return `cierran ${formatDeadline(deadline)}`;
+  return `cierran ${formatWeekdayTime(deadline)}`;
 }
 
 /**
