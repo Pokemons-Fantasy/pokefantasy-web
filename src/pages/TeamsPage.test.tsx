@@ -71,6 +71,11 @@ const OPEN_SCHEDULE: ScheduleResponse = {
   leagueId: 'league-1', jornadas: [], stealWindowOpen: true, swapWindowOpen: true,
 };
 
+/** Los equipos rivales empiezan plegados: despliega el de brock. */
+async function openBrock() {
+  await userEvent.click(await screen.findByRole('button', { name: /brock/ }));
+}
+
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -100,13 +105,14 @@ describe('TeamsPage', () => {
     renderPage();
 
     expect(await screen.findByText('pikachu')).toBeInTheDocument();
-    expect(await screen.findByText('onix')).toBeInTheDocument();
     expect(screen.getByText('Tu equipo')).toBeInTheDocument();
-    expect(screen.getByText('brock')).toBeInTheDocument();
+    await openBrock();
+    expect(await screen.findByText('onix')).toBeInTheDocument();
   });
 
   it('clicking an unlocked rival pokemon during the steal window opens the steal action modal', async () => {
     renderPage();
+    await openBrock();
     const onix = await screen.findByText('onix');
 
     await userEvent.click(onix.closest('.pokemon-card')!);
@@ -117,6 +123,7 @@ describe('TeamsPage', () => {
 
   it('choosing "Proponer intercambio" from the rival action modal opens the propose-trade modal', async () => {
     renderPage();
+    await openBrock();
     const onix = await screen.findByText('onix');
     await userEvent.click(onix.closest('.pokemon-card')!);
     await screen.findByText(/Pokémon de/);
@@ -129,6 +136,7 @@ describe('TeamsPage', () => {
   it('when the steal window is closed, clicking a rival pokemon goes straight to propose-trade', async () => {
     mockedSchedule.mockResolvedValue({ ...OPEN_SCHEDULE, stealWindowOpen: false });
     renderPage();
+    await openBrock();
     const onix = await screen.findByText('onix');
 
     await userEvent.click(onix.closest('.pokemon-card')!);
@@ -138,11 +146,34 @@ describe('TeamsPage', () => {
 
   it('filtering by tier hides non-matching rival pokemon', async () => {
     renderPage();
+    await openBrock();
     await screen.findByText('onix');
 
     await userEvent.click(screen.getByRole('button', { name: 'S' }));
 
     await waitFor(() => expect(screen.queryByText('onix')).not.toBeInTheDocument());
+  });
+
+  it('muestra el estado del mercado en una línea en lugar de dos avisos', async () => {
+    mockedSchedule.mockResolvedValue({ ...OPEN_SCHEDULE, stealWindowOpen: false, swapWindowOpen: true });
+    renderPage();
+
+    const status = await screen.findByRole('status', { name: 'Estado del mercado' });
+    expect(status).toHaveTextContent('Robos');
+    expect(status).toHaveTextContent('Intercambios y banquillo');
+    expect(screen.queryByText(/la ventana abre el/)).not.toBeInTheDocument();
+  });
+
+  it('con el mercado cerrado se puede proponer, avisando de cuándo se aceptará', async () => {
+    mockedSchedule.mockResolvedValue({ ...OPEN_SCHEDULE, stealWindowOpen: false, swapWindowOpen: false });
+    renderPage();
+    await openBrock();
+    const onix = await screen.findByText('onix');
+
+    await userEvent.click(onix.closest('.pokemon-card')!);
+
+    expect(await screen.findByRole('heading', { name: 'Proponer intercambio' })).toBeInTheDocument();
+    expect(screen.getByText(/solo podrá aceptarla cuando abra el mercado/)).toBeInTheDocument();
   });
 
   it('clicking a bench entry opens the bench action modal', async () => {

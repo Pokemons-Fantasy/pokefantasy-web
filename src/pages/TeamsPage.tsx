@@ -28,7 +28,7 @@ import TeamFilterBar from '../components/teams/TeamFilterBar';
 import BenchSection from '../components/teams/BenchSection';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
-import Notice from '../components/Notice';
+import MarketStatus from '../components/teams/MarketStatus';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -106,14 +106,6 @@ export default function TeamsPage() {
 
   const maxTeamSize = leagueSettings?.maxTeamSize ?? 10;
 
-  const DAY_NAMES: Record<number, string> = {
-    1: 'lunes', 2: 'martes', 3: 'miércoles', 4: 'jueves',
-    5: 'viernes', 6: 'sábado', 7: 'domingo',
-  };
-  const stealDayLabel = DAY_NAMES[leagueSettings?.stealWindowCloseDay ?? 4] ?? 'jueves';
-  const stealTimeLabel = leagueSettings?.stealWindowCloseTime ?? '23:59';
-  const swapDayLabel  = DAY_NAMES[leagueSettings?.swapWindowCloseDay ?? 5] ?? 'viernes';
-  const swapTimeLabel  = leagueSettings?.swapWindowCloseTime ?? '16:00';
 
   const { data: schedule } = useQuery({
     queryKey: ['schedule', leagueId],
@@ -369,6 +361,7 @@ export default function TeamsPage() {
           responder={modalProposeTrade.responder}
           responderPokemon={modalProposeTrade.responderPokemon}
           myTeam={myTeam.picks.map((p) => ({ name: p.pokemonName, id: p.pokemonId }))}
+          marketOpen={!swapWindowClosed}
           onClose={() => setModalProposeTrade(null)}
         />
       )}
@@ -417,25 +410,7 @@ export default function TeamsPage() {
           </div>
         )}
 
-        {swapWindowClosed ? (
-          <Notice variant="warning">
-            🔒 Intercambios cerrados hasta que se registren todos los resultados de la jornada
-          </Notice>
-        ) : (
-          <Notice variant="success">
-            🔓 Ventana de intercambios abierta — cierra el {swapDayLabel} a las {swapTimeLabel}
-          </Notice>
-        )}
-
-        {stealWindowOpen ? (
-          <Notice variant="success">
-            🔓 Ventana de robos abierta — cierra el {stealDayLabel} a las {stealTimeLabel}
-          </Notice>
-        ) : (
-          <Notice variant="warning">
-            🔒 Robos cerrados — la ventana abre el {stealDayLabel} de la semana de la jornada
-          </Notice>
-        )}
+        {isDraftCompleted && schedule && <MarketStatus schedule={schedule} />}
 
         {draft && teams.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginTop: '1.5rem' }}>
@@ -479,12 +454,14 @@ export default function TeamsPage() {
 
             <RivalTeamsList
               teams={filteredRivals}
+              filterActive={filterActive}
               maxTeamSize={maxTeamSize}
               isDraftCompleted={isDraftCompleted}
               copiedTeam={copiedTeam}
               onExportShowdown={(team) => exportTeamToShowdown(team.picks, team.username)}
               tierByName={tierByName}
               stealWindowOpen={stealWindowOpen}
+              swapWindowOpen={!swapWindowClosed}
               effectiveStealPrice={effectiveStealPrice}
               myBalance={myBalance}
               onInfo={showDetail}

@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { tierRank, priceForTier } from './tiers';
+import { tierRank, priceForTier, TIER_ORDER } from './tiers';
 import type { LeagueSettings } from '../api/leagues';
+
+describe('TIER_ORDER', () => {
+  it('va de mejor a peor y coincide con tierRank', () => {
+    expect(TIER_ORDER).toEqual(['S', 'A', 'B', 'C', 'D']);
+    expect(TIER_ORDER.map(tierRank)).toEqual([0, 1, 2, 3, 4]);
+  });
+});
 
 describe('tierRank', () => {
   it('ranks S as best (0) through D as worst (4)', () => {

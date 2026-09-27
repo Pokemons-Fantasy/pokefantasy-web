@@ -4,7 +4,7 @@ import type { JornadaDto, ScheduleResponse } from '../api/leagues';
 
 const jornada = (roundNumber: number, done: boolean, extra: Partial<JornadaDto> = {}): JornadaDto => ({
   roundNumber,
-  matches: [{ player1: 'ash', player2: 'brock', status: done ? 'COMPLETED' : 'PENDING' }],
+  matches: [{ id: `m${roundNumber}`, player1: 'ash', player2: 'brock', status: done ? 'COMPLETED' : 'PENDING' }],
   ...extra,
 });
 

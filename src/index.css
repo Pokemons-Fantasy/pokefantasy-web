@@ -1040,6 +1040,73 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
   .draft-board-sprite { width: 36px; height: 36px; }
 }
 
+/* ─── MERCADO Y RIVALES (components/teams/MarketStatus, RivalTeamsList) ─── */
+
+.market-status { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+.market-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+.market-chip strong { color: var(--text); font-weight: 700; }
+.market-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.market-chip.open { border-color: var(--success-border); background: var(--success-bg); }
+.market-chip.open .market-chip-dot { background: var(--success); }
+.market-chip.closed { border-color: var(--warning-border); background: var(--warning-bg); }
+.market-chip.closed .market-chip-dot { background: var(--warning); }
+
+.rival-teams { display: flex; flex-direction: column; gap: 0.5rem; }
+.rival-toggle-all { align-self: flex-end; font-size: 0.78rem; padding: 0.25rem 0.65rem; }
+.rival-team { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.rival-team > div[id] { padding: 0 0.75rem 0.75rem; }
+.rival-team-header { display: flex; align-items: center; gap: 0.5rem; padding-right: 0.6rem; }
+.rival-team-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.rival-team-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rival-team-chevron { color: var(--text-3); font-size: 0.75rem; transition: transform 0.15s; }
+.rival-team-chevron.open { transform: rotate(90deg); }
+.rival-team-name { font-weight: 600; }
+.rival-team-size { color: var(--text-3); font-size: 0.85rem; }
+.rival-team-tiers { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; margin-left: auto; }
+.tier-count {
+  padding: 0.05rem 0.4rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: 1px solid;
+}
+.tier-count-s { color: var(--tier-s); background: var(--tier-s-bg); border-color: var(--tier-s-border); }
+.tier-count-a { color: var(--tier-a); background: var(--tier-a-bg); border-color: var(--tier-a-border); }
+.tier-count-b { color: var(--tier-b); background: var(--tier-b-bg); border-color: var(--tier-b-border); }
+.tier-count-c { color: var(--tier-c); background: var(--tier-c-bg); border-color: var(--tier-c-border); }
+.tier-count-d { color: var(--tier-d); background: var(--tier-d-bg); border-color: var(--tier-d-border); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rival-team-chevron { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .rival-team-tiers { display: none; }
+}
+
 /* ─── GEN TABS ─── */
 
 .gen-tabs {
