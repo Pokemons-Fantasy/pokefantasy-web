@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { getMyLeagues } from '../api/leagues';
@@ -26,7 +26,6 @@ const FOCUS_CARDS = {
 
 export default function HomePage() {
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
 
   const { data: leagues = [] } = useQuery({
     queryKey: ['my-leagues'],
@@ -39,9 +38,7 @@ export default function HomePage() {
   const single = focus?.leagues.length === 1 ? focus.leagues[0] : null;
 
   // Una liga en esa fase → directo a su pantalla; varias → lista de ligas
-  const handleFocusNav = () => {
-    navigate(single && card ? `/leagues/${single.id}${card.path}` : '/leagues');
-  };
+  const focusTarget = single && card ? `/leagues/${single.id}${card.path}` : '/leagues';
 
   return (
     <div className="page-wrapper">
@@ -91,16 +88,16 @@ export default function HomePage() {
         <div className="nav-cards stagger">
 
           {/* ── Mis ligas ── always shown, gold accent */}
-          <button className="nav-card nav-card-gold" onClick={() => navigate('/leagues')}>
+          <Link className="nav-card nav-card-gold" to="/leagues">
             <div className="nav-card-icon nav-card-icon-gold">🏆</div>
             <h3>Mis ligas</h3>
             <p>Ver ligas activas, gestionar miembros y acceder al draft.</p>
             <span className="nav-card-arrow">Ver ligas <span>→</span></span>
-          </button>
+          </Link>
 
           {/* ── Fase destacada: draft en curso > setup > temporada ── */}
           {focus && card && (
-            <button className={`nav-card ${card.live ? 'nav-card-live' : 'nav-card-setup'}`} onClick={handleFocusNav}>
+            <Link className={`nav-card ${card.live ? 'nav-card-live' : 'nav-card-setup'}`} to={focusTarget}>
               {card.live && <span className="nav-card-live-dot" aria-hidden="true" />}
 
               <div className={`nav-card-icon ${card.live ? 'nav-card-icon-green' : 'nav-card-icon-blue'}`}>
@@ -121,7 +118,7 @@ export default function HomePage() {
               <span className={`nav-card-arrow ${card.live ? 'nav-card-arrow-green' : 'nav-card-arrow-blue'}`}>
                 {card.cta} <span>→</span>
               </span>
-            </button>
+            </Link>
           )}
 
           {/* ── Cómo funciona ── static / info */}

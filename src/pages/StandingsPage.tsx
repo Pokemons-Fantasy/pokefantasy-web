@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getStandings, getLeagueDetail } from '../api/leagues';
+import { getStandings } from '../api/leagues';
 import type { PlayerStanding } from '../api/leagues';
 import { SkeletonTable } from '../components/SkeletonTable';
-import PageHeader from '../components/PageHeader';
 import { formatDiff } from '../utils/score';
 
 export default function StandingsPage() {
@@ -12,12 +11,6 @@ export default function StandingsPage() {
   const username = useAuthStore((s) => s.username);
   const navigate = useNavigate();
 
-  const { data: league } = useQuery({
-    queryKey: ['league-detail', leagueId],
-    queryFn: () => getLeagueDetail(leagueId!),
-    enabled: !!leagueId,
-    staleTime: 60_000,
-  });
 
   const { data: standings, isLoading } = useQuery({
     queryKey: ['standings', leagueId],
@@ -30,24 +23,11 @@ export default function StandingsPage() {
   const hasScores = !!standings?.some((s) => s.scoreFor > 0 || s.scoreAgainst > 0);
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header">
           <div>
             <h1 className="page-title">🏆 Clasificación</h1>
-            {league && <p className="page-subtitle">{league.name}</p>}
-          </div>
-          <div className="section-actions">
-            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/schedule`)}>
-              📅 Calendario
-            </button>
           </div>
         </div>
 
@@ -82,6 +62,7 @@ export default function StandingsPage() {
                     pos={i + 1}
                     isMe={row.username === username}
                     showDiff={hasScores}
+                    to={`/leagues/${leagueId}/players/${row.username}`}
                     onNavigate={() => navigate(`/leagues/${leagueId}/players/${row.username}`)}
                   />
                 ))}
@@ -90,7 +71,7 @@ export default function StandingsPage() {
           </div>
         )}
       </main>
-    </div>
+    </>
   );
 }
 
@@ -99,12 +80,14 @@ function StandingRow({
   pos,
   isMe,
   showDiff,
+  to,
   onNavigate,
 }: {
   row: PlayerStanding;
   pos: number;
   isMe: boolean;
   showDiff: boolean;
+  to: string;
   onNavigate: () => void;
 }) {
   const posLabel = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : String(pos);
@@ -127,7 +110,9 @@ function StandingRow({
         {posLabel}
       </td>
       <td style={{ fontWeight: isMe ? 700 : 500 }}>
-        {row.username}
+        <Link to={to} className="row-link" onClick={(e) => e.stopPropagation()}>
+          {row.username}
+        </Link>
         {isMe && (
           <span
             style={{

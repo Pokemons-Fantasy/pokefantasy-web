@@ -10,10 +10,8 @@ import { getDraftStatus, startDraft } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
-import PageHeader from '../components/PageHeader';
-import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
-export default function LeagueDetailPage() {
+export default function LeagueMembersPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
   const navigate = useNavigate();
@@ -124,76 +122,18 @@ export default function LeagueDetailPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="page-wrapper">
-        <PageHeader />
-        <main className="page-content">
-          <SkeletonTable rows={4} />
-        </main>
-      </div>
-    );
-  }
-
-  if (!league) {
-    return (
-      <div className="page-wrapper">
-        <main className="page-content">
-          <p className="error">Liga no encontrada</p>
-        </main>
-      </div>
-    );
+  if (isLoading || !league) {
+    // El layout ya muestra "Liga no encontrada" si la liga no carga.
+    return <main className="page-content"><SkeletonTable rows={4} /></main>;
   }
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate('/leagues')}>← Mis ligas</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header">
           <div>
-            <h1 className="page-title">{league.name}</h1>
+            <h1 className="page-title">Miembros</h1>
             <p className="page-subtitle">Creada por {league.createdBy}</p>
-          </div>
-          <div className="section-actions">
-            <LeaguePhaseBadge draftStatus={draft?.status ?? null} />
-            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/pool`)}>
-              Pool
-            </button>
-            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>
-              Draft
-            </button>
-            {(draft?.picks?.length ?? 0) > 0 && (
-              <button className="btn-primary" onClick={() => navigate(`/leagues/${leagueId}/teams`)}>
-                Equipos
-              </button>
-            )}
-            {draft?.status === 'COMPLETED' && (
-              <>
-                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/standings`)}>
-                  🏆 Clasificación
-                </button>
-                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/schedule`)}>
-                  📅 Calendario
-                </button>
-                <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/activity`)}>
-                  ⚡ Actividad
-                </button>
-                <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
-                  ⚙️ Configuración
-                </button>
-                {isAdmin && (
-                  <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/tiers`)}>
-                    🔧 Gestionar tiers
-                  </button>
-                )}
-              </>
-            )}
           </div>
         </div>
 
@@ -358,6 +298,6 @@ export default function LeagueDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

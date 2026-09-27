@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft, autoPickDraft } from '../api/pokemons';
@@ -11,7 +11,6 @@ import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
-import PageHeader from '../components/PageHeader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { spriteUrl } from '../utils/sprites';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -19,7 +18,6 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
@@ -144,28 +142,11 @@ export default function DraftPage() {
     : 'muted';
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header">
           <h1 className="page-title">Draft</h1>
           <div className="section-actions">
-            {(draft?.picks?.length ?? 0) > 0 && (
-              <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/teams`)}>
-                Ver equipos
-              </button>
-            )}
-            {draft?.status === 'COMPLETED' && (
-              <button className="btn-secondary" onClick={() => navigate(`/leagues/${leagueId}/config`)}>
-                ⚙️ Configuración
-              </button>
-            )}
             {isAdmin && draft?.status === 'IN_PROGRESS' && (
               <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
                 Cancelar draft
@@ -354,6 +335,6 @@ export default function DraftPage() {
           onClose={() => setDetailEntry(null)}
         />
       )}
-    </div>
+    </>
   );
 }

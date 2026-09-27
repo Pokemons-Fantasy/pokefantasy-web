@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getDraftStatus, getClosedList } from '../api/pokemons';
 import type { DraftPick, Tier } from '../api/pokemons';
-import { getStandings, getLeagueDetail } from '../api/leagues';
+import { getStandings } from '../api/leagues';
 import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
-import PageHeader from '../components/PageHeader';
 import TierBadge from '../components/TierBadge';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { spriteUrl } from '../utils/sprites';
@@ -78,7 +77,6 @@ function formatRelative(iso: string): string {
 
 export default function PlayerProfilePage() {
   const { leagueId, username } = useParams<{ leagueId: string; username: string }>();
-  const navigate = useNavigate();
 
   const { data: standings } = useQuery({
     queryKey: ['standings', leagueId],
@@ -101,12 +99,6 @@ export default function PlayerProfilePage() {
     staleTime: 60_000,
   });
 
-  const { data: league } = useQuery({
-    queryKey: ['league-detail', leagueId],
-    queryFn: () => getLeagueDetail(leagueId!),
-    enabled: !!leagueId,
-    staleTime: 60_000,
-  });
 
   const isLoading = draftLoading || closedListLoading;
 
@@ -137,14 +129,7 @@ export default function PlayerProfilePage() {
     draftHistory.some((h) => !currentTeam.find((c) => c.pokemonName === h.pokemonName));
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
 
         {/* ── Hero del jugador ── */}
@@ -167,7 +152,6 @@ export default function PlayerProfilePage() {
           </div>
           <div>
             <h1 className="page-title" style={{ marginBottom: '0.15rem' }}>{username}</h1>
-            {league && <p className="page-subtitle">{league.name}</p>}
           </div>
         </div>
 
@@ -290,7 +274,7 @@ export default function PlayerProfilePage() {
         </div>
 
       </main>
-    </div>
+    </>
   );
 }
 

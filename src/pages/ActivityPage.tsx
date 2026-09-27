@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getActivityFeed } from '../api/activity';
-import PageHeader from '../components/PageHeader';
 import type { ActivityEvent } from '../api/activity';
 
 // ── Event formatting ──────────────────────────────────────────────────────────
@@ -238,7 +237,6 @@ function EventCard({ event, isRecent }: EventCardProps) {
 
 export default function ActivityPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
-  const navigate = useNavigate();
 
   const [page, setPage] = useState(0);
   const [allEvents, setAllEvents] = useState<ActivityEvent[]>([]);
@@ -285,14 +283,7 @@ export default function ActivityPage() {
   const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         {/* Section header */}
         <div className="section-header" style={{ marginBottom: '2rem' }}>
@@ -309,12 +300,6 @@ export default function ActivityPage() {
                 Actualizando
               </span>
             )}
-            <button
-              className="btn-ghost"
-              onClick={() => navigate(`/leagues/${leagueId}/teams`)}
-            >
-              Equipos
-            </button>
           </div>
         </div>
 
@@ -469,6 +454,6 @@ export default function ActivityPage() {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

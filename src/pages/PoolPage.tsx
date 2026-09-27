@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
   getAvailablePokemons,
@@ -15,7 +15,6 @@ import PokemonDetailModal from '../components/PokemonDetailModal';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
-import PageHeader from '../components/PageHeader';
 import { spriteUrl } from '../utils/sprites';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
@@ -52,7 +51,6 @@ function matchesGen(p: AvailablePokemon, gen: GenFilter): boolean {
 export default function PoolPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
@@ -107,14 +105,7 @@ export default function PoolPage() {
     .filter((p) => matchesGen(p, genFilter));
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header">
           <div>
@@ -206,6 +197,6 @@ export default function PoolPage() {
           onClose={() => setDetailEntry(null)}
         />
       )}
-    </div>
+    </>
   );
 }

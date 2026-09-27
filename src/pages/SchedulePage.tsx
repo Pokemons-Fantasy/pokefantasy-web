@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getLeagueDetail } from '../api/leagues';
 import {
@@ -16,12 +16,10 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { parseScore, scoreLabel, SCORE_MAX } from '../utils/score';
 import { SkeletonTable } from '../components/SkeletonTable';
-import PageHeader from '../components/PageHeader';
 
 export default function SchedulePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const addToast = useToastStore((s) => s.addToast);
@@ -139,27 +137,16 @@ export default function SchedulePage() {
   );
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>← Liga</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       <main className="page-content">
         <div className="section-header">
           <div>
             <h1 className="page-title">📅 Calendario</h1>
-            {league && <p className="page-subtitle">{league.name}</p>}
           </div>
           <div className="section-actions">
             {myCoins !== undefined && (
               <span className="coin-badge coin-badge-lg">💰 {myCoins.coins} monedas</span>
             )}
-            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}/standings`)}>
-              🏆 Clasificación
-            </button>
           </div>
         </div>
 
@@ -371,7 +358,7 @@ export default function SchedulePage() {
           </div>
         );
       })()}
-    </div>
+    </>
   );
 }
 

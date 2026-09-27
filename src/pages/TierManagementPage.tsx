@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getClosedList, getDraftStatus, assignTier } from '../api/pokemons';
 import type { ClosedListEntry, Tier, TierChange } from '../api/pokemons';
@@ -8,7 +8,6 @@ import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
-import PageHeader from '../components/PageHeader';
 import { spriteUrl } from '../utils/sprites';
 import { tierRank } from '../utils/tiers';
 import { TIER_COLORS } from '../utils/colors';
@@ -150,7 +149,6 @@ function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustMod
 export default function TierManagementPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const addToast = useToastStore((s) => s.addToast);
@@ -206,14 +204,7 @@ export default function TierManagementPage() {
   const tabEntries = closedList.filter((e) => e.tier === activeTab);
 
   return (
-    <div className="page-wrapper">
-      <PageHeader left={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}`)}>Ligas</button>
-          <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-        </div>
-      } />
-
+    <>
       {/* Tier adjust modal */}
       {modalEntry && (
         <TierAdjustModal
@@ -230,9 +221,9 @@ export default function TierManagementPage() {
         {!isDraftCompleted && (
           <div className="empty-state">
             <p>El draft debe estar completado para ajustar tiers.</p>
-            <button className="btn-ghost" onClick={() => navigate(`/leagues/${leagueId}`)}>
+            <Link className="btn-ghost" to={`/leagues/${leagueId}`}>
               Volver a la liga
-            </button>
+            </Link>
           </div>
         )}
 
@@ -329,6 +320,6 @@ export default function TierManagementPage() {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

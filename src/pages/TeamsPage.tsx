@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useAuthStore } from '../store/authStore';
@@ -28,7 +28,6 @@ import TeamFilterBar from '../components/teams/TeamFilterBar';
 import BenchSection from '../components/teams/BenchSection';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
-import PageHeader from '../components/PageHeader';
 import Notice from '../components/Notice';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -36,7 +35,6 @@ import Notice from '../components/Notice';
 export default function TeamsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const addToast = useToastStore((s) => s.addToast);
@@ -265,36 +263,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="page-wrapper">
-      <PageHeader
-        left={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-back" onClick={() => navigate(`/leagues/${leagueId}/draft`)}>← Draft</button>
-            <span className="logo" onClick={() => navigate('/leagues')}>PokeFantasy</span>
-          </div>
-        }
-        rightExtra={isDraftCompleted ? (
-          <button
-            className="btn-ghost"
-            style={{ position: 'relative' }}
-            onClick={() => setShowTradesModal(true)}
-          >
-            Intercambios
-            {pendingIncomingCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -6, right: -6,
-                background: 'var(--accent-fill)', color: '#0a0a0f',
-                fontSize: '0.65rem', fontWeight: 700,
-                borderRadius: '50%', width: 18, height: 18,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {pendingIncomingCount}
-              </span>
-            )}
-          </button>
-        ) : undefined}
-      />
-
+    <>
       {/* Bench action modal — choose swap or buy */}
       {modalBench && myTeam && !benchGoingToSwap && (
         <BenchActionModal
@@ -416,7 +385,29 @@ export default function TeamsPage() {
       )}
 
       <main className="page-content">
-        <h1 className="page-title">Equipos</h1>
+        <div className="section-header">
+          <h1 className="page-title">Equipos</h1>
+          {isDraftCompleted && (
+            <button
+              className="btn-ghost"
+              style={{ position: 'relative' }}
+              onClick={() => setShowTradesModal(true)}
+            >
+              Intercambios
+              {pendingIncomingCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: -6, right: -6,
+                  background: 'var(--accent-fill)', color: '#0a0a0f',
+                  fontSize: '0.65rem', fontWeight: 700,
+                  borderRadius: '50%', width: 18, height: 18,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {pendingIncomingCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
 
         {isLoading && <SkeletonGrid count={6} />}
 
@@ -519,6 +510,6 @@ export default function TeamsPage() {
           />
         )}
       </main>
-    </div>
+    </>
   );
 }

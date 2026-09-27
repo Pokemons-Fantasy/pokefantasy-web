@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import LeagueConfigPage from './LeagueConfigPage';
 import { useAuthStore } from '../store/authStore';
 import * as leaguesApi from '../api/leagues';
@@ -51,19 +51,28 @@ const SETTINGS: LeagueSettings = {
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
+  const router = createMemoryRouter([
+    { path: '/leagues/:leagueId/config', element: <LeagueConfigPage /> },
+    { path: '/leagues/:leagueId/teams', element: <p>Pantalla de equipos</p> },
+  ], { initialEntries: ['/leagues/league-1/config'] });
+  const result = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/leagues/league-1/config']}>
-        <Routes>
-          <Route path="/leagues/:leagueId/config" element={<LeagueConfigPage />} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
+  return { ...result, router };
+}
+
+/** Navega fuera de la página. Antes vacía los efectos pendientes: tras cargar los ajustes el formulario
+ *  se sincroniza en un efecto, y useBlocker registra su función también en un efecto. */
+async function leaveTo(router: ReturnType<typeof renderPage>['router'], path: string) {
+  await act(async () => {});
+  await act(async () => { await router.navigate(path); });
 }
 
 describe('LeagueConfigPage', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     useAuthStore.setState({ username: 'admin1' });
     mockedLeagueDetail.mockResolvedValue(LEAGUE);
     mockedDraftStatus.mockResolvedValue(null);
@@ -127,5 +136,50 @@ describe('LeagueConfigPage', () => {
 
     expect(await screen.findByText('Solo el admin puede modificar estos valores. Vista de solo lectura.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Guardar cambios' })).not.toBeInTheDocument();
+  });
+
+  it('con cambios sin guardar, salir pide confirmación y Descartar completa la navegación', async () => {
+    const { router } = renderPage();
+    const coinsPerWin = await screen.findByLabelText('Monedas por victoria');
+    await userEvent.clear(coinsPerWin);
+    await userEvent.type(coinsPerWin, '150');
+
+    await leaveTo(router, '/leagues/league-1/teams');
+    expect(await screen.findByText('Cambios sin guardar')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    expect(await screen.findByText('Pantalla de equipos')).toBeInTheDocument();
+  });
+
+  it('Seguir editando cancela la salida y conserva los cambios', async () => {
+    const { router } = renderPage();
+    const coinsPerWin = await screen.findByLabelText('Monedas por victoria') as HTMLInputElement;
+    await userEvent.clear(coinsPerWin);
+    await userEvent.type(coinsPerWin, '150');
+
+    await leaveTo(router, '/leagues/league-1/teams');
+    await userEvent.click(await screen.findByRole('button', { name: 'Seguir editando' }));
+
+    expect(router.state.location.pathname).toBe('/leagues/league-1/config');
+    expect(coinsPerWin.value).toBe('150');
+  });
+
+  it('sin cambios se sale sin preguntar', async () => {
+    const { router } = renderPage();
+    await screen.findByLabelText('Monedas por victoria');
+    await leaveTo(router, '/leagues/league-1/teams');
+    expect(await screen.findByText('Pantalla de equipos')).toBeInTheDocument();
+  });
+
+  it('tras guardar se sale sin preguntar', async () => {
+    const { router } = renderPage();
+    const coinsPerWin = await screen.findByLabelText('Monedas por victoria');
+    await userEvent.clear(coinsPerWin);
+    await userEvent.type(coinsPerWin, '150');
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    await waitFor(() => expect(mockedUpdateSettings).toHaveBeenCalledTimes(1));
+
+    await leaveTo(router, '/leagues/league-1/teams');
+    expect(await screen.findByText('Pantalla de equipos')).toBeInTheDocument();
   });
 });
