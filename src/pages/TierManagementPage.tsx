@@ -118,10 +118,10 @@ function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustMod
           <div style={{
             padding: '0.6rem 0.9rem',
             borderRadius: 8,
-            background: 'rgba(251,191,36,0.06)',
-            border: '1px solid rgba(251,191,36,0.22)',
+            background: 'var(--accent-dim)',
+            border: '1px solid var(--accent-glow)',
             fontSize: '0.82rem',
-            color: '#fbbf24',
+            color: 'var(--accent)',
           }}>
             Esto producira una cascada de {steps} {steps === 1 ? 'intercambio adicional' : 'intercambios adicionales'} para mantener los conteos equilibrados.
           </div>
@@ -266,15 +266,15 @@ export default function TierManagementPage() {
               <div style={{
                 padding: '0.75rem 1rem',
                 borderRadius: 10,
-                background: 'rgba(52,211,153,0.06)',
-                border: '1px solid rgba(52,211,153,0.2)',
+                background: 'var(--success-bg)',
+                border: '1px solid var(--success-border)',
                 fontSize: '0.82rem',
                 marginBottom: '1.25rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.2rem',
               }}>
-                <div style={{ fontWeight: 600, color: 'var(--green)', marginBottom: '0.25rem' }}>
+                <div style={{ fontWeight: 600, color: 'var(--success)', marginBottom: '0.25rem' }}>
                   Tiers actualizados
                 </div>
                 {lastChanges.map((c) => (

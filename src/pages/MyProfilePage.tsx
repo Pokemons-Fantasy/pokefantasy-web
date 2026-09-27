@@ -113,11 +113,11 @@ export default function MyProfilePage() {
                   {/* Stats row — only when there are played games */}
                   {myStats && myStats.played > 0 && (
                     <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.82rem', marginBottom: '0.35rem', marginTop: '0.5rem' }}>
-                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{myStats.wins}V</span>
-                      <span style={{ color: '#f87171', fontWeight: 600 }}>{myStats.losses}D</span>
+                      <span style={{ color: 'var(--success)', fontWeight: 600 }}>{myStats.wins}V</span>
+                      <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{myStats.losses}D</span>
                       <span style={{ color: 'var(--text-3)' }}>{myStats.winPct}%</span>
                       {myStats.currentStreak !== 0 && (
-                        <span style={{ color: myStats.currentStreak > 0 ? 'var(--green)' : '#f87171', fontWeight: 600 }}>
+                        <span style={{ color: myStats.currentStreak > 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
                           {myStats.currentStreak > 0 ? `+${myStats.currentStreak}` : myStats.currentStreak} racha
                         </span>
                       )}

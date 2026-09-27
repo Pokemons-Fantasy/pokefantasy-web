@@ -12,8 +12,8 @@ const DISMISS_MS: Record<ToastType, number> = {
 };
 
 const COLORS: Record<ToastType, { border: string; bg: string; icon: string }> = {
-  success: { border: 'var(--green)', bg: 'rgba(52,211,153,0.1)', icon: '✓' },
-  error:   { border: '#f87171',      bg: 'rgba(248,113,113,0.08)', icon: '✕' },
+  success: { border: 'var(--success)', bg: 'var(--success-bg)', icon: '✓' },
+  error:   { border: 'var(--danger)',      bg: 'var(--danger-bg)', icon: '✕' },
   info:    { border: 'var(--accent)', bg: 'var(--accent-dim)',    icon: 'ℹ' },
 };
 

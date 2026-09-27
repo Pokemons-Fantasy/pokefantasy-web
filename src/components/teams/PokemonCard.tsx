@@ -35,8 +35,8 @@ export default function PokemonCard({
             <span className="coin-badge" style={{
               marginTop: '0.25rem',
               fontSize: '0.68rem',
-              background: 'rgba(251,191,36,0.1)',
-              borderColor: 'rgba(251,191,36,0.25)',
+              background: 'var(--accent-dim)',
+              borderColor: 'var(--accent-glow)',
             }}>
               🛡 {stealPrice}
             </span>
@@ -70,8 +70,8 @@ export default function PokemonCard({
               marginTop: '0.2rem',
               padding: '0.15rem 0.4rem',
               fontSize: '0.65rem',
-              background: 'rgba(248,113,113,0.12)',
-              border: '1px solid rgba(248,113,113,0.25)',
+              background: 'var(--danger-bg)',
+              border: '1px solid var(--danger-border)',
               borderRadius: 4,
               color: '#fca5a5',
               cursor: 'pointer',
@@ -115,7 +115,7 @@ export default function PokemonCard({
               fontSize: '0.68rem',
               background: canAffordSteal ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.15)',
               borderColor: canAffordSteal ? 'rgba(239,68,68,0.3)' : 'rgba(107,114,128,0.25)',
-              color: canAffordSteal ? '#f87171' : '#9ca3af',
+              color: canAffordSteal ? 'var(--danger)' : 'var(--text-3)',
             }}>
               💰 {stealPrice}
             </span>

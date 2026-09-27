@@ -207,7 +207,7 @@ export default function SchedulePage() {
                       <span style={{
                         fontSize: '0.72rem',
                         fontWeight: 600,
-                        color: '#4ade80',
+                        color: 'var(--success)',
                         background: 'rgba(74,222,128,0.1)',
                         border: '1px solid rgba(74,222,128,0.3)',
                         borderRadius: '4px',
@@ -220,9 +220,9 @@ export default function SchedulePage() {
                       <span style={{
                         fontSize: '0.72rem',
                         fontWeight: 600,
-                        color: '#f87171',
-                        background: 'rgba(248,113,113,0.1)',
-                        border: '1px solid rgba(248,113,113,0.3)',
+                        color: 'var(--danger)',
+                        background: 'var(--danger-bg)',
+                        border: '1px solid var(--danger-border)',
                         borderRadius: '4px',
                         padding: '0.1rem 0.45rem',
                       }}>
@@ -487,7 +487,7 @@ function MatchRow({
           fontSize: '0.75rem',
           fontWeight: 600,
           background: completed ? 'rgba(74,222,128,0.1)' : 'var(--surface-3, var(--surface-2))',
-          color: completed ? 'var(--green, #4ade80)' : 'var(--text-3)',
+          color: completed ? 'var(--success)' : 'var(--text-3)',
           border: `1px solid ${completed ? 'rgba(74,222,128,0.3)' : 'var(--border)'}`,
           minWidth: 36,
           textAlign: 'center',

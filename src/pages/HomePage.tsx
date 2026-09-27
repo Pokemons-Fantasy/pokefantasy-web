@@ -67,7 +67,7 @@ export default function HomePage() {
             </div>
             {activeLeagues.length > 0 && (
               <div className="stat-pill">
-                <span className="stat-pill-value" style={{ color: 'var(--green)' }}>
+                <span className="stat-pill-value" style={{ color: 'var(--success)' }}>
                   {activeLeagues.length}
                 </span>
                 <span className="stat-pill-label">Activa{activeLeagues.length !== 1 ? 's' : ''}</span>

@@ -29,6 +29,7 @@ import BenchSection from '../components/teams/BenchSection';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
+import Notice from '../components/Notice';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -282,7 +283,7 @@ export default function TeamsPage() {
             {pendingIncomingCount > 0 && (
               <span style={{
                 position: 'absolute', top: -6, right: -6,
-                background: 'var(--accent)', color: '#fff',
+                background: 'var(--accent-fill)', color: '#0a0a0f',
                 fontSize: '0.65rem', fontWeight: 700,
                 borderRadius: '50%', width: 18, height: 18,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -426,43 +427,23 @@ export default function TeamsPage() {
         )}
 
         {swapWindowClosed ? (
-          <div className="my-turn-banner" style={{
-            background: 'rgba(248,113,113,0.07)',
-            borderColor: 'rgba(248,113,113,0.25)',
-            color: '#f87171',
-            marginBottom: '0.75rem',
-          }}>
+          <Notice variant="warning">
             🔒 Intercambios cerrados hasta que se registren todos los resultados de la jornada
-          </div>
+          </Notice>
         ) : (
-          <div className="my-turn-banner" style={{
-            background: 'rgba(251,191,36,0.07)',
-            borderColor: 'rgba(251,191,36,0.25)',
-            color: '#fbbf24',
-            marginBottom: '0.75rem',
-          }}>
+          <Notice variant="success">
             🔓 Ventana de intercambios abierta — cierra el {swapDayLabel} a las {swapTimeLabel}
-          </div>
+          </Notice>
         )}
 
         {stealWindowOpen ? (
-          <div className="my-turn-banner" style={{
-            background: 'rgba(251,191,36,0.07)',
-            borderColor: 'rgba(251,191,36,0.25)',
-            color: '#fbbf24',
-            marginBottom: '0.75rem',
-          }}>
+          <Notice variant="success">
             🔓 Ventana de robos abierta — cierra el {stealDayLabel} a las {stealTimeLabel}
-          </div>
+          </Notice>
         ) : (
-          <div className="my-turn-banner" style={{
-            background: 'rgba(248,113,113,0.07)',
-            borderColor: 'rgba(248,113,113,0.25)',
-            color: '#f87171',
-            marginBottom: '0.75rem',
-          }}>
+          <Notice variant="warning">
             🔒 Robos cerrados — la ventana abre el {stealDayLabel} de la semana de la jornada
-          </div>
+          </Notice>
         )}
 
         {draft && teams.length > 0 && (

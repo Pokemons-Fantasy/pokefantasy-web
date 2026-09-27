@@ -19,6 +19,7 @@ import TierDistributionSection from '../components/leagueConfig/TierDistribution
 import ScheduleSection from '../components/leagueConfig/ScheduleSection';
 import TimeWindowsSection from '../components/leagueConfig/TimeWindowsSection';
 import PendingChangesSidebar from '../components/leagueConfig/PendingChangesSidebar';
+import Notice from '../components/Notice';
 
 const DEFAULT_SETTINGS: LeagueSettings = {
   coinsPerWin: 100,
@@ -246,24 +247,14 @@ export default function LeagueConfigPage() {
         {!isLoading && (
           <>
             {!isAdmin && (
-              <div className="my-turn-banner" style={{
-                background: 'rgba(129,140,248,0.07)',
-                borderColor: 'rgba(129,140,248,0.25)',
-                color: 'var(--blue)',
-                marginBottom: '1rem',
-              }}>
+              <Notice variant="info">
                 Solo el admin puede modificar estos valores. Vista de solo lectura.
-              </div>
+              </Notice>
             )}
             {isAdmin && draftInProgress && (
-              <div className="my-turn-banner" style={{
-                background: 'rgba(251,191,36,0.07)',
-                borderColor: 'rgba(251,191,36,0.25)',
-                color: 'var(--yellow, #f59e0b)',
-                marginBottom: '1rem',
-              }}>
+              <Notice variant="warning">
                 El draft está en curso. No se puede modificar la configuración hasta que termine o se cancele.
-              </div>
+              </Notice>
             )}
 
             {/* ── Two-column layout ─────────────────────────────────────────── */}
