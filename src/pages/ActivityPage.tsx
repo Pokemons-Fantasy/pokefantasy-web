@@ -116,7 +116,9 @@ function ActivityFeed({ leagueId, types, username, spriteByName, filtered }: Act
     });
   }, [data, page]);
 
-  const lastSeen = useLastSeen(`pf:activity-last-seen:${leagueId}`, filtered ? undefined : events[0]?.createdAt);
+  // Por usuario y liga: en un navegador compartido, lo que vio uno no cuenta como visto para otro
+  const viewer = useAuthStore((s) => s.username);
+  const lastSeen = useLastSeen(`pf:activity-last-seen:${viewer}:${leagueId}`, filtered ? undefined : events[0]?.createdAt);
   const seenFrom = filtered ? null : firstSeenEventId(events, lastSeen);
   const groups = groupByDay(events, new Date());
 

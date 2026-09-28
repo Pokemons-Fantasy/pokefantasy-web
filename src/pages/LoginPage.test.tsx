@@ -12,17 +12,24 @@ import { useToastStore } from '../store/toastStore';
 vi.mock('../api/auth', async (importOriginal) => ({ ...(await importOriginal<typeof authApi>()), login: vi.fn() }));
 vi.mock('../api/leagues', async (importOriginal) => ({ ...(await importOriginal<typeof leaguesApi>()), getMyLeagues: vi.fn() }));
 
-function renderLogin() {
+function renderLogin(from: { pathname: string; search?: string } = { pathname: '/invite/tok' }, client = newClient()) {
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>
-      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: { pathname: '/invite/tok' } } }]}>
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from } }]}>
         <Routes>
+          <Route path="/" element={<p>home page</p>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/invite/:token" element={<p>invite page</p>} />
+          <Route path="/leagues/:leagueId/teams" element={<p>teams page</p>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
   );
+  return client;
+}
+
+function newClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
 async function submit() {
@@ -34,7 +41,7 @@ async function submit() {
 
 describe('LoginPage', () => {
   beforeEach(() => {
-    useAuthStore.setState({ username: null });
+    useAuthStore.setState({ username: null, lastSession: null });
     useToastStore.setState({ toasts: [] });
     vi.mocked(authApi.login).mockResolvedValue({ username: 'ash' });
   });
@@ -62,5 +69,32 @@ describe('LoginPage', () => {
     renderLogin();
     await submit();
     expect(await screen.findByText('invite page')).toBeInTheDocument();
+  });
+
+  it('otra persona que entra en la misma pestaña va a la home, no a la página del anterior', async () => {
+    vi.mocked(leaguesApi.getMyLeagues).mockResolvedValue([]);
+    useAuthStore.setState({ lastSession: { user: 'misty', path: '/leagues/l1/teams' } });
+    renderLogin({ pathname: '/leagues/l1/teams' });
+    await submit();
+    expect(await screen.findByText('home page')).toBeInTheDocument();
+  });
+
+  it('la misma persona vuelve a donde terminó su sesión', async () => {
+    vi.mocked(leaguesApi.getMyLeagues).mockResolvedValue([]);
+    useAuthStore.setState({ lastSession: { user: 'ash', path: '/leagues/l1/teams' } });
+    renderLogin({ pathname: '/leagues/l1/teams' });
+    await submit();
+    expect(await screen.findByText('teams page')).toBeInTheDocument();
+  });
+
+  it('vacía la caché al entrar: nada de los datos de la cuenta anterior', async () => {
+    vi.mocked(leaguesApi.getMyLeagues).mockResolvedValue([]);
+    const client = newClient();
+    client.setQueryData(['my-coins', 'l1'], { coins: 999 });
+    renderLogin(undefined, client);
+    await submit();
+    await screen.findByText('invite page');
+    expect(client.getQueryData(['my-coins', 'l1'])).toBeUndefined();
+    expect(client.getQueryData(['my-leagues'])).toEqual([]); // la comprobación de cookie sí queda
   });
 });
