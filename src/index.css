@@ -2127,3 +2127,121 @@ a.btn-back, a.logo { text-decoration: none; }
   .activity-row { gap: 0.5rem; padding: 0.4rem 0.6rem; }
   .activity-sprites img { width: 32px; height: 32px; }
 }
+
+/* ─── POOL (pages/PoolPage, components/pool/PoolCard, components/TypeChip) ─── */
+
+.pool-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); }
+
+.pool-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.pool-card-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.55rem 0.35rem 0.6rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.pool-card-main[aria-disabled="true"] { cursor: default; }
+.pool-card-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pool-card.state-free:hover { border-color: var(--accent); box-shadow: 0 0 14px var(--accent-dim); transform: translateY(-2px); }
+.pool-card.state-own,
+.pool-card.state-own-closed { border-color: var(--success-border); background: var(--success-bg); }
+.pool-card.state-own:hover { border-color: var(--success); transform: translateY(-2px); }
+
+/* Tamaño nativo del PNG (96 px), sin recortar: el margen transparente varía por Pokémon (los grandes llenan
+   la imagen) y un recorte por CSS los corta. En columnas estrechas se ajusta al ancho de la card. */
+.pool-sprite-box { width: 96px; max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.pool-sprite { width: 100%; height: 100%; image-rendering: pixelated; }
+.pool-card.state-taken .pool-sprite { filter: grayscale(1); opacity: 0.5; }
+
+.pool-name {
+  width: 100%;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: capitalize;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pool-card.state-taken .pool-name,
+.pool-card.state-closed .pool-name { color: var(--text-2); }
+.pool-types { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2rem; }
+
+.pool-card .tier-badge { width: 24px; height: 24px; font-size: 0.75rem; top: 6px; left: 6px; }
+.pool-owner {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+.pool-card.state-own .pool-owner,
+.pool-card.state-own-closed .pool-owner { color: var(--success); }
+
+.pool-info-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-style: italic;
+  cursor: pointer;
+}
+.pool-info-btn:hover { border-color: var(--border-hover); color: var(--text); }
+.pool-info-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.type-chip {
+  padding: 0.05rem 0.4rem;
+  border-radius: 100px;
+  border: 1px solid color-mix(in srgb, var(--type-color, var(--border)) 45%, transparent);
+  background: var(--type-bg, var(--surface-2));
+  color: var(--text);
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.pool-type-tabs { margin-top: -0.25rem; }
+.type-tab { display: inline-flex; align-items: center; gap: 0.35rem; }
+.type-tab::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--type-color, var(--text-3));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool-card { transition: none; }
+  .pool-card.state-free:hover,
+  .pool-card.state-own:hover { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .pool-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+}
