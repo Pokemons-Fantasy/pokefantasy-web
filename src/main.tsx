@@ -1,10 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { apiClient } from './api/client'
+import { apiClient, onSessionExpired } from './api/client'
 import './index.css'
 import App from './App.tsx'
 import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
+import { useAuthStore } from './store/authStore'
+
+// Sin sesión en el backend: se olvida el usuario y ProtectedRoute lleva a /login recordando la ruta
+onSessionExpired(() => useAuthStore.getState().expireSession())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

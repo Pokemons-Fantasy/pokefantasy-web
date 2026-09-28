@@ -9,6 +9,7 @@ import TierBadge from '../components/TierBadge';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
+import { openEventStream } from '../api/sse';
 import DraftBoard from '../components/draft/DraftBoard';
 import Notice from '../components/Notice';
 import { buildDraftBoard } from '../utils/draftBoard';
@@ -36,26 +37,30 @@ export default function DraftPage() {
     enabled: !!leagueId,
   });
 
-  // SSE — actualización en tiempo real; fallback a polling cada 10 s si la conexión se cierra
+  // SSE del draft (exige sesión y ser miembro de la liga). El proxy de Netlify corta la conexión cada
+  // <26 s: se reconecta sola y al volver se refresca por si se perdió algún evento; mientras está caída,
+  // polling cada 10 s.
   useEffect(() => {
     if (!leagueId) return;
-    const BASE = import.meta.env.VITE_API_URL ?? 'https://pokefantasy.onrender.com';
-    // withCredentials: el backend exige sesión (cookie httpOnly) y ser miembro de la liga.
-    const es = new EventSource(`${BASE}/v1/leagues/${leagueId}/draft/events`, { withCredentials: true });
-
-    es.addEventListener('draft-updated', () => {
-      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+    const refresh = () => queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+    let fallback: ReturnType<typeof setInterval> | null = null;
+    const stopFallback = () => {
+      if (fallback) clearInterval(fallback);
+      fallback = null;
+    };
+    const close = openEventStream(`/v1/leagues/${leagueId}/draft/events`, {
+      listeners: { 'draft-updated': refresh },
+      onOpen: (reconnected) => {
+        stopFallback();
+        if (reconnected) refresh();
+      },
+      onDown: () => {
+        if (!fallback) fallback = setInterval(refresh, 10_000);
+      },
     });
-
-    const fallback = setInterval(() => {
-      if (es.readyState === EventSource.CLOSED) {
-        queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
-      }
-    }, 10_000);
-
     return () => {
-      es.close();
-      clearInterval(fallback);
+      close();
+      stopFallback();
     };
   }, [leagueId, queryClient]);
 

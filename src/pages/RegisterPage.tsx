@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, type Location } from 'react-router-dom';
 import { register } from '../api/auth';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -11,6 +11,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const addToast = useToastStore((s) => s.addToast);
+  const location = useLocation();
+  // Viene del login, que a su vez guarda la ruta protegida que se intentó abrir (p. ej. /invite/:token)
+  const from = (location.state as { from?: Location } | null)?.from;
 
   const userError = usernameError(username);
   const passError = passwordError(password);
@@ -18,7 +21,10 @@ export default function RegisterPage() {
 
   const mutation = useMutation({
     mutationFn: () => register(username, password),
-    onSuccess: () => navigate('/login'),
+    onSuccess: () => {
+      addToast('success', 'Cuenta creada. Inicia sesión para continuar.');
+      navigate('/login', { state: { from } });
+    },
     onError: (err) => addToast('error', extractErrorMessage(err, 'El usuario ya existe o ha habido un error')),
   });
 
@@ -64,7 +70,7 @@ export default function RegisterPage() {
           </button>
         </form>
         {mutation.isSuccess && <p className="success">¡Cuenta creada! Redirigiendo...</p>}
-        <p className="auth-footer">¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
+        <p className="auth-footer">¿Ya tienes cuenta? <Link to="/login" state={{ from }}>Inicia sesión</Link></p>
       </div>
     </div>
   );

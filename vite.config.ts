@@ -8,4 +8,14 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
+  server: {
+    proxy: {
+      // Igual que public/_redirects: sin VITE_API_URL, `npm run dev` habla con producción a través de /api
+      '/api': {
+        target: 'https://pokefantasy.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })

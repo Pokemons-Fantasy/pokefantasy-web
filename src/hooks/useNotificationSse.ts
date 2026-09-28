@@ -5,8 +5,7 @@ import { useToastStore } from '../store/toastStore';
 import { getMyPendingTrades } from '../api/trades';
 import { getMyLeagues } from '../api/leagues';
 import { getActivityFeed } from '../api/activity';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'https://pokefantasy.onrender.com';
+import { openEventStream } from '../api/sse';
 
 export function useNotificationSse() {
   const username = useAuthStore((s) => s.username);
@@ -18,6 +17,8 @@ export function useNotificationSse() {
 
   useEffect(() => {
     if (!username) return;
+
+    let ready = false; // hasta cargar lo ya existente, nada se anuncia como nuevo
 
     // --- Init: populate refs without toasting ---
     async function initRefs() {
@@ -45,88 +46,94 @@ export function useNotificationSse() {
       }
     }
 
-    let fallbackInterval: ReturnType<typeof setInterval> | null = null;
-
-    // --- SSE ---
-    const es = new EventSource(`${API_BASE}/v1/users/events`, { withCredentials: true });
-
-    es.addEventListener('steal', (e: MessageEvent) => {
-      const data = JSON.parse(e.data) as {
-        leagueId: string;
-        actorUsername: string;
-        pokemonName: string;
-      };
-      const key = e.lastEventId || `${data.actorUsername}-${data.pokemonName}-${data.leagueId}`;
-      if (!seenStealIds.current.has(key)) {
-        seenStealIds.current.add(key);
-        addToast(
-          'info',
-          `${data.actorUsername} te robó a ${data.pokemonName}`,
-          `/leagues/${data.leagueId}/activity`,
-        );
-        queryClient.invalidateQueries({ queryKey: ['activity-feed-poll', data.leagueId] });
-        queryClient.invalidateQueries({ queryKey: ['draft-status', data.leagueId] });
-      }
-    });
-
-    es.addEventListener('trade-proposed', (e: MessageEvent) => {
-      const data = JSON.parse(e.data) as {
-        leagueId: string;
-        proposer: string;
-        tradeId: string;
-      };
-      if (!seenTradeIds.current.has(data.tradeId)) {
-        seenTradeIds.current.add(data.tradeId);
-        addToast(
-          'info',
-          `Nueva propuesta de intercambio de ${data.proposer}`,
-          `/leagues/${data.leagueId}/activity`,
-        );
-        queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
-      }
-    });
-
-    es.onerror = () => {
-      es.close(); // stop browser auto-reconnect; fallback polling takes over
-      // SSE dropped — activate fallback polling at 120s
-      if (!fallbackInterval) {
-        fallbackInterval = setInterval(async () => {
-          try {
-            const trades = await queryClient.fetchQuery({
-              queryKey: ['my-pending-trades'],
-              queryFn: getMyPendingTrades,
-              staleTime: 25_000,
-            });
-            for (const trade of trades) {
-              if (!seenTradeIds.current.has(trade.id)) {
-                seenTradeIds.current.add(trade.id);
-                addToast(
-                  'info',
-                  `Nueva propuesta de intercambio de ${trade.proposer}`,
-                  `/leagues/${trade.leagueId}/activity`,
-                );
-              }
-            }
-          } catch {
-            // network unavailable — retry next tick
+    // Propuestas de intercambio que no se han visto: tras una reconexión y en el polling de respaldo
+    async function checkTrades() {
+      if (!ready) return;
+      try {
+        const trades = await queryClient.fetchQuery({
+          queryKey: ['my-pending-trades'],
+          queryFn: getMyPendingTrades,
+          staleTime: 0,
+        });
+        for (const trade of trades) {
+          if (!seenTradeIds.current.has(trade.id)) {
+            seenTradeIds.current.add(trade.id);
+            addToast(
+              'info',
+              `Nueva propuesta de intercambio de ${trade.proposer}`,
+              `/leagues/${trade.leagueId}/activity`,
+            );
           }
-        }, 120_000);
+        }
+      } catch {
+        // network unavailable — retry next tick or reconnection
       }
+    }
+
+    let fallbackInterval: ReturnType<typeof setInterval> | null = null;
+    const stopFallback = () => {
+      if (fallbackInterval) clearInterval(fallbackInterval);
+      fallbackInterval = null;
     };
 
-    es.onopen = () => {
-      // SSE reconnected — stop fallback
-      if (fallbackInterval) {
-        clearInterval(fallbackInterval);
-        fallbackInterval = null;
-      }
-    };
+    // --- SSE --- El proxy de Netlify corta la conexión cada <26 s: se reconecta sola; mientras está
+    // caída, polling cada 120 s.
+    const close = openEventStream('/v1/users/events', {
+      listeners: {
+        steal: (e) => {
+          const data = JSON.parse(e.data) as {
+            leagueId: string;
+            actorUsername: string;
+            pokemonName: string;
+          };
+          const key = e.lastEventId || `${data.actorUsername}-${data.pokemonName}-${data.leagueId}`;
+          if (!seenStealIds.current.has(key)) {
+            seenStealIds.current.add(key);
+            addToast(
+              'info',
+              `${data.actorUsername} te robó a ${data.pokemonName}`,
+              `/leagues/${data.leagueId}/activity`,
+            );
+            queryClient.invalidateQueries({ queryKey: ['activity-feed-poll', data.leagueId] });
+            queryClient.invalidateQueries({ queryKey: ['draft-status', data.leagueId] });
+          }
+        },
+        'trade-proposed': (e) => {
+          const data = JSON.parse(e.data) as {
+            leagueId: string;
+            proposer: string;
+            tradeId: string;
+          };
+          if (!seenTradeIds.current.has(data.tradeId)) {
+            seenTradeIds.current.add(data.tradeId);
+            addToast(
+              'info',
+              `Nueva propuesta de intercambio de ${data.proposer}`,
+              `/leagues/${data.leagueId}/activity`,
+            );
+            queryClient.invalidateQueries({ queryKey: ['my-pending-trades'] });
+          }
+        },
+      },
+      onOpen: (reconnected) => {
+        stopFallback();
+        if (reconnected) checkTrades();
+      },
+      onDown: () => {
+        if (!fallbackInterval) fallbackInterval = setInterval(checkTrades, 120_000);
+      },
+    });
 
-    initRefs();
+    // Si la carga inicial falla (red), se sigue igualmente: como mucho se anuncia algo ya existente
+    initRefs()
+      .catch(() => {})
+      .finally(() => {
+        ready = true;
+      });
 
     return () => {
-      es.close();
-      if (fallbackInterval) clearInterval(fallbackInterval);
+      close();
+      stopFallback();
     };
   }, [username, queryClient, addToast]);
 }

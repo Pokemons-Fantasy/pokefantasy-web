@@ -30,7 +30,7 @@ Toda la documentación y el conocimiento del proyecto (back y front) vive en el 
 
 ```bash
 npm install
-npm run dev                         # sin VITE_API_URL apunta a PRODUCCIÓN (ver abajo)
+npm run dev                         # sin VITE_API_URL habla con PRODUCCIÓN por el proxy /api (ver abajo)
 ./node_modules/.bin/tsc --noEmit    # check de tipos
 npm run lint
 npm test                            # vitest (jsdom)
@@ -87,7 +87,7 @@ Antes de cambiarlas, leer la nota en `vault/70 Decisiones/` y preguntar.
 - **Los equipos se derivan de `draft.picks`**, no de un endpoint de equipos (ADR-006).
 - **El código usa los tipos escritos a mano de `src/api/*.ts`**, no `schema.d.ts` directamente; `contract.ts` comprueba en compilación que cuadran con el backend (solo campos primitivos; la nulabilidad no se compara porque springdoc no marca `required`) (ADR-010).
 - **SSE + polling de respaldo**: si el `EventSource` se cierra, se vuelve a polling (10 s draft, 120 s usuario). No quitar el fallback.
-- **Sin `VITE_API_URL` se apunta a producción** a propósito (build de Netlify y APK); en local se usa `.env.local`.
+- **La web llama a la API en `/api` de su propio dominio** y Netlify (`public/_redirects`) la reenvía a Render: así la cookie de sesión no es de terceros y Safari/iOS la acepta. La app nativa llama a Render directamente. Sin `VITE_API_URL`, `npm run dev` usa el mismo proxy (`vite.config.ts`) contra producción a propósito; en local se usa `.env.local` (ADR-013).
 - **Router de datos** (`createBrowserRouter`): las subrutas de liga cuelgan de `LeagueLayout` y Configuración bloquea la salida con `useBlocker`. El error boundary global se reinicia con `resetKey`, no con `key={pathname}` (remontaría los layouts). Tests de páginas con `useBlocker`: `createMemoryRouter` (ADR-012).
 
 ### 4. Qué puede tocar qué
