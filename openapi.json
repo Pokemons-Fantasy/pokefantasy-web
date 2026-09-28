@@ -910,10 +910,7 @@
                         "content": {
                             "*/*": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "type": "string"
-                                    }
+                                    "$ref": "#/components/schemas/RedeemInviteResponse"
                                 }
                             }
                         }
@@ -1821,6 +1818,17 @@
                 "properties": {
                     "pokemonName": {
                         "type": "string"
+                    }
+                }
+            },
+            "RedeemInviteResponse": {
+                "type": "object",
+                "properties": {
+                    "leagueId": {
+                        "type": "string"
+                    },
+                    "alreadyMember": {
+                        "type": "boolean"
                     }
                 }
             },

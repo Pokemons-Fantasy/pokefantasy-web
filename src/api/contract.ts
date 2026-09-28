@@ -14,7 +14,7 @@ import type { ActivityEvent, ActivityFeedResponse } from './activity';
 import type { LoginResponse } from './auth';
 import type {
   CoinBalanceResponse, JornadaDto, League, LeagueDetail, LeagueMember, LeagueSettings,
-  MatchDto, PlayerSeasonStats, PlayerStanding, ScheduleResponse,
+  MatchDto, PlayerSeasonStats, PlayerStanding, RedeemInviteResponse, ScheduleResponse,
 } from './leagues';
 import type {
   AvailablePokemon, BenchEntry, DraftPick, DraftStatus, TierAdjustmentResponse, TierChange,
@@ -54,6 +54,7 @@ export type Contract = [
   Assert<FieldsMatch<ScheduleResponse, S['ScheduleResponse']>>,
   Assert<FieldsMatch<PlayerStanding, S['PlayerStandingResponse']>>,
   Assert<FieldsMatch<PlayerSeasonStats, S['PlayerSeasonStats']>>,
+  Assert<FieldsMatch<RedeemInviteResponse, S['RedeemInviteResponse']>>,
   Assert<FieldsMatch<AvailablePokemon, S['AvailablePokemonResponse']>>,
   Assert<FieldsMatch<BenchEntry, S['BenchEntryResponse']>>,
   Assert<FieldsMatch<DraftPick, S['DraftPickResponse']>>,

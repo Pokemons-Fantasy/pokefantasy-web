@@ -12,8 +12,9 @@ export default function InvitePage() {
 
   const { mutate: redeem, isPending } = useMutation({
     mutationFn: () => redeemInvite(token!),
-    onSuccess: ({ leagueId }) => {
-      addToast('success', '¡Te has unido a la liga!');
+    onSuccess: ({ leagueId, alreadyMember }) => {
+      if (alreadyMember) addToast('info', 'Ya eras miembro de esta liga');
+      else addToast('success', '¡Te has unido a la liga!');
       navigate(`/leagues/${leagueId}`);
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Link inválido o expirado')),

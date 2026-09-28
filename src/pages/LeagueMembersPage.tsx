@@ -9,6 +9,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { getDraftStatus, startDraft } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { inviteUrl } from '../utils/invite';
 import { SkeletonTable } from '../components/SkeletonTable';
 
 export default function LeagueMembersPage() {
@@ -71,10 +72,7 @@ export default function LeagueMembersPage() {
   const { mutate: generateInvite } = useMutation({
     mutationFn: () => generateInviteLink(leagueId!),
     onSuccess: ({ token }) => {
-      const url = Capacitor.isNativePlatform()
-        ? `pokefantasy://invite/${token}`
-        : `${window.location.origin}/invite/${token}`;
-      Clipboard.write({ string: url });
+      Clipboard.write({ string: inviteUrl(token, Capacitor.isNativePlatform(), window.location.origin) });
       addToast('success', 'Link de invitación copiado (válido 48 h)');
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al generar link')),
@@ -265,13 +263,16 @@ export default function LeagueMembersPage() {
                 </ul>
               )}
             </div>
-            <button
-              className="btn-ghost"
-              style={{ marginTop: '0.5rem', width: '100%' }}
-              onClick={() => generateInvite()}
-            >
-              🔗 Copiar link de invitación
-            </button>
+            {/* El backend no admite nuevos miembros por link una vez empezado el draft */}
+            {!draftActive && (
+              <button
+                className="btn-ghost"
+                style={{ marginTop: '0.5rem', width: '100%' }}
+                onClick={() => generateInvite()}
+              >
+                🔗 Copiar link de invitación
+              </button>
+            )}
           </>
         )}
       </main>
