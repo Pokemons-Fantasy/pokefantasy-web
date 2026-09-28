@@ -5,6 +5,8 @@ export interface AvailablePokemon {
   id: number;
   name: string;
   spriteUrl: string;
+  /** Tipos en inglés, en orden de slot. Ausente con un backend o una caché sin tipos. */
+  types?: string[] | null;
 }
 
 export type Tier = 'S' | 'A' | 'B' | 'C' | 'D';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -9,44 +9,26 @@ import {
   nominatePokemon,
   denominatePokemon,
 } from '../api/pokemons';
-import type { AvailablePokemon, ClosedListEntry } from '../api/pokemons';
-import TierBadge from '../components/TierBadge';
+import type { ClosedListEntry } from '../api/pokemons';
 import PokemonDetailModal from '../components/PokemonDetailModal';
+import PoolCard from '../components/pool/PoolCard';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
-import { spriteUrl } from '../utils/sprites';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
+import { TYPE_COLORS } from '../utils/colors';
+import { typeLabel } from '../utils/pokemonTypes';
+import {
+  GEN_TABS,
+  POKEMON_TYPES,
+  cardState,
+  matchesGen,
+  matchesType,
+  pokemonTypes,
+  type GenFilter,
+} from '../utils/pool';
 
 const MAX_NOMINATIONS = 16;
-
-type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'regional';
-
-const GEN_TABS: { label: string; key: GenFilter; min?: number; max?: number }[] = [
-  { label: 'Todos',    key: 'all' },
-  { label: 'Gen I',   key: 'gen1', min: 1,   max: 151  },
-  { label: 'Gen II',  key: 'gen2', min: 152, max: 251  },
-  { label: 'Gen III', key: 'gen3', min: 252, max: 386  },
-  { label: 'Gen IV',  key: 'gen4', min: 387, max: 493  },
-  { label: 'Gen V',   key: 'gen5', min: 494, max: 649  },
-  { label: 'Gen VI',  key: 'gen6', min: 650, max: 721  },
-  { label: 'Gen VII', key: 'gen7', min: 722, max: 809  },
-  { label: 'Gen VIII',key: 'gen8', min: 810, max: 905  },
-  { label: 'Gen IX',  key: 'gen9', min: 906, max: 1025 },
-  { label: 'Regional', key: 'regional' },
-];
-
-function matchesGen(p: AvailablePokemon, gen: GenFilter): boolean {
-  if (gen === 'all') return true;
-  if (gen === 'regional') {
-    const name = p.name.toLowerCase();
-    return name.includes('-alola') || name.includes('-galar')
-        || name.includes('-hisui') || name.includes('-paldea');
-  }
-  const tab = GEN_TABS.find((t) => t.key === gen);
-  if (!tab || tab.min === undefined || tab.max === undefined) return false;
-  return p.id >= tab.min && p.id <= tab.max && p.id < 10000;
-}
 
 export default function PoolPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -55,11 +37,13 @@ export default function PoolPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [search, setSearch] = useState('');
   const [genFilter, setGenFilter] = useState<GenFilter>('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
 
   const { data: available = [], isLoading: loadingPokemons } = useQuery({
     queryKey: ['available-pokemons'],
     queryFn: getAvailablePokemons,
+    staleTime: 10 * 60_000,
   });
 
   const { data: closedList = [] } = useQuery({
@@ -76,33 +60,32 @@ export default function PoolPage() {
   });
 
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
-  const nominatedNames = new Set(closedList.map((e) => e.pokemonName));
-  const tierByName = new Map(closedList.map((e) => [e.pokemonName, e.tier]));
   const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
   // Misma regla que NominatePokemonCommandHandler: solo se nomina con el draft sin empezar
   const nominationsClosed = !!draftStatus && draftStatus.status !== 'PENDING';
   const canNominate = !nominationsClosed && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
+  // Con un backend anterior la lista no trae tipos: sin filtro por tipo
+  const hasTypes = available.some((p) => p.types && p.types.length > 0);
 
-  const { mutate: nominate, isPending } = useMutation({
+  const { mutate: nominate, isPending: nominating } = useMutation({
     mutationFn: (pokemonName: string) => nominatePokemon(leagueId!, pokemonName),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] }),
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al nominar')),
   });
 
-  const { mutate: denominate } = useMutation({
+  const { mutate: denominate, isPending: denominating } = useMutation({
     mutationFn: (pokemonName: string) => denominatePokemon(leagueId!, pokemonName),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
-    },
-    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al desnominar')),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] }),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al quitar la nominación')),
   });
 
-  const filtered = available
-    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((p) => matchesGen(p, genFilter));
+  const query = search.trim().toLowerCase();
+  const cards = available
+    .filter((p) => p.name.toLowerCase().includes(query))
+    .filter((p) => matchesGen(p, genFilter))
+    .map((p) => ({ pokemon: p, entry: entryByName.get(p.name), types: pokemonTypes(p, entryByName.get(p.name)) }))
+    .filter((c) => !hasTypes || matchesType(c.types, typeFilter));
 
   return (
     <>
@@ -126,11 +109,13 @@ export default function PoolPage() {
           <LeaguePhaseBadge draftStatus={draftStatus?.status ?? null} />
         </div>
 
-        <div className="gen-tabs">
+        <div className="gen-tabs" role="group" aria-label="Generación">
           {GEN_TABS.map((tab) => (
             <button
               key={tab.key}
+              type="button"
               className={`gen-tab${genFilter === tab.key ? ' active' : ''}`}
+              aria-pressed={genFilter === tab.key}
               onClick={() => setGenFilter(tab.key)}
             >
               {tab.label}
@@ -138,56 +123,63 @@ export default function PoolPage() {
           ))}
         </div>
 
+        {hasTypes && (
+          <div className="gen-tabs pool-type-tabs" role="group" aria-label="Tipo">
+            <button
+              type="button"
+              className={`gen-tab${typeFilter === 'all' ? ' active' : ''}`}
+              aria-pressed={typeFilter === 'all'}
+              onClick={() => setTypeFilter('all')}
+            >
+              Todos los tipos
+            </button>
+            {POKEMON_TYPES.map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={`gen-tab type-tab${typeFilter === type ? ' active' : ''}`}
+                style={{ '--type-color': TYPE_COLORS[type]?.color } as CSSProperties}
+                aria-pressed={typeFilter === type}
+                onClick={() => setTypeFilter(type)}
+              >
+                {typeLabel(type)}
+              </button>
+            ))}
+          </div>
+        )}
+
         <input
           className="search-input"
-          type="text"
+          type="search"
           placeholder="Buscar Pokémon..."
+          aria-label="Buscar Pokémon"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {loadingPokemons && <SkeletonGrid count={8} cardHeight="70px" />}
+        {loadingPokemons && <SkeletonGrid count={8} cardHeight="110px" />}
 
-        <div className="pokemon-grid">
-          {filtered.map((pokemon) => {
-            const isNominated = nominatedNames.has(pokemon.name);
-            const isOwn = myNominations.some((n) => n.pokemonName === pokemon.name);
-            const nominatedBy = entryByName.get(pokemon.name)?.nominatedBy;
+        {!loadingPokemons && cards.length === 0 && (
+          <p className="empty-state">Ningún Pokémon coincide con los filtros.</p>
+        )}
+
+        <div className="pokemon-grid pool-grid">
+          {cards.map(({ pokemon, entry, types }) => {
+            const isOwn = entry?.nominatedBy === username;
+            const state = cardState({ isNominated: !!entry, isOwn, nominationsClosed, canNominate });
             return (
-              <div
+              <PoolCard
                 key={pokemon.id}
-                className={`pokemon-card ${isNominated ? 'nominated' : ''} ${isOwn ? 'own' : ''}`}
-                onClick={() => {
-                  if (nominationsClosed || isPending) return;
-                  if (isOwn) denominate(pokemon.name);
-                  else if (!isNominated && canNominate) nominate(pokemon.name);
-                }}
-                title={
-                  isOwn ? 'Clic para quitar'
-                  : isNominated ? (nominatedBy ? `Nominado por ${nominatedBy}` : 'Ya nominado')
-                  : !canNominate ? (nominationsClosed ? 'Nominaciones cerradas' : 'Límite alcanzado')
-                  : 'Clic para nominar'
-                }
-              >
-                <img src={spriteUrl(pokemon.id)} alt={pokemon.name} className="pokemon-sprite" />
-                <span className="pokemon-name">{pokemon.name}</span>
-                {isNominated && <TierBadge tier={tierByName.get(pokemon.name)} />}
-                {isOwn && <span className="pokemon-tag pokemon-tag-own">Tuyo</span>}
-                {isNominated && !isOwn && (
-                  <span className="pokemon-tag pokemon-tag-taken">
-                    {nominatedBy ? `De ${nominatedBy}` : 'Nominado'}
-                  </span>
-                )}
-                {isNominated && (
-                  <button
-                    className="pokemon-info-btn"
-                    onClick={(e) => { e.stopPropagation(); setDetailEntry(entryByName.get(pokemon.name) ?? null); }}
-                    title="Ver detalles"
-                  >
-                    i
-                  </button>
-                )}
-              </div>
+                id={pokemon.id}
+                name={pokemon.name}
+                types={types}
+                state={state}
+                tier={entry?.tier}
+                nominatedBy={entry?.nominatedBy}
+                busy={nominating || denominating}
+                onToggle={() => (state === 'own' ? denominate(pokemon.name) : nominate(pokemon.name))}
+                onInfo={entry ? () => setDetailEntry(entry) : undefined}
+              />
             );
           })}
         </div>

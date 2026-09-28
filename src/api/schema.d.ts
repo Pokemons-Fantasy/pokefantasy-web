@@ -890,6 +890,7 @@ export interface components {
             id?: number;
             name?: string;
             spriteUrl?: string;
+            types?: string[];
         };
         LeagueDetailResponse: {
             id?: string;
