@@ -27,7 +27,7 @@ export default function StealModal({
       <div className="modal animate-in-fast" style={{ maxWidth: 440 }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Robar pokémon</h2>
+          <h2 style={{ fontSize: '1.15rem' }}>Robar Pokémon</h2>
           <button
             className="btn-ghost"
             style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}

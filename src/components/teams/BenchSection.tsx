@@ -19,17 +19,17 @@ export default function BenchSection({
   return (
     <div style={{ marginTop: '3rem' }}>
       <hr className="divider" />
-      <p className="section-label">Banca</p>
+      <p className="section-label">Banquillo</p>
 
       {bench.length === 0 ? (
         <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-          No quedan pokémons en la banca.
+          No quedan Pokémon en el banquillo.
         </p>
       ) : (
         <>
           {!swapWindowClosed && canInteract && (
             <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Haz click en un pokémon de la banca para intercambiarlo o comprarlo.
+              Haz clic en un Pokémon del banquillo para intercambiarlo o comprarlo.
             </p>
           )}
           <div className="pokemon-grid">

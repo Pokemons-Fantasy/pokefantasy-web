@@ -141,7 +141,7 @@ export default function PoolPage() {
         <input
           className="search-input"
           type="text"
-          placeholder="Buscar pokémon..."
+          placeholder="Buscar Pokémon..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -152,6 +152,7 @@ export default function PoolPage() {
           {filtered.map((pokemon) => {
             const isNominated = nominatedNames.has(pokemon.name);
             const isOwn = myNominations.some((n) => n.pokemonName === pokemon.name);
+            const nominatedBy = entryByName.get(pokemon.name)?.nominatedBy;
             return (
               <div
                 key={pokemon.id}
@@ -163,7 +164,7 @@ export default function PoolPage() {
                 }}
                 title={
                   isOwn ? 'Clic para quitar'
-                  : isNominated ? 'Ya nominado'
+                  : isNominated ? (nominatedBy ? `Nominado por ${nominatedBy}` : 'Ya nominado')
                   : !canNominate ? (nominationsClosed ? 'Nominaciones cerradas' : 'Límite alcanzado')
                   : 'Clic para nominar'
                 }
@@ -172,7 +173,11 @@ export default function PoolPage() {
                 <span className="pokemon-name">{pokemon.name}</span>
                 {isNominated && <TierBadge tier={tierByName.get(pokemon.name)} />}
                 {isOwn && <span className="pokemon-tag pokemon-tag-own">Tuyo</span>}
-                {isNominated && !isOwn && <span className="pokemon-tag pokemon-tag-taken">Tomado</span>}
+                {isNominated && !isOwn && (
+                  <span className="pokemon-tag pokemon-tag-taken">
+                    {nominatedBy ? `De ${nominatedBy}` : 'Nominado'}
+                  </span>
+                )}
                 {isNominated && (
                   <button
                     className="pokemon-info-btn"

@@ -74,9 +74,9 @@ export default function LeagueMembersPage() {
     mutationFn: () => generateInviteLink(leagueId!),
     onSuccess: ({ token }) => {
       Clipboard.write({ string: inviteUrl(token, Capacitor.isNativePlatform(), window.location.origin) });
-      addToast('success', 'Link de invitación copiado (válido 48 h)');
+      addToast('success', 'Enlace de invitación copiado (válido 48 h)');
     },
-    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al generar link')),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al generar el enlace')),
   });
 
   const { mutate: remove, isPending: removing } = useMutation({
@@ -269,7 +269,7 @@ export default function LeagueMembersPage() {
                 style={{ marginTop: '0.5rem', width: '100%' }}
                 onClick={() => generateInvite()}
               >
-                🔗 Copiar link de invitación
+                🔗 Copiar enlace de invitación
               </button>
             )}
           </>

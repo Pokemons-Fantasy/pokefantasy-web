@@ -53,8 +53,8 @@ export default function OwnTeamPanel({
           <button
             className="btn-ghost own-team-collapse-btn"
             onClick={onToggleCollapse}
-            title={collapsed ? 'Expandir' : 'Colapsar'}
-            aria-label={collapsed ? 'Expandir tu equipo' : 'Colapsar tu equipo'}
+            title={collapsed ? 'Desplegar' : 'Plegar'}
+            aria-label={collapsed ? 'Desplegar tu equipo' : 'Plegar tu equipo'}
           >
             {collapsed ? '▶' : '▼'}
           </button>

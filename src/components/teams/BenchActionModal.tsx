@@ -33,7 +33,7 @@ export default function BenchActionModal({
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.15rem' }}>
-            {view === 'choose' ? 'Banca' : 'Comprar de la banca'}
+            {view === 'choose' ? 'Banquillo' : 'Comprar del banquillo'}
           </h2>
           <button
             className="btn-ghost"
@@ -87,7 +87,7 @@ export default function BenchActionModal({
                 <span style={{ fontSize: '1.5rem' }}>🔄</span>
                 <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Intercambiar</span>
                 <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
-                  Da uno de tus pokémon y recibe este
+                  Da uno de tus Pokémon y recibe este
                 </span>
               </button>
             )}
@@ -106,7 +106,7 @@ export default function BenchActionModal({
               <span style={{ fontSize: '1.5rem' }}>🛒</span>
               <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Comprar</span>
               <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
-                Añade este pokémon por 💰 {price}
+                Añade este Pokémon por 💰 {price}
               </span>
             </button>
           </div>

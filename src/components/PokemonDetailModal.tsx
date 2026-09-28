@@ -22,12 +22,12 @@ interface Props {
 }
 
 const STAT_META: { key: keyof Stats; label: string; color: string }[] = [
-  { key: 'hp',             label: 'HP',  color: '#4ade80' },
-  { key: 'attack',         label: 'Atk', color: '#f87171' },
-  { key: 'defense',        label: 'Def', color: '#60a5fa' },
-  { key: 'specialAttack',  label: 'SpA', color: '#c084fc' },
-  { key: 'specialDefense', label: 'SpD', color: '#2dd4bf' },
-  { key: 'speed',          label: 'Spe', color: '#fbbf24' },
+  { key: 'hp',             label: 'PS', color: '#4ade80' },
+  { key: 'attack',         label: 'Ataque', color: '#f87171' },
+  { key: 'defense',        label: 'Defensa', color: '#60a5fa' },
+  { key: 'specialAttack',  label: 'At. Esp.', color: '#c084fc' },
+  { key: 'specialDefense', label: 'Def. Esp.', color: '#2dd4bf' },
+  { key: 'speed',          label: 'Velocidad', color: '#fbbf24' },
 ];
 
 export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats, types, onClose }: Props) {
@@ -140,7 +140,7 @@ export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats
                   const val = stats[key];
                   const pct = Math.min(100, Math.round((val / 255) * 100));
                   return (
-                    <div key={key} style={{ display: 'grid', gridTemplateColumns: '3rem 2.4rem 1fr', alignItems: 'center', gap: '0.5rem' }}>
+                    <div key={key} style={{ display: 'grid', gridTemplateColumns: '4.2rem 2.4rem 1fr', alignItems: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', textAlign: 'right' }}>{label}</span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text)', textAlign: 'right', fontFamily: "'Space Mono', monospace" }}>{val}</span>
                       <div
@@ -158,7 +158,7 @@ export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats
                 })}
               </div>
             ) : (
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>Sin datos de stats</p>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', margin: 0 }}>Sin estadísticas</p>
             )}
           </div>
         </div>

@@ -252,7 +252,7 @@ export default function DraftPage() {
             <>
               <div className="my-turn-banner animate-in">
                 <span className="my-turn-dot" />
-                ⚡ ¡Es tu turno! Elige un pokémon del pool
+                ⚡ ¡Es tu turno! Elige un Pokémon del pool
               </div>
               <input
                 className="search-input"
@@ -348,7 +348,7 @@ export default function DraftPage() {
                   setPendingPick(null);
                 }}
               >
-                {picking ? 'Pickeando...' : 'Confirmar'}
+                {picking ? 'Eligiendo...' : 'Confirmar'}
               </button>
             </div>
           </div>

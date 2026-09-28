@@ -83,10 +83,10 @@ const FIELD_LABELS: Record<keyof LeagueSettings, string> = {
   tierPctC: '% tier C',
   tierPctD: '% tier D',
   turnTimerSeconds: 'Tiempo por turno (s)',
-  stealWindowCloseDay: 'Día cierre ventana robo',
-  stealWindowCloseTime: 'Hora cierre robo',
-  swapWindowCloseDay: 'Día cierre ventana swap',
-  swapWindowCloseTime: 'Hora cierre swap',
+  stealWindowCloseDay: 'Día de cierre de robos',
+  stealWindowCloseTime: 'Hora de cierre de robos',
+  swapWindowCloseDay: 'Día de cierre de intercambios',
+  swapWindowCloseTime: 'Hora de cierre de intercambios',
 };
 
 const FIELD_KEYS = Object.keys(FIELD_LABELS) as (keyof LeagueSettings)[];

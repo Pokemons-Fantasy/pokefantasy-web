@@ -184,6 +184,6 @@ describe('TeamsPage', () => {
     const squirtle = await screen.findByText('squirtle');
     await userEvent.click(squirtle.closest('.pokemon-card')!);
 
-    expect(await screen.findByRole('heading', { name: 'Banca' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Banquillo' })).toBeInTheDocument();
   });
 });
