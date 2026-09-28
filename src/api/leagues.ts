@@ -186,7 +186,13 @@ export const generateInviteLink = async (leagueId: string): Promise<{ token: str
   return res.data;
 };
 
-export const redeemInvite = async (token: string): Promise<{ leagueId: string }> => {
+export interface RedeemInviteResponse {
+  leagueId: string;
+  /** Ya era miembro: no se ha añadido de nuevo. Opcional hasta que el backend lo devuelva. */
+  alreadyMember?: boolean;
+}
+
+export const redeemInvite = async (token: string): Promise<RedeemInviteResponse> => {
   const res = await apiClient.post(`/v1/invite/${token}/redeem`);
   return res.data;
 };

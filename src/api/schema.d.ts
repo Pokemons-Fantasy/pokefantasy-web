@@ -803,6 +803,10 @@ export interface components {
         BuyFromBenchRequest: {
             pokemonName?: string;
         };
+        RedeemInviteResponse: {
+            leagueId?: string;
+            alreadyMember?: boolean;
+        };
         SseEmitter: {
             /** Format: int64 */
             timeout?: number;
@@ -1715,9 +1719,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": {
-                        [key: string]: string;
-                    };
+                    "*/*": components["schemas"]["RedeemInviteResponse"];
                 };
             };
         };
