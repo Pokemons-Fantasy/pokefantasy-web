@@ -11,7 +11,7 @@
  */
 import type { components } from './schema';
 import type { ActivityEvent, ActivityFeedResponse } from './activity';
-import type { LoginResponse } from './auth';
+import type { AvatarVersionResponse, CurrentUser, LoginResponse } from './auth';
 import type {
   CoinBalanceResponse, JornadaDto, League, LeagueDetail, LeagueMember, LeagueSettings,
   MatchDto, PlayerSeasonStats, PlayerStanding, RedeemInviteResponse, ScheduleResponse,
@@ -43,6 +43,8 @@ export type Contract = [
   Assert<FieldsMatch<ActivityEvent, S['ActivityEventResponse']>>,
   Assert<FieldsMatch<ActivityFeedResponse, S['ActivityFeedResponse']>>,
   Assert<FieldsMatch<LoginResponse, S['LoginResponse']>>,
+  Assert<FieldsMatch<CurrentUser, S['CurrentUserResponse']>>,
+  Assert<FieldsMatch<AvatarVersionResponse, S['AvatarVersionResponse']>>,
   Assert<FieldsMatch<League, S['LeagueResponse']>>,
   Assert<FieldsMatch<LeagueDetail, S['LeagueDetailResponse']>>,
   Assert<FieldsMatch<LeagueMember, S['LeagueMemberResponse']>>,

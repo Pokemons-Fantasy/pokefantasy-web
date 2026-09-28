@@ -18,6 +18,8 @@ export interface League {
 export interface LeagueMember {
   username: string;
   leagueRole: 'ADMIN' | 'USER';
+  /** Versión de su foto de perfil; null o ausente = sin foto. */
+  avatarVersion?: number | null;
 }
 
 export interface LeagueDetail {

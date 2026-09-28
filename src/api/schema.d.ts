@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/user/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["uploadAvatar"];
+        post?: never;
+        delete: operations["deleteAvatar"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/steal-price": {
         parameters: {
             query?: never;
@@ -388,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/users/{username}/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAvatar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users/search": {
         parameters: {
             query?: never;
@@ -428,6 +460,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["myPendingTrades"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/user/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
         put?: never;
         post?: never;
         delete?: never;
@@ -684,6 +732,10 @@ export interface components {
             currentPassword?: string;
             newPassword?: string;
         };
+        AvatarVersionResponse: {
+            /** Format: int64 */
+            avatarVersion?: number;
+        };
         SetStealPriceRequest: {
             pokemonName?: string;
             /** Format: int32 */
@@ -828,6 +880,11 @@ export interface components {
             createdAt?: string;
             resolvedAt?: string;
         };
+        CurrentUserResponse: {
+            username?: string;
+            /** Format: int64 */
+            avatarVersion?: number;
+        };
         AvailablePokemonResponse: {
             /** Format: int32 */
             id?: number;
@@ -848,6 +905,8 @@ export interface components {
             username?: string;
             /** @enum {string} */
             leagueRole?: "ADMIN" | "USER";
+            /** Format: int64 */
+            avatarVersion?: number;
         };
         PlayerStandingResponse: {
             username?: string;
@@ -1081,6 +1140,51 @@ export interface operations {
                 "application/json": components["schemas"]["ChangePasswordRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    uploadAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvatarVersionResponse"];
+                };
+            };
+        };
+    };
+    deleteAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -1724,6 +1828,28 @@ export interface operations {
             };
         };
     };
+    getAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     searchUsers: {
         parameters: {
             query: {
@@ -1783,6 +1909,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TradeResponse"][];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrentUserResponse"];
                 };
             };
         };
