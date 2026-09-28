@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation, Link, type Location } from 'react-router-dom';
 import { login } from '../api/auth';
+import { getMyLeagues } from '../api/leagues';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { isSessionExpired } from '../utils/session';
 
 interface LocationState {
   from?: Location;
 }
+
+export const COOKIES_BLOCKED_MESSAGE =
+  'Tu navegador está bloqueando las cookies de sesión. Permite las cookies de este sitio o prueba con otro navegador.';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -18,9 +23,20 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as LocationState | null)?.from;
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: () => login(username, password),
+    mutationFn: async () => {
+      const result = await login(username, password);
+      try {
+        // Comprueba que el navegador ha guardado la cookie antes de dar el login por bueno; si no, cada
+        // petición daría 401 y se volvería al login en bucle. El resultado queda en caché para la home.
+        await queryClient.fetchQuery({ queryKey: ['my-leagues'], queryFn: getMyLeagues, retry: false });
+      } catch (err) {
+        if (isSessionExpired(err)) throw new Error(COOKIES_BLOCKED_MESSAGE, { cause: err });
+      }
+      return result;
+    },
     onSuccess: ({ username: loggedUsername }) => {
       setAuth(loggedUsername);
       navigate(from ?? '/', { replace: true });
