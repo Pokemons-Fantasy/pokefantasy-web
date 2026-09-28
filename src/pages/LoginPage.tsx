@@ -59,7 +59,7 @@ export default function LoginPage() {
             {mutation.isPending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-        <p className="auth-footer">¿No tienes cuenta? <Link to="/register">Regístrate</Link></p>
+        <p className="auth-footer">¿No tienes cuenta? <Link to="/register" state={{ from }}>Regístrate</Link></p>
       </div>
     </div>
   );
