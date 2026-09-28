@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { getStandings } from '../api/leagues';
 import type { PlayerStanding } from '../api/leagues';
 import { SkeletonTable } from '../components/SkeletonTable';
+import UserAvatar from '../components/avatar/UserAvatar';
 import { formatDiff } from '../utils/score';
 
 export default function StandingsPage() {
@@ -111,6 +112,7 @@ function StandingRow({
       </td>
       <td style={{ fontWeight: isMe ? 700 : 500 }}>
         <Link to={to} className="row-link" onClick={(e) => e.stopPropagation()}>
+          <UserAvatar username={row.username} size={24} className="avatar-inline" />
           {row.username}
         </Link>
         {isMe && (

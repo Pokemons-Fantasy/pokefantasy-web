@@ -11,6 +11,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { inviteUrl } from '../utils/invite';
 import { SkeletonTable } from '../components/SkeletonTable';
+import UserAvatar from '../components/avatar/UserAvatar';
 
 export default function LeagueMembersPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -139,7 +140,7 @@ export default function LeagueMembersPage() {
         <div className="members-list">
           {league.members.map((m) => (
             <div key={m.username} className="member-row">
-              <div className="member-avatar">{m.username[0]}</div>
+              <UserAvatar username={m.username} />
               <div className="member-info">
                 <div className="member-name">{m.username}</div>
                 <div className={`member-role ${m.leagueRole === 'ADMIN' ? 'member-role-admin' : ''}`}>
@@ -185,9 +186,7 @@ export default function LeagueMembersPage() {
               {turnOrder.map((player, i) => (
                 <div key={player} className="turn-order-item">
                   <span className="turn-order-num">{i + 1}</span>
-                  <div className="member-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem' }}>
-                    {player[0]}
-                  </div>
+                  <UserAvatar username={player} size={32} />
                   <span className="turn-order-name">{player}</span>
                   <div className="turn-order-arrows">
                     <button

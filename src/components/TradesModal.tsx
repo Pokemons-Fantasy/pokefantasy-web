@@ -7,6 +7,7 @@ import { spriteUrl } from '../utils/sprites';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from './SkeletonTable';
+import UserAvatar from './avatar/UserAvatar';
 
 interface Props {
   leagueId: string;
@@ -235,7 +236,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
                     <TradeRow
                       key={trade.id}
                       trade={trade}
-                      label={<><strong>{trade.proposer}</strong> te propone:</>}
+                      label={<><UserAvatar username={trade.proposer} size={20} className="avatar-inline" /><strong>{trade.proposer}</strong> te propone:</>}
                       actions={
                         <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
                           <button
@@ -286,7 +287,7 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
                     <TradeRow
                       key={trade.id}
                       trade={trade}
-                      label={<>Propuesta a <strong>{trade.responder}</strong>:</>}
+                      label={<>Propuesta a <UserAvatar username={trade.responder} size={20} className="avatar-inline" /><strong>{trade.responder}</strong>:</>}
                       actions={
                         <button
                           className="btn-ghost"

@@ -76,6 +76,7 @@ Rutas y estructura completa: `vault/40 Frontend/Estructura frontend.md`.
 | Orden de tiers y precio mostrado (`tierRank`, `priceForTier`) | `utils/tiers.ts` |
 | Reglas de registro / marcador | `utils/registration.ts` / `utils/score.ts` |
 | Tema claro/oscuro y status bar | `hooks/useTheme.ts` |
+| Foto de perfil (foto o inicial, URL versionada) | `components/avatar/UserAvatar` + `avatarUrl` (`api/auth`); versiones de los miembros en `AvatarVersionsContext`, que provee `LeagueLayout` (ADR-014) |
 | Registro del token push | `main.tsx` (único uso de `apiClient` fuera de `src/api/`) |
 
 ### 3. Decisiones intencionadas (no "arreglarlas")

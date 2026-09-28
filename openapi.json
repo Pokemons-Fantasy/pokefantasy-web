@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:18080",
+            "url": "http://localhost:8080",
             "description": "Generated server url"
         }
     ],
@@ -36,6 +36,55 @@
                     },
                     "required": true
                 },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/user/avatar": {
+            "put": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "uploadAvatar",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AvatarVersionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "deleteAvatar",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -918,6 +967,37 @@
                 }
             }
         },
+        "/v1/users/{username}/avatar": {
+            "get": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "getAvatar",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "byte"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/users/search": {
             "get": {
                 "tags": [
@@ -995,6 +1075,26 @@
                                     "items": {
                                         "$ref": "#/components/schemas/TradeResponse"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/me": {
+            "get": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "me",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CurrentUserResponse"
                                 }
                             }
                         }
@@ -1510,6 +1610,15 @@
                     }
                 }
             },
+            "AvatarVersionResponse": {
+                "type": "object",
+                "properties": {
+                    "avatarVersion": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
             "SetStealPriceRequest": {
                 "type": "object",
                 "properties": {
@@ -1885,6 +1994,18 @@
                     }
                 }
             },
+            "CurrentUserResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatarVersion": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
             "AvailablePokemonResponse": {
                 "type": "object",
                 "properties": {
@@ -1948,6 +2069,10 @@
                             "ADMIN",
                             "USER"
                         ]
+                    },
+                    "avatarVersion": {
+                        "type": "integer",
+                        "format": "int64"
                     }
                 }
             },

@@ -4,6 +4,7 @@ import type { Team } from '../../utils/teams';
 import { isPickLocked } from '../../utils/teams';
 import { TIER_ORDER } from '../../utils/tiers';
 import PokemonCard from './PokemonCard';
+import UserAvatar from '../avatar/UserAvatar';
 
 interface RivalTeamsListProps {
   teams: Team[];
@@ -71,7 +72,7 @@ export default function RivalTeamsList({
                 onClick={() => toggle(team.username)}
               >
                 <span className={`rival-team-chevron${open ? ' open' : ''}`} aria-hidden="true">▸</span>
-                <span className="member-avatar" aria-hidden="true">{team.username[0]}</span>
+                <UserAvatar username={team.username} />
                 <span className="rival-team-name">{team.username}</span>
                 <span className="rival-team-size">{team.picks.length}/{maxTeamSize}</span>
                 {counts.length > 0 && (

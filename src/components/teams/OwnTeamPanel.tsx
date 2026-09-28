@@ -3,6 +3,7 @@ import type { Team } from '../../utils/teams';
 import { isPickLocked } from '../../utils/teams';
 import PokemonCard from './PokemonCard';
 import CoinBadge from './CoinBadge';
+import UserAvatar from '../avatar/UserAvatar';
 
 interface OwnTeamPanelProps {
   team: Team;
@@ -30,7 +31,7 @@ export default function OwnTeamPanel({
     <div className="own-team-panel">
       <div className="own-team-panel-header">
         <div className="own-team-header-info">
-          <div className="member-avatar">{team.username[0]}</div>
+          <UserAvatar username={team.username} />
           <span style={{ fontWeight: 600, fontSize: '1rem' }}>Tu equipo</span>
           <span style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
             {team.picks.length}/{maxTeamSize}

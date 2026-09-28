@@ -8,6 +8,7 @@ import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
 import TierBadge from '../components/TierBadge';
 import { SkeletonGrid } from '../components/SkeletonGrid';
+import UserAvatar from '../components/avatar/UserAvatar';
 import { spriteUrl } from '../utils/sprites';
 
 function coinDelta(event: ActivityEvent, username: string): number {
@@ -134,22 +135,7 @@ export default function PlayerProfilePage() {
 
         {/* ── Hero del jugador ── */}
         <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem' }}>
-          <div style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'var(--accent-dim)',
-            border: '2px solid var(--accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.75rem',
-            fontWeight: 800,
-            color: 'var(--accent)',
-            flexShrink: 0,
-          }}>
-            {username?.[0]?.toUpperCase()}
-          </div>
+          <UserAvatar username={username ?? ''} size={64} className="member-avatar-hero" />
           <div>
             <h1 className="page-title" style={{ marginBottom: '0.15rem' }}>{username}</h1>
           </div>

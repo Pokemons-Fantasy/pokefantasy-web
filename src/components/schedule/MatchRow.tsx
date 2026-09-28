@@ -1,5 +1,6 @@
 import type { MatchDto } from '../../api/leagues';
 import { scoreLabel } from '../../utils/score';
+import UserAvatar from '../avatar/UserAvatar';
 
 interface MatchRowProps {
   match: MatchDto;
@@ -19,7 +20,13 @@ export default function MatchRow({ match, username, isAdmin, onRecord, onEdit }:
   }
 
   function playerName(player: string) {
-    return <>{completed && match.winnerUsername === player && '✓ '}{player}</>;
+    return (
+      <>
+        {completed && match.winnerUsername === player && '✓ '}
+        <UserAvatar username={player} size={20} className="avatar-inline" />
+        {player}
+      </>
+    );
   }
 
   return (

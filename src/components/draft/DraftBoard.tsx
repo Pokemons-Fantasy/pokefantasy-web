@@ -2,6 +2,7 @@ import type { Tier } from '../../api/pokemons';
 import type { BoardCell, DraftBoardData } from '../../utils/draftBoard';
 import { spriteUrl } from '../../utils/sprites';
 import TierBadge from '../TierBadge';
+import UserAvatar from '../avatar/UserAvatar';
 
 interface DraftBoardProps {
   board: DraftBoardData;
@@ -35,6 +36,7 @@ export default function DraftBoard({ board, me, tierByName, onSelect }: DraftBoa
                 className={player === me ? 'mine' : undefined}
                 aria-label={player === me ? `${player} (tú)` : undefined}
               >
+                <UserAvatar username={player} size={20} className="avatar-inline" />
                 {player}
               </th>
             ))}

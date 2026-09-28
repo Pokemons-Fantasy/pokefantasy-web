@@ -598,6 +598,45 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
   flex-shrink: 0;
   text-transform: uppercase;
 }
+.member-avatar[data-initial]::before { content: attr(data-initial); }
+.member-avatar-img { object-fit: cover; padding: 0; }
+.member-avatar-hero {
+  background: var(--accent-dim);
+  border: 2px solid var(--accent);
+  font-weight: 800;
+}
+/* Avatar pequeño delante de un nombre en una línea de texto (tablas, marcadores, trades). */
+.avatar-inline {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  border-width: 0;
+}
+.avatar-editor { max-width: 420px; width: 100%; }
+.avatar-editor-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.avatar-editor-controls { display: flex; align-items: center; gap: 0.75rem; }
+.avatar-editor-controls input[type='range'] { flex: 1; accent-color: var(--accent); }
+.avatar-preview {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.avatar-preview img { position: absolute; top: 0; left: 0; max-width: none; }
+.avatar-editor-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+.profile-photo { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.profile-photo-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.profile-photo-confirm { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
 
 .member-info { flex: 1; min-width: 0; }
 .member-name { font-weight: 600; font-size: 0.9rem; }
