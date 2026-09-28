@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getLeagueDetail } from '../../api/leagues';
@@ -10,6 +11,7 @@ import LeaguePhaseBadge from '../LeaguePhaseBadge';
 import { SkeletonTable } from '../SkeletonTable';
 import LeagueTabs from './LeagueTabs';
 import LeagueMenu from './LeagueMenu';
+import { AvatarVersionsContext } from '../avatar/AvatarVersionsContext';
 
 /** Marco común de /leagues/:leagueId/*: cabecera, nombre y fase, pestañas y menú. */
 export default function LeagueLayout() {
@@ -28,6 +30,12 @@ export default function LeagueLayout() {
     queryFn: () => getDraftStatus(leagueId!),
     enabled: !!leagueId,
   });
+
+  // Versión de la foto de cada miembro para los avatares de las páginas de la liga.
+  const avatarVersions = useMemo(
+    () => new Map(league?.members.map((m) => [m.username, m.avatarVersion ?? null] as const) ?? []),
+    [league],
+  );
 
   const phase = leaguePhase(draft?.status ?? null);
   const isAdmin = !!league?.members.some((m) => m.username === username && m.leagueRole === 'ADMIN');
@@ -65,7 +73,9 @@ export default function LeagueLayout() {
           <div className="league-tabs-bar">
             {!loadingDraft && <LeagueTabs tabs={leagueTabs(phase)} active={section} />}
           </div>
-          <Outlet />
+          <AvatarVersionsContext.Provider value={avatarVersions}>
+            <Outlet />
+          </AvatarVersionsContext.Provider>
         </>
       )}
     </div>
