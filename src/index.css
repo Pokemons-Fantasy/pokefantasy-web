@@ -612,6 +612,28 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
   margin-right: 0.4rem;
   border-width: 0;
 }
+.avatar-editor { max-width: 420px; width: 100%; }
+.avatar-editor-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.avatar-editor-controls { display: flex; align-items: center; gap: 0.75rem; }
+.avatar-editor-controls input[type='range'] { flex: 1; accent-color: var(--accent); }
+.avatar-preview {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.avatar-preview img { position: absolute; top: 0; left: 0; max-width: none; }
+.avatar-editor-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
 
 .member-info { flex: 1; min-width: 0; }
 .member-name { font-weight: 600; font-size: 0.9rem; }
