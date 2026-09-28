@@ -1,17 +1,67 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../store/authStore';
-import { getLeagueDetail, addMember, removeMember, generateInviteLink, searchUsers } from '../api/leagues';
+import {
+  getLeagueDetail, addMember, removeMember, promoteToAdmin, generateInviteLink, searchUsers,
+} from '../api/leagues';
 import { useDebounce } from '../hooks/useDebounce';
 import { getDraftStatus, startDraft } from '../api/pokemons';
+import type { DraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { inviteUrl } from '../utils/invite';
 import { SkeletonTable } from '../components/SkeletonTable';
 import UserAvatar from '../components/avatar/UserAvatar';
+import MemberMenu from '../components/league/MemberMenu';
+import type { MemberAction } from '../components/league/MemberMenu';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { moveTurn, shuffleTurnOrder, syncTurnOrder } from '../utils/turnOrder';
+
+type MemberActionKind = 'leave' | 'remove' | 'promote';
+
+interface PendingAction {
+  kind: MemberActionKind;
+  username: string;
+}
+
+/** Textos de la confirmación. Salir o expulsar solo quita picks con el draft en marcha (el back solo los
+ *  toca entonces); con la temporada empezada el equipo y los partidos se quedan. */
+function confirmCopy({ kind, username }: PendingAction, draftStatus: DraftStatus['status'] | undefined) {
+  const drafting = draftStatus === 'PENDING' || draftStatus === 'IN_PROGRESS';
+  const season = draftStatus === 'COMPLETED';
+  if (kind === 'promote') {
+    return {
+      title: `¿Hacer admin a ${username}?`,
+      message: 'Podrá gestionar los miembros, la configuración y el draft, igual que tú. Desde la app no se puede deshacer.',
+      confirmLabel: 'Hacer admin',
+      pendingLabel: 'Guardando...',
+      danger: false,
+    };
+  }
+  if (kind === 'leave') {
+    const effect = drafting ? 'Perderás los picks que llevas en el draft. '
+      : season ? 'Tu equipo y tus partidos se quedan en la liga. ' : '';
+    return {
+      title: '¿Salir de la liga?',
+      message: `${effect}Solo podrás volver si un admin te añade.`,
+      confirmLabel: 'Salir',
+      pendingLabel: 'Saliendo...',
+      danger: true,
+    };
+  }
+  const effect = drafting ? `${username} perderá los picks que lleva en el draft. `
+    : season ? 'Su equipo y sus partidos se quedan en la liga. ' : '';
+  return {
+    title: `¿Expulsar a ${username}?`,
+    message: `${effect}Dejará de ver la liga hasta que un admin le vuelva a añadir.`,
+    confirmLabel: 'Expulsar',
+    pendingLabel: 'Expulsando...',
+    danger: true,
+  };
+}
 
 export default function LeagueMembersPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -21,8 +71,9 @@ export default function LeagueMembersPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [memberSearch, setMemberSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [turnOrder, setTurnOrder] = useState<string[]>([]);
-  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  /** Orden colocado por el admin; el que se usa es `turnOrder`, sincronizado con los miembros. */
+  const [arrangedOrder, setArrangedOrder] = useState<string[]>([]);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   const debouncedSearch = useDebounce(memberSearch, 300);
 
@@ -45,12 +96,10 @@ export default function LeagueMembersPage() {
     enabled: !!leagueId,
   });
 
-  useEffect(() => {
-    if (league && turnOrder.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sin acción inmediata (roadmap-frontend.md)
-      setTurnOrder(league.members.map((m) => m.username));
-    }
-  }, [league]);
+  const turnOrder = useMemo(
+    () => syncTurnOrder(arrangedOrder, league?.members.map((m) => m.username) ?? []),
+    [arrangedOrder, league],
+  );
 
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
@@ -82,15 +131,32 @@ export default function LeagueMembersPage() {
   const { mutate: remove, isPending: removing } = useMutation({
     mutationFn: (target: string) => removeMember(leagueId!, target),
     onSuccess: (_data, target) => {
-      setConfirmRemove(null);
+      setPendingAction(null);
       if (target === username) {
+        queryClient.invalidateQueries({ queryKey: ['my-leagues'] });
         navigate('/leagues');
       } else {
         queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
-        setTurnOrder((prev) => prev.filter((u) => u !== target));
+        addToast('success', `${target} ya no está en la liga`);
       }
     },
-    onError: () => setConfirmRemove(null),
+    onError: (err, target) => {
+      setPendingAction(null);
+      addToast('error', extractErrorMessage(err, target === username ? 'No se pudo salir de la liga' : `No se pudo expulsar a ${target}`));
+    },
+  });
+
+  const { mutate: promote, isPending: promoting } = useMutation({
+    mutationFn: (target: string) => promoteToAdmin(leagueId!, target),
+    onSuccess: (_data, target) => {
+      setPendingAction(null);
+      queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
+      addToast('success', `${target} ya es admin`);
+    },
+    onError: (err, target) => {
+      setPendingAction(null);
+      addToast('error', extractErrorMessage(err, `No se pudo hacer admin a ${target}`));
+    },
   });
 
   const { mutate: initDraft, isPending: startingDraft } = useMutation({
@@ -103,22 +169,27 @@ export default function LeagueMembersPage() {
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al iniciar draft')),
   });
 
-  const moveUp = (i: number) => {
-    if (i === 0) return;
-    setTurnOrder((prev) => {
-      const next = [...prev];
-      [next[i - 1], next[i]] = [next[i], next[i - 1]];
-      return next;
-    });
+  const confirmPending = () => {
+    if (!pendingAction) return;
+    if (pendingAction.kind === 'promote') promote(pendingAction.username);
+    else remove(pendingAction.username);
   };
 
-  const moveDown = (i: number) => {
-    setTurnOrder((prev) => {
-      if (i === prev.length - 1) return prev;
-      const next = [...prev];
-      [next[i], next[i + 1]] = [next[i + 1], next[i]];
-      return next;
-    });
+  /** Acciones del menú ⋯ de cada fila según quién mira. */
+  const rowMenu = (target: string, targetIsAdmin: boolean): { actions: MemberAction[]; note?: string } => {
+    const ask = (kind: MemberActionKind) => () => setPendingAction({ kind, username: target });
+    if (target === username) {
+      return isLastAdmin
+        ? { actions: [], note: 'Eres el único admin: para salir, haz admin antes a otro jugador.' }
+        : { actions: [{ label: 'Salir de la liga', onSelect: ask('leave'), danger: true }] };
+    }
+    if (!isAdmin) return { actions: [] };
+    return {
+      actions: [
+        ...(targetIsAdmin ? [] : [{ label: 'Hacer admin', onSelect: ask('promote') }]),
+        { label: 'Expulsar', onSelect: ask('remove'), danger: true },
+      ],
+    };
   };
 
   if (isLoading || !league) {
@@ -138,49 +209,39 @@ export default function LeagueMembersPage() {
 
         <p className="section-label">Jugadores ({league.members.length})</p>
         <div className="members-list">
-          {league.members.map((m) => (
-            <div key={m.username} className="member-row">
-              <UserAvatar username={m.username} />
-              <div className="member-info">
-                <div className="member-name">{m.username}</div>
-                <div className={`member-role ${m.leagueRole === 'ADMIN' ? 'member-role-admin' : ''}`}>
-                  {m.leagueRole === 'ADMIN' ? 'Admin' : 'Jugador'}
+          {league.members.map((m) => {
+            const memberIsAdmin = m.leagueRole === 'ADMIN';
+            const menu = rowMenu(m.username, memberIsAdmin);
+            return (
+              <div key={m.username} className="member-row">
+                <UserAvatar username={m.username} />
+                <div className="member-info">
+                  <span className="member-name">{m.username}</span>
+                  {m.username === username && <span className="badge badge-gray">Tú</span>}
+                  {memberIsAdmin && <span className="badge badge-yellow">Admin</span>}
                 </div>
+                <MemberMenu username={m.username} actions={menu.actions} note={menu.note} />
               </div>
-              {m.leagueRole === 'ADMIN' && (
-                <span className="badge badge-yellow">Admin</span>
-              )}
-              {m.username === username && (
-                <button
-                  className="btn-danger"
-                  style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
-                  disabled={isLastAdmin}
-                  title={isLastAdmin ? 'No puedes salir si eres el único admin' : 'Salir de la liga'}
-                  onClick={() => setConfirmRemove(m.username)}
-                >
-                  Salir
-                </button>
-              )}
-              {isAdmin && m.username !== username && (
-                <button
-                  className="btn-danger"
-                  style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
-                  onClick={() => setConfirmRemove(m.username)}
-                >
-                  Expulsar
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {isAdmin && !draftActive && (
           <>
             <hr className="divider" />
             <p className="section-label">Iniciar draft</p>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)', marginBottom: '1rem' }}>
-              Ordena los jugadores para definir el orden de turnos.
-            </p>
+            <div className="turn-order-toolbar">
+              <p className="turn-order-hint">Ordena los jugadores para definir el orden de turnos.</p>
+              <button
+                type="button"
+                className="btn-ghost turn-order-shuffle"
+                title="Orden aleatorio"
+                onClick={() => setArrangedOrder(shuffleTurnOrder(turnOrder))}
+                disabled={turnOrder.length < 2}
+              >
+                Barajar
+              </button>
+            </div>
 
             <div className="turn-order-list">
               {turnOrder.map((player, i) => (
@@ -191,15 +252,17 @@ export default function LeagueMembersPage() {
                   <div className="turn-order-arrows">
                     <button
                       className="arrow-btn"
-                      onClick={() => moveUp(i)}
+                      onClick={() => setArrangedOrder(moveTurn(turnOrder, i, -1))}
                       disabled={i === 0}
                       title="Subir"
+                      aria-label={`Subir a ${player}`}
                     >↑</button>
                     <button
                       className="arrow-btn"
-                      onClick={() => moveDown(i)}
+                      onClick={() => setArrangedOrder(moveTurn(turnOrder, i, 1))}
                       disabled={i === turnOrder.length - 1}
                       title="Bajar"
+                      aria-label={`Bajar a ${player}`}
                     >↓</button>
                   </div>
                 </div>
@@ -207,8 +270,7 @@ export default function LeagueMembersPage() {
             </div>
 
             <button
-              className="btn-primary"
-              style={{ marginTop: '1rem' }}
+              className="btn-primary turn-order-start"
               disabled={startingDraft || turnOrder.length === 0}
               onClick={() => initDraft()}
             >
@@ -221,7 +283,7 @@ export default function LeagueMembersPage() {
           <>
             <hr className="divider" />
             <p className="section-label">Añadir jugador</p>
-            <div style={{ position: 'relative' }}>
+            <div className="add-member">
               <div className="inline-form">
                 <input
                   className="search-input"
@@ -265,8 +327,7 @@ export default function LeagueMembersPage() {
             {/* El backend no admite nuevos miembros por link una vez empezado el draft */}
             {!draftActive && (
               <button
-                className="btn-ghost"
-                style={{ marginTop: '0.5rem', width: '100%' }}
+                className="btn-ghost invite-button"
                 onClick={() => generateInvite()}
               >
                 🔗 Copiar enlace de invitación
@@ -276,27 +337,13 @@ export default function LeagueMembersPage() {
         )}
       </main>
 
-      {confirmRemove && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>
-              {confirmRemove === username ? '¿Salir de la liga?' : `¿Expulsar a ${confirmRemove}?`}
-            </h2>
-            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
-              {confirmRemove === username
-                ? 'Perderás todos tus picks del draft. Esta acción no se puede deshacer.'
-                : `${confirmRemove} será eliminado de la liga y perderá todos sus picks del draft.`}
-            </p>
-            <div className="modal-actions">
-              <button className="btn-ghost" onClick={() => setConfirmRemove(null)} disabled={removing}>
-                Cancelar
-              </button>
-              <button className="btn-danger" onClick={() => remove(confirmRemove)} disabled={removing}>
-                {removing ? 'Eliminando...' : confirmRemove === username ? 'Salir' : 'Expulsar'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {pendingAction && (
+        <ConfirmDialog
+          {...confirmCopy(pendingAction, draft?.status)}
+          pending={removing || promoting}
+          onConfirm={confirmPending}
+          onClose={() => setPendingAction(null)}
+        />
       )}
     </>
   );

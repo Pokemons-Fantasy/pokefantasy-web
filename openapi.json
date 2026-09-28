@@ -328,6 +328,37 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/members/{username}/admin": {
+            "put": {
+                "tags": [
+                    "league-controller"
+                ],
+                "operationId": "promoteToAdmin",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/closed-list/{entryId}/tier": {
             "put": {
                 "tags": [

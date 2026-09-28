@@ -653,16 +653,51 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
 .profile-photo-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .profile-photo-confirm { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
 
-.member-info { flex: 1; min-width: 0; }
-.member-name { font-weight: 600; font-size: 0.9rem; }
-.member-role {
-  font-size: 0.7rem;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 0.1rem;
+.member-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
-.member-role-admin { color: var(--accent); }
+.member-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.member-menu-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.6rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+button.member-menu-item {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.member-menu-item.danger { color: var(--danger); }
+.member-menu-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.member-menu-note {
+  max-width: 230px;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.add-member { position: relative; }
+.invite-button { margin-top: 0.5rem; width: 100%; }
+
+.confirm-dialog { max-width: 420px; }
+.confirm-dialog-message { color: var(--text-2); font-size: 0.9rem; }
 
 /* ─── BADGES ─── */
 
@@ -1200,6 +1235,17 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
 }
 
 /* ─── TURN ORDER ─── */
+
+.turn-order-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.turn-order-hint { margin: 0; font-size: 0.875rem; color: var(--text-2); }
+.turn-order-shuffle { flex-shrink: 0; }
+.turn-order-start { margin-top: 1rem; }
 
 .turn-order-list { display: flex; flex-direction: column; gap: 0.4rem; }
 
@@ -1933,11 +1979,6 @@ a.btn-back, a.logo { text-decoration: none; }
   .pokemon-sprite {
     width: 60px;
     height: 60px;
-  }
-
-  /* Member row: allow action button to wrap */
-  .member-row {
-    flex-wrap: wrap;
   }
 
   /* Draft status bar: tighter gap */
