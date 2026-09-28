@@ -2177,6 +2177,7 @@ export interface operations {
                 page?: number;
                 size?: number;
                 username?: string;
+                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED")[];
             };
             header?: never;
             path: {
