@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { openEventStream, SSE_RETRY_MIN_MS, SSE_RETRY_MAX_MS } from './sse';
 
+// Base fija: la real sale de VITE_API_URL y un .env.local (backend local) cambiaría la URL esperada.
+vi.mock('./client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./client')>()),
+  API_BASE_URL: '/api',
+}));
+
 class FakeEventSource {
   static instances: FakeEventSource[] = [];
   onopen: (() => void) | null = null;
