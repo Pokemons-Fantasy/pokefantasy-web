@@ -9,12 +9,16 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import ChangePasswordForm from '../components/ChangePasswordForm';
+import { getMe } from '../api/auth';
+import UserAvatar from '../components/avatar/UserAvatar';
+import ProfilePhotoSection from '../components/avatar/ProfilePhotoSection';
 
 export default function MyProfilePage() {
   const username = useAuthStore((s) => s.username);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: getMe, staleTime: 5 * 60_000 });
 
   // leagueId de la liga cuyo MVP picker está abierto (null = cerrado)
   const [mvpPickerLeagueId, setMvpPickerLeagueId] = useState<string | null>(null);
@@ -65,14 +69,12 @@ export default function MyProfilePage() {
 
         {/* ── Hero ── */}
         <div className="animate-in" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem' }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'var(--accent-dim)', border: '2px solid var(--accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent)', flexShrink: 0,
-          }}>
-            {username?.[0]?.toUpperCase()}
-          </div>
+          <UserAvatar
+            username={username ?? ''}
+            size={64}
+            avatarVersion={me?.avatarVersion ?? null}
+            className="member-avatar-hero"
+          />
           <div>
             <h1 className="page-title" style={{ marginBottom: '0.15rem' }}>{username}</h1>
             <p className="page-subtitle">
@@ -191,6 +193,10 @@ export default function MyProfilePage() {
             })}
           </div>
         )}
+
+        {/* ── Foto de perfil ── */}
+        <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Foto de perfil</p>
+        <ProfilePhotoSection username={username ?? ''} />
 
         {/* ── Cuenta ── */}
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>

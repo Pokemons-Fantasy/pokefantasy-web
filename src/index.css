@@ -634,6 +634,9 @@ a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decora
 }
 .avatar-preview img { position: absolute; top: 0; left: 0; max-width: none; }
 .avatar-editor-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+.profile-photo { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.profile-photo-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.profile-photo-confirm { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
 
 .member-info { flex: 1; min-width: 0; }
 .member-name { font-weight: 600; font-size: 0.9rem; }
