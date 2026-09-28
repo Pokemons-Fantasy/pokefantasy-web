@@ -55,6 +55,11 @@ export const removeMember = async (leagueId: string, username: string): Promise<
   await apiClient.delete(`/v1/leagues/${leagueId}/members/${username}`);
 };
 
+/** Admin: hace admin a otro miembro (idempotente). */
+export const promoteToAdmin = async (leagueId: string, username: string): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/members/${username}/admin`);
+};
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export interface LeagueSettings {
