@@ -6,6 +6,8 @@ import ProfilePhotoSection from './ProfilePhotoSection';
 import * as authApi from '../../api/auth';
 import { useToastStore } from '../../store/toastStore';
 
+// Base fija: sin esto dependería del VITE_API_URL del .env.local de quien ejecute los tests.
+vi.mock('../../api/client', () => ({ API_BASE_URL: '/api', apiClient: {} }));
 vi.mock('../../api/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof authApi>()),
   getMe: vi.fn(),

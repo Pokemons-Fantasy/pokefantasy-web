@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/react';
 import UserAvatar from './UserAvatar';
 import { AvatarVersionsContext } from './AvatarVersionsContext';
+
+// Base fija: sin esto dependería del VITE_API_URL del .env.local de quien ejecute los tests.
+vi.mock('../../api/client', () => ({ API_BASE_URL: '/api', apiClient: {} }));
 
 describe('UserAvatar', () => {
   it('renders the initial and no image without a version', () => {
