@@ -2160,9 +2160,10 @@ a.btn-back, a.logo { text-decoration: none; }
 .pool-card.state-own-closed { border-color: var(--success-border); background: var(--success-bg); }
 .pool-card.state-own:hover { border-color: var(--success); transform: translateY(-2px); }
 
-/* Los PNG del CDN tienen mucho margen transparente: se amplían y se recorta el margen */
-.pool-sprite-box { width: 80px; height: 72px; display: grid; place-items: center; overflow: hidden; }
-.pool-sprite { width: 128px; height: 128px; max-width: none; image-rendering: pixelated; }
+/* Tamaño nativo del PNG (96 px), sin recortar: el margen transparente varía por Pokémon (los grandes llenan
+   la imagen) y un recorte por CSS los corta. En columnas estrechas se ajusta al ancho de la card. */
+.pool-sprite-box { width: 96px; max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.pool-sprite { width: 100%; height: 100%; image-rendering: pixelated; }
 .pool-card.state-taken .pool-sprite { filter: grayscale(1); opacity: 0.5; }
 
 .pool-name {
