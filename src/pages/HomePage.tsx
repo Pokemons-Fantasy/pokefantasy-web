@@ -13,7 +13,7 @@ const FOCUS_CARDS = {
     many: (n: number) => `${n} ligas con draft en curso.`,
   },
   setup: {
-    live: false, icon: '🎯', title: 'Continuar setup', path: '', cta: 'Continuar',
+    live: false, icon: '🎯', title: 'Continuar la preparación', path: '', cta: 'Continuar',
     single: 'nominar Pokémon y arrancar.',
     many: () => 'Continúa preparando tus ligas.',
   },

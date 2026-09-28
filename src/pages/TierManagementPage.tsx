@@ -121,7 +121,7 @@ function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustMod
             fontSize: '0.82rem',
             color: 'var(--accent)',
           }}>
-            Esto producira una cascada de {steps} {steps === 1 ? 'intercambio adicional' : 'intercambios adicionales'} para mantener los conteos equilibrados.
+            Esto producirá una cascada de {steps} {steps === 1 ? 'intercambio adicional' : 'intercambios adicionales'} para mantener los conteos equilibrados.
           </div>
         )}
 
@@ -215,7 +215,7 @@ export default function TierManagementPage() {
       )}
 
       <main className="page-content">
-        <h1 className="page-title">Gestion de tiers</h1>
+        <h1 className="page-title">Gestión de tiers</h1>
 
         {!isDraftCompleted && (
           <div className="empty-state">
@@ -287,7 +287,7 @@ export default function TierManagementPage() {
               <SkeletonGrid count={6} />
             ) : tabEntries.length === 0 ? (
               <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-                No hay pokémon en tier {activeTab}.
+                No hay Pokémon en tier {activeTab}.
               </p>
             ) : (
               <div className="pokemon-grid">

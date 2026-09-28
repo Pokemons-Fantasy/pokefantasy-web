@@ -91,7 +91,7 @@ export function useNotificationSse() {
             seenStealIds.current.add(key);
             addToast(
               'info',
-              `${data.actorUsername} te robó a ${data.pokemonName}`,
+              `${data.actorUsername} te ha robado a ${data.pokemonName}`,
               `/leagues/${data.leagueId}/activity`,
             );
             queryClient.invalidateQueries({ queryKey: ['activity-feed-poll', data.leagueId] });

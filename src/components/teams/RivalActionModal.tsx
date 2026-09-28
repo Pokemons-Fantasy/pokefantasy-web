@@ -1,6 +1,7 @@
 import type { DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
+import { coinsLabel } from '../../utils/coins';
 
 interface RivalActionModalProps {
   pick: DraftPick;
@@ -76,7 +77,7 @@ export default function RivalActionModal({
             }}
             onClick={() => canAffordSteal && onChooseSteal()}
             disabled={!canAffordSteal}
-            title={!canAffordSteal ? `Necesitas ${stealPrice} monedas (tienes ${myBalance})` : undefined}
+            title={!canAffordSteal ? `Necesitas ${coinsLabel(stealPrice)} (tienes ${myBalance})` : undefined}
           >
             <span style={{ fontSize: '1.5rem' }}>🗡️</span>
             <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Robar</span>
@@ -97,7 +98,7 @@ export default function RivalActionModal({
             <span style={{ fontSize: '1.5rem' }}>⇄</span>
             <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Proponer intercambio</span>
             <span style={{ color: 'var(--text-3)', fontSize: '0.75rem', textAlign: 'center', lineHeight: 1.3 }}>
-              Ofrece uno de tus pokémon a cambio
+              Ofrece uno de tus Pokémon a cambio
             </span>
           </button>
         </div>

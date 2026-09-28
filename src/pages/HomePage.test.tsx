@@ -54,7 +54,7 @@ describe('HomePage', () => {
   it('con varias ligas en la misma fase, la tarjeta destacada enlaza a la lista', async () => {
     vi.mocked(leaguesApi.getMyLeagues).mockResolvedValue([league('l1', 'PENDING'), league('l2', null)]);
     renderHome();
-    const link = await screen.findByRole('link', { name: /Continuar setup/ });
+    const link = await screen.findByRole('link', { name: /Continuar la preparación/ });
     expect(link).toHaveAttribute('href', '/leagues');
   });
 });

@@ -17,7 +17,7 @@ export default function InvitePage() {
       else addToast('success', '¡Te has unido a la liga!');
       navigate(`/leagues/${leagueId}`);
     },
-    onError: (err) => addToast('error', extractErrorMessage(err, 'Link inválido o expirado')),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Enlace no válido o caducado')),
   });
 
   return (

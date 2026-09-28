@@ -4,6 +4,7 @@ import type { LeagueSettings } from '../../api/leagues';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
 import { tierRank, priceForTier } from '../../utils/tiers';
+import { coinsLabel } from '../../utils/coins';
 
 interface SwapModalProps {
   benchEntry: BenchEntry;
@@ -49,7 +50,7 @@ export default function SwapModal({
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Intercambio de banca</h2>
+          <h2 style={{ fontSize: '1.15rem' }}>Intercambio con el banquillo</h2>
           <button
             className="btn-ghost"
             style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
@@ -87,7 +88,7 @@ export default function SwapModal({
               </div>
             )}
             {basePrice > 0 ? (
-              <span className="coin-badge coin-badge-lg">💰 {basePrice} monedas</span>
+              <span className="coin-badge coin-badge-lg">💰 {coinsLabel(basePrice)}</span>
             ) : (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
@@ -128,7 +129,7 @@ export default function SwapModal({
               </span>
             ) : (
               <span style={{ fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 600 }}>
-                Te faltan {basePrice - myBalance} monedas
+                Te faltan {coinsLabel(basePrice - myBalance)}
               </span>
             )}
           </div>
@@ -137,7 +138,7 @@ export default function SwapModal({
         {/* Can't afford base — stop here */}
         {!canAffordBase && (
           <p style={{ fontSize: '0.875rem', color: 'var(--text-2)', textAlign: 'center', padding: '0.5rem 0' }}>
-            Necesitas <strong style={{ color: 'var(--accent)' }}>💰 {basePrice}</strong> para fichar a este pokémon.
+            Necesitas <strong style={{ color: 'var(--accent)' }}>💰 {basePrice}</strong> para fichar a este Pokémon.
           </p>
         )}
 
@@ -145,7 +146,7 @@ export default function SwapModal({
         {canAffordBase && myPicks.length > 0 && (
           <>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', fontWeight: 500, marginBottom: '0.25rem' }}>
-              ¿Qué pokémon de tu equipo entregas?
+              ¿Qué Pokémon de tu equipo entregas?
             </p>
             <div
               className="pokemon-grid pokemon-grid-modal"

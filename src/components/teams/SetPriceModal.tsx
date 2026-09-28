@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
+import { coinsLabel } from '../../utils/coins';
 
 interface SetPriceModalProps {
   pick: DraftPick;
@@ -120,7 +121,7 @@ export default function SetPriceModal({
             </div>
             {!canAfford && (
               <span style={{ color: 'var(--danger)', fontWeight: 600 }}>
-                Saldo insuficiente — te faltan {investment - myBalance} monedas
+                Saldo insuficiente — te faltan {coinsLabel(investment - myBalance)}
               </span>
             )}
           </div>

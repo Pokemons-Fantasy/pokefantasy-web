@@ -53,11 +53,11 @@ function coinEventLabel(event: ActivityEvent, username: string): string {
     case 'POKEMON_RELEASED':
       return `Liberé ${event.pokemonName ?? ''} (+${a})`;
     case 'BENCH_SWAP':
-      return `Swap: ${event.pokemonName ?? ''}↔${event.pokemonName2 ?? ''} (+${a})`;
+      return `Intercambio con el banquillo: ${event.pokemonName ?? ''}↔${event.pokemonName2 ?? ''} (+${a})`;
     case 'TRADE_COMPLETED':
       return event.actorUsername === username
-        ? `Trade con ${event.targetUsername ?? ''} (-${a})`
-        : `Trade con ${event.actorUsername} (+${a})`;
+        ? `Intercambio con ${event.targetUsername ?? ''} (-${a})`
+        : `Intercambio con ${event.actorUsername} (+${a})`;
     case 'STEAL':
       return event.actorUsername === username
         ? `Robé ${event.pokemonName ?? ''} a ${event.targetUsername ?? ''} (-${a})`
@@ -171,7 +171,7 @@ export default function PlayerProfilePage() {
 
           {!isLoading && currentTeam.length === 0 && (
             <div className="empty-state" style={{ padding: '2rem 1rem' }}>
-              <p>Este jugador aún no tiene pokémon.</p>
+              <p>Este jugador aún no tiene Pokémon.</p>
             </div>
           )}
 

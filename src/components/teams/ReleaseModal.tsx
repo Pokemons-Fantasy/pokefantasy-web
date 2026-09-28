@@ -25,7 +25,7 @@ export default function ReleaseModal({
       <div className="modal animate-in-fast" style={{ maxWidth: 400 }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Liberar pokémon</h2>
+          <h2 style={{ fontSize: '1.15rem' }}>Liberar Pokémon</h2>
           <button
             className="btn-ghost"
             style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
@@ -58,7 +58,7 @@ export default function ReleaseModal({
               {pick.pokemonName}
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
-              Volverá a la banca disponible para todos
+              Volverá al banquillo, disponible para todos
             </div>
           </div>
         </div>

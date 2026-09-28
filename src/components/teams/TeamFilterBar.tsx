@@ -22,7 +22,7 @@ export default function TeamFilterBar({
       <input
         className="search-input"
         type="text"
-        placeholder="Buscar pokémon en equipos rivales..."
+        placeholder="Buscar Pokémon en equipos rivales..."
         value={filterName}
         onChange={(e) => onFilterNameChange(e.target.value)}
         style={{ marginBottom: '0.5rem' }}
@@ -54,7 +54,7 @@ export default function TeamFilterBar({
         <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.45rem' }}>
           {filteredTeamCount}{' '}
           {filteredTeamCount === 1 ? 'rival' : 'rivales'} ·{' '}
-          {filteredPokemonCount} pokémon
+          {filteredPokemonCount} Pokémon
         </p>
       )}
     </div>

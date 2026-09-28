@@ -29,6 +29,7 @@ import BenchSection from '../components/teams/BenchSection';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import MarketStatus from '../components/teams/MarketStatus';
+import { coinsLabel } from '../utils/coins';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -212,7 +213,7 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
-      addToast('success', `${name} liberado — +${reward} monedas`);
+      addToast('success', `${name} liberado — +${coinsLabel(reward)}`);
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al liberar')),
   });

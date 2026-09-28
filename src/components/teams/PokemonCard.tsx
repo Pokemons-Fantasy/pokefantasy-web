@@ -66,8 +66,8 @@ export default function PokemonCard({
         {onRelease && (
           <button
             onClick={(e) => { e.stopPropagation(); onRelease(); }}
-            title="Liberar a la banca"
-            aria-label="Liberar a la banca"
+            title="Liberar al banquillo"
+            aria-label="Liberar al banquillo"
             style={{
               marginTop: '0.2rem',
               padding: '0.15rem 0.4rem',
