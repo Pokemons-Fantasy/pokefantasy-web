@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
+import UserAvatar from '../components/avatar/UserAvatar';
 
 // ── Event formatting ──────────────────────────────────────────────────────────
 
@@ -178,6 +179,8 @@ function EventCard({ event, isRecent }: EventCardProps) {
       >
         {display.icon}
       </div>
+
+      <UserAvatar username={event.actorUsername} size={28} />
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
