@@ -6,7 +6,7 @@ import { getMyLeagues } from '../api/leagues';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
-import { isSessionExpired } from '../utils/session';
+import { isSessionExpired, loginDestination } from '../utils/session';
 
 interface LocationState {
   from?: Location;
@@ -28,6 +28,8 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await login(username, password);
+      // Nada de la cuenta anterior en caché (misma pestaña, otra persona): se empieza de cero
+      queryClient.clear();
       try {
         // Comprueba que el navegador ha guardado la cookie antes de dar el login por bueno; si no, cada
         // petición daría 401 y se volvería al login en bucle. El resultado queda en caché para la home.
@@ -38,8 +40,10 @@ export default function LoginPage() {
       return result;
     },
     onSuccess: ({ username: loggedUsername }) => {
+      // Antes de setAuth, que olvida la última sesión
+      const destination = loginDestination(from, useAuthStore.getState().lastSession, loggedUsername);
       setAuth(loggedUsername);
-      navigate(from ?? '/', { replace: true });
+      navigate(destination, { replace: true });
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Usuario o contraseña incorrectos')),
   });

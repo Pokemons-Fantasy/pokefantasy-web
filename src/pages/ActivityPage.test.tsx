@@ -95,9 +95,17 @@ describe('ActivityPage', () => {
   });
 
   it('separa lo nuevo desde tu última visita', async () => {
-    localStorage.setItem('pf:activity-last-seen:l1', EVENTS[1].createdAt);
+    localStorage.setItem('pf:activity-last-seen:ash:l1', EVENTS[1].createdAt);
     renderPage();
 
     expect(await screen.findByText('Tu última visita')).toBeInTheDocument();
+  });
+
+  it('la última visita es de cada usuario: la de otra cuenta en este navegador no cuenta', async () => {
+    localStorage.setItem('pf:activity-last-seen:misty:l1', EVENTS[1].createdAt);
+    renderPage();
+
+    await screen.findByRole('region', { name: 'Hoy' });
+    expect(screen.queryByText('Tu última visita')).not.toBeInTheDocument();
   });
 });
