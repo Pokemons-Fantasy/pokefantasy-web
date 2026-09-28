@@ -32,6 +32,7 @@ export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalPr
   const titleId = useId();
   const zoomId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const pressedOnBackdrop = useRef(false);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [loaded, setLoaded] = useState<LoadedImage | null>(null);
@@ -75,7 +76,13 @@ export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalPr
   });
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className="modal-overlay"
+      // Solo cierra si el clic empezó en el fondo: al arrastrar la foto y soltar fuera del modal, el
+      // navegador lanza el click en el ancestro común (el fondo) y se perdería el encuadre.
+      onMouseDown={(e) => { pressedOnBackdrop.current = e.target === e.currentTarget; }}
+      onClick={(e) => { if (pressedOnBackdrop.current && e.target === e.currentTarget) onClose(); }}
+    >
       <div
         ref={dialogRef}
         className="modal animate-in-fast avatar-editor"

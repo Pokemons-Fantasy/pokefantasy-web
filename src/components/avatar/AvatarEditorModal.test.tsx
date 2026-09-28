@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useEffect } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AvatarEditorModal from './AvatarEditorModal';
@@ -104,6 +104,28 @@ describe('AvatarEditorModal', () => {
     await screen.findByTestId('cropper');
 
     await user.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('does not close when a drag that started inside ends on the backdrop', async () => {
+    const { onClose } = renderEditor();
+    const cropper = await screen.findByTestId('cropper');
+    const backdrop = screen.getByRole('dialog').parentElement!;
+
+    fireEvent.mouseDown(cropper);
+    fireEvent.click(backdrop); // el navegador lanza el click en el ancestro común: el fondo
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('closes when the backdrop itself is clicked', async () => {
+    const { onClose } = renderEditor();
+    await screen.findByTestId('cropper');
+    const backdrop = screen.getByRole('dialog').parentElement!;
+
+    fireEvent.mouseDown(backdrop);
+    fireEvent.click(backdrop);
 
     expect(onClose).toHaveBeenCalled();
   });
