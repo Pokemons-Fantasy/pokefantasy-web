@@ -1,6 +1,7 @@
 import type { DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
+import { coinsLabel } from '../../utils/coins';
 
 interface StealModalProps {
   pick: DraftPick;
@@ -98,7 +99,7 @@ export default function StealModal({
           )}
           {!canAfford && (
             <span style={{ fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 600 }}>
-              Te faltan {stealPrice - myBalance} monedas
+              Te faltan {coinsLabel(stealPrice - myBalance)}
             </span>
           )}
         </div>

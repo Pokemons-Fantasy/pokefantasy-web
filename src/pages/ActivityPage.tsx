@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
 import UserAvatar from '../components/avatar/UserAvatar';
+import { coinsLabel } from '../utils/coins';
 
 // ── Event formatting ──────────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ function formatEvent(event: ActivityEvent): EventDisplay {
   switch (event.type) {
     case 'STEAL':
       return {
-        text: `${actor} robó a ${pokemon} de ${target} · pagó ${coins} monedas`,
+        text: `${actor} robó a ${pokemon} de ${target} · pagó ${coinsLabel(coins)}`,
         color: '#10b981',
         icon: '⚡',
         label: 'Robo',
@@ -41,7 +42,7 @@ function formatEvent(event: ActivityEvent): EventDisplay {
       };
     case 'BENCH_PURCHASE':
       return {
-        text: `${actor} compró ${pokemon} del banquillo por ${coins} monedas`,
+        text: `${actor} compró ${pokemon} del banquillo por ${coinsLabel(coins)}`,
         color: '#f59e0b',
         icon: '🛒',
         label: 'Compra',
@@ -69,7 +70,7 @@ function formatEvent(event: ActivityEvent): EventDisplay {
       };
     case 'POKEMON_RELEASED':
       return {
-        text: `${actor} liberó a ${pokemon} al banquillo · +${coins} monedas`,
+        text: `${actor} liberó a ${pokemon} al banquillo · +${coinsLabel(coins)}`,
         color: '#64748b',
         icon: '🕊️',
         label: 'Liberado',
@@ -83,14 +84,14 @@ function formatEvent(event: ActivityEvent): EventDisplay {
       };
     case 'COIN_EARNED':
       return {
-        text: `${actor} ganó +${coins} monedas`,
+        text: `${actor} ganó +${coinsLabel(coins)}`,
         color: '#f59e0b',
         icon: '●',
         label: 'Monedas',
       };
     case 'COIN_REVOKED':
       return {
-        text: `${actor} devolvió ${coins} monedas por el resultado anulado de la jornada ${round}`,
+        text: `${actor} devolvió ${coinsLabel(coins)} por el resultado anulado de la jornada ${round}`,
         color: '#94a3b8',
         icon: '●',
         label: 'Monedas',

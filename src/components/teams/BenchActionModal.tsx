@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { BenchEntry, DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
+import { coinsLabel } from '../../utils/coins';
 
 interface BenchActionModalProps {
   benchEntry: BenchEntry;
@@ -101,7 +102,7 @@ export default function BenchActionModal({
               }}
               onClick={() => canAffordBuy && setView('buy')}
               disabled={!canAffordBuy}
-              title={!canAffordBuy ? `Necesitas ${price} monedas (tienes ${myBalance})` : undefined}
+              title={!canAffordBuy ? `Necesitas ${coinsLabel(price)} (tienes ${myBalance})` : undefined}
             >
               <span style={{ fontSize: '1.5rem' }}>🛒</span>
               <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Comprar</span>

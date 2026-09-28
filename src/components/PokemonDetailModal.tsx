@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Tier } from '../api/pokemons';
 import { spriteUrl } from '../utils/sprites';
 import { TYPE_COLORS, TIER_COLORS } from '../utils/colors';
+import { typeLabel } from '../utils/pokemonTypes';
 
 interface Stats {
   hp: number;
@@ -107,7 +108,7 @@ export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats
                         textTransform: 'capitalize',
                       }}
                     >
-                      {t}
+                      {typeLabel(t)}
                     </span>
                   );
                 })}

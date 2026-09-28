@@ -5,6 +5,7 @@ import { spriteUrl } from '../utils/sprites';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import Notice from './Notice';
+import { coinsLabel } from '../utils/coins';
 
 interface PokemonRef {
   name: string;
@@ -295,7 +296,7 @@ export default function ProposeTradeModal({
                   marginTop: '0.3rem',
                 }}
               >
-                💰 {responder} recibirá {coins} monedas si acepta.
+                💰 {responder} recibirá {coinsLabel(coins)} si acepta.
               </p>
             )}
           </div>

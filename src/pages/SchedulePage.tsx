@@ -20,6 +20,7 @@ import { jornadaStates, nextMatchFor } from '../utils/schedule';
 import { SkeletonTable } from '../components/SkeletonTable';
 import MarketStatus from '../components/teams/MarketStatus';
 import JornadaCard from '../components/schedule/JornadaCard';
+import { coinsLabel } from '../utils/coins';
 
 export default function SchedulePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -160,7 +161,7 @@ export default function SchedulePage() {
           </div>
           <div className="section-actions">
             {myCoins !== undefined && (
-              <span className="coin-badge coin-badge-lg">💰 {myCoins.coins} monedas</span>
+              <span className="coin-badge coin-badge-lg">💰 {coinsLabel(myCoins.coins)}</span>
             )}
           </div>
         </div>
