@@ -47,7 +47,7 @@ describe('PoolPage', () => {
     useAuthStore.setState({ username: 'ash' });
     api.getAvailablePokemons.mockResolvedValue(AVAILABLE);
     api.getClosedList.mockResolvedValue([entry('pikachu', 25, 'misty'), entry('squirtle', 7, 'ash')]);
-    api.getDraftStatus.mockResolvedValue(PENDING);
+    api.getDraftStatus.mockResolvedValue(null);
     api.nominatePokemon.mockResolvedValue(undefined);
     api.denominatePokemon.mockResolvedValue(undefined);
   });
@@ -98,6 +98,14 @@ describe('PoolPage', () => {
     expect(screen.queryByRole('group', { name: 'Tipo' })).not.toBeInTheDocument();
     // Bulbasaur no está nominado: sin tipos en la lista, va sin chips
     expect(screen.queryByText('Planta')).not.toBeInTheDocument();
+  });
+
+  it('con el draft en preparación las nominaciones están cerradas', async () => {
+    api.getDraftStatus.mockResolvedValue(PENDING);
+    renderPage();
+    expect(await screen.findByText('Nominaciones cerradas: se está preparando el draft')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Bulbasaur, nominaciones cerradas (Planta, Veneno)' }))
+      .toHaveAttribute('aria-disabled', 'true');
   });
 
   it('con las nominaciones cerradas no se puede nominar', async () => {

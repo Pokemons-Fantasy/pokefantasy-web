@@ -2,7 +2,7 @@ import type { League, ScheduleResponse } from '../api/leagues';
 import { leaguePhase, type LeaguePhase } from './leaguePhase';
 import { jornadaStates, myResult, nextMatchFor, type MyResult } from './schedule';
 
-const URGENCY: Record<LeaguePhase, number> = { draft: 0, season: 1, setup: 2, cancelled: 2 };
+const URGENCY: Record<LeaguePhase, number> = { draft: 0, season: 1, preparing: 2, setup: 2, cancelled: 2 };
 
 /** Ligas de la home por urgencia: draft en curso, temporada y preparación (estable dentro de cada fase). */
 export function leaguesByUrgency(leagues: League[]): League[] {

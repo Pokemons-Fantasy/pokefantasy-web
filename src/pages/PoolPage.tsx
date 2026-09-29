@@ -16,6 +16,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
+import Notice from '../components/Notice';
 import { TYPE_COLORS } from '../utils/colors';
 import { typeLabel } from '../utils/pokemonTypes';
 import {
@@ -61,8 +62,8 @@ export default function PoolPage() {
 
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
   const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
-  // Misma regla que NominatePokemonCommandHandler: solo se nomina con el draft sin empezar
-  const nominationsClosed = !!draftStatus && draftStatus.status !== 'PENDING';
+  // Misma regla que NominatePokemonCommandHandler: solo se nomina mientras la liga no tiene draft
+  const nominationsClosed = !!draftStatus;
   const canNominate = !nominationsClosed && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
   // Con un backend anterior la lista no trae tipos: sin filtro por tipo
@@ -108,6 +109,10 @@ export default function PoolPage() {
           </div>
           <LeaguePhaseBadge draftStatus={draftStatus?.status ?? null} />
         </div>
+
+        {draftStatus?.status === 'PENDING' && (
+          <Notice variant="info">Nominaciones cerradas: se está preparando el draft</Notice>
+        )}
 
         <div className="gen-tabs" role="group" aria-label="Generación">
           {GEN_TABS.map((tab) => (

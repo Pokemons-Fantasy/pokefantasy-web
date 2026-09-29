@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { leaguePhase, LEAGUE_PHASES } from './leaguePhase';
 describe('leaguePhase', () => {
-  it('sin draft o pendiente es preparación', () => {
+  it('sin draft es preparación de la liga', () => {
     expect(leaguePhase(undefined)).toBe('setup');
     expect(leaguePhase(null)).toBe('setup');
-    expect(leaguePhase('PENDING')).toBe('setup');
+  });
+
+  it('draft pendiente es preparación del draft', () => {
+    expect(leaguePhase('PENDING')).toBe('preparing');
+    expect(LEAGUE_PHASES.preparing).toEqual({ label: 'Preparando draft', badge: 'green' });
   });
 
   it('draft en curso', () => {
