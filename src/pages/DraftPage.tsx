@@ -278,7 +278,7 @@ export default function DraftPage() {
                   : history.length}
               </div>
             </div>
-            {myRemaining !== null && draft.status !== 'PENDING' && (
+            {myRemaining !== null && draftInProgress && (
               <div>
                 <div className="draft-stat-label">Te quedan</div>
                 <div className="draft-stat-value">{myRemaining} 🪙</div>

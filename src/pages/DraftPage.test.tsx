@@ -137,6 +137,16 @@ describe('DraftPage', () => {
       expect(screen.getByText(/te quedarán 70 monedas/)).toBeInTheDocument();
     });
 
+    it('con el draft completado no dice "Te quedan": el sobrante ya está en el saldo', async () => {
+      vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+        status: 'COMPLETED', config: CONFIG, budgets: { ash: 20, brock: 10 },
+        draftHistory: [{ ...pick('ash', 'mew', 1), price: 280 }],
+      }));
+      renderPage();
+      expect(await screen.findByText('Completado')).toBeInTheDocument();
+      expect(screen.queryByText('Te quedan')).not.toBeInTheDocument();
+    });
+
     it('sin dinero para ningún Pokémon libre tu draft ha terminado', async () => {
       vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([entry('e1', 'mew', 'S')]);
       vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
