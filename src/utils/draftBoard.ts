@@ -4,7 +4,7 @@ export interface BoardCell {
   username: string;
   /** null si ese jugador aún no ha elegido en esta ronda. */
   pick: DraftPick | null;
-  /** Número global del pick (draft lineal: mismo orden de turnos en todas las rondas). */
+  /** Número global del pick (en snake, las rondas pares se cuentan al revés). */
   pickNumber: number;
   /** Casilla del jugador que tiene el turno ahora. */
   isCurrent: boolean;
@@ -26,10 +26,12 @@ interface BuildDraftBoardInput {
   /** Rondas previstas (maxTeamSize) para pintar también las que faltan durante el draft. */
   totalRounds?: number;
   current?: { round: number; username: string | null } | null;
+  /** Draft snake: las rondas pares van al revés, así que su número de pick se cuenta desde la derecha. */
+  snake?: boolean;
 }
 
 export function buildDraftBoard({
-  history, turnOrder, currentPicks = [], totalRounds = 0, current = null,
+  history, turnOrder, currentPicks = [], totalRounds = 0, current = null, snake = false,
 }: BuildDraftBoardInput): DraftBoardData {
   const byRoundAndUser = new Map(history.map((p) => [`${p.round}|${p.username}`, p]));
   const ownerByPokemon = new Map(currentPicks.map((p) => [p.pokemonName, p.username]));
@@ -43,7 +45,7 @@ export function buildDraftBoard({
       return {
         username,
         pick,
-        pickNumber: i * turnOrder.length + col + 1,
+        pickNumber: i * turnOrder.length + (snake && round % 2 === 0 ? turnOrder.length - 1 - col : col) + 1,
         isCurrent: !pick && current?.round === round && current.username === username,
         currentOwner: owner && owner !== username ? owner : null,
       };
