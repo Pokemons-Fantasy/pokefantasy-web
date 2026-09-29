@@ -377,8 +377,118 @@ body {
 }
 
 .header-right { display: flex; align-items: center; gap: 1rem; }
-.header-user { font-size: 0.875rem; color: var(--text-2); }
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
 .header-user strong { color: var(--text); font-weight: 600; }
+.header-theme-toggle { padding: 0.3rem 0.55rem; font-size: 1rem; line-height: 1; }
+
+/* Avatar de la cabecera; el punto avisa de intercambios pendientes */
+.header-avatar { position: relative; display: inline-flex; flex-shrink: 0; }
+.header-avatar-dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.header-avatar-button {
+  display: none;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.header-avatar-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ─── PANEL DE LA CUENTA (móvil) ─── */
+
+.user-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  animation: fadeIn 0.2s ease;
+}
+.user-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 86vw);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  padding: calc(1rem + env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  animation: drawerIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes drawerIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .user-drawer-overlay, .user-drawer { animation: none; }
+}
+.user-drawer-head { display: flex; align-items: center; gap: 0.75rem; }
+.user-drawer-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.user-drawer-close { padding: 0.35rem 0.6rem; line-height: 1; }
+.user-drawer-section {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.user-drawer-label {
+  margin: 0 0 0.35rem;
+  padding: 0 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.user-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.925rem;
+}
+.user-drawer-item:hover,
+.user-drawer-item[aria-current="page"] { background: var(--surface-2); }
+.user-drawer-item[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.user-drawer-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.user-drawer-item-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-drawer-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
 
 .page-content {
   max-width: 1100px;
@@ -1933,9 +2043,12 @@ a.btn-back, a.logo { text-decoration: none; }
     padding: 1.5rem 1rem 3rem;
   }
 
-  /* Header: hide username text to save space */
-  .header-user {
+  /* Header: en móvil solo el avatar, que abre el panel de la cuenta */
+  .header-desktop {
     display: none;
+  }
+  .header-avatar-button.header-mobile {
+    display: inline-flex;
   }
 
   /* Header right: tighten gap and shrink buttons */
