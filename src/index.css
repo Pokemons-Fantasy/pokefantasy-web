@@ -2101,46 +2101,38 @@ a.btn-back, a.logo { text-decoration: none; }
 
 /* ─── CONFIG FORM ─── */
 
-.settings-two-col {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 2rem;
-  align-items: start;
-}
-
-.settings-sidebar {
-  position: sticky;
-  top: 80px;
+.config-form {
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-
-@media (max-width: 768px) {
-  .settings-two-col {
-    grid-template-columns: 1fr;
-  }
-  .settings-sidebar {
-    position: static;
-  }
-}
-
-.config-form {
-  max-width: 480px;
+.config-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.75rem;
 }
+.config-section-title { margin: 0; font-size: 1rem; font-weight: 700; }
+.config-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
 
 .config-field {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  min-width: 0;
 }
+.config-fieldset { margin: 0; padding: 0; border: none; }
+.config-label { font-size: 0.8rem; font-weight: 600; color: var(--text-2); padding: 0; }
+.config-number { display: flex; align-items: center; gap: 0.5rem; }
+.config-number .search-input { width: 6.5rem; text-align: right; }
+.field-unit { font-size: 0.8rem; color: var(--text-3); white-space: nowrap; }
+.config-inline { display: flex; gap: 0.5rem; }
+.config-inline .search-input { flex: 1; min-width: 0; }
+.config-date { max-width: 12rem; }
 
 .config-field .search-input {
   margin-bottom: 0;
@@ -2155,6 +2147,80 @@ a.btn-back, a.logo { text-decoration: none; }
   font-size: 0.75rem;
   color: var(--text-3);
   line-height: 1.4;
+}
+
+/* Fila de cinco inputs, uno por tier (precios de mercado, porcentajes, precios del draft) */
+.tier-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; }
+.tier-row-field { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; min-width: 0; }
+.tier-row-badge { position: static; width: 28px; height: 28px; font-size: 0.75rem; }
+.tier-row-input { display: flex; align-items: center; gap: 0.2rem; width: 100%; }
+.tier-row-input .search-input { width: 100%; min-width: 0; padding-left: 0.35rem; padding-right: 0.35rem; text-align: center; }
+
+/* Distribución de tiers en vivo */
+.tier-dist-bar {
+  display: flex;
+  height: 1.25rem;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+.tier-dist-segment {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  transition: flex-grow 0.2s ease;
+}
+.tier-dist-s { background: var(--tier-s-bg); color: var(--tier-s); box-shadow: inset 0 0 0 1px var(--tier-s-border); }
+.tier-dist-a { background: var(--tier-a-bg); color: var(--tier-a); box-shadow: inset 0 0 0 1px var(--tier-a-border); }
+.tier-dist-b { background: var(--tier-b-bg); color: var(--tier-b); box-shadow: inset 0 0 0 1px var(--tier-b-border); }
+.tier-dist-c { background: var(--tier-c-bg); color: var(--tier-c); box-shadow: inset 0 0 0 1px var(--tier-c-border); }
+.tier-dist-d { background: var(--tier-d-bg); color: var(--tier-d); box-shadow: inset 0 0 0 1px var(--tier-d-border); }
+.tier-dist-missing {
+  background: repeating-linear-gradient(45deg, transparent 0 4px, var(--danger-bg) 4px 8px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tier-dist-segment { transition: none; }
+}
+.tier-dist-status { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; }
+.tier-dist-ok { color: var(--success); }
+.tier-dist-bad { color: var(--danger); }
+.tier-dist-fix { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+/* Barra de guardar: fija abajo mientras haya cambios (Configuración, Preparar draft) */
+.save-bar {
+  position: sticky;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  max-width: 760px;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.save-bar-info { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; flex: 1 1 14rem; }
+.save-bar-summary { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+.save-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.save-bar-details summary { cursor: pointer; font-size: 0.8rem; color: var(--text-2); }
+.save-bar-details ul { margin: 0.4rem 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+.save-bar-details li { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.78rem; color: var(--text-2); }
+.save-bar-diff { white-space: nowrap; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.save-bar-diff strong { color: var(--accent); }
+.save-bar-error { margin: 0; font-size: 0.8rem; }
+.save-bar-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+@media (max-width: 640px) {
+  .config-grid-2 { grid-template-columns: 1fr; }
+  .config-section { padding: 1rem; }
+  .save-bar-actions { width: 100%; }
+  .save-bar-actions > button { flex: 1; }
 }
 
 /* ─── RESPONSIVE ─── */
@@ -2544,11 +2610,9 @@ a.btn-back, a.logo { text-decoration: none; }
 
 /* Preparación del draft */
 .draft-setup-meta { font-size: 0.85rem; color: var(--text-2); }
-.draft-price-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; margin: 0.75rem 0; }
-.draft-price-field { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
-.draft-price-field .search-input { width: 100%; text-align: center; }
+.draft-budget-form { display: flex; flex-direction: column; gap: 1rem; margin: 0.75rem 0; }
 .draft-snake-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 0.75rem; }
-.draft-setup-save, .draft-setup-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+.draft-setup-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; margin-top: 1rem; }
 .draft-setup-actions { justify-content: space-between; }
 .setup-card { cursor: pointer; font: inherit; color: inherit; }
 .setup-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
@@ -2559,7 +2623,6 @@ a.btn-back, a.logo { text-decoration: none; }
   padding: 0.6rem 0.9rem; margin-top: 1rem; border-radius: 12px;
   background: var(--surface-2); border: 1px solid var(--border);
 }
-@media (max-width: 480px) { .draft-price-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* Cards del draft con precio */
 .pokemon-card-main {

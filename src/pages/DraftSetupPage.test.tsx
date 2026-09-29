@@ -87,6 +87,18 @@ describe('DraftSetupPage', () => {
     }));
   });
 
+  it('la barra de guardar solo aparece con cambios y Descartar los deshace', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    const budget = await screen.findByLabelText('Presupuesto por jugador') as HTMLInputElement;
+    expect(screen.queryByRole('region', { name: 'Cambios sin guardar' })).not.toBeInTheDocument();
+    await user.clear(budget);
+    await user.type(budget, '800');
+    await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    expect(budget.value).toBe('1000');
+    expect(screen.queryByRole('region', { name: 'Cambios sin guardar' })).not.toBeInTheDocument();
+  });
+
   it('con cambios sin guardar no deja empezar y pide confirmación al salir', async () => {
     const user = userEvent.setup();
     const router = renderPage();
