@@ -559,7 +559,19 @@ body {
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
+
+/* Tarjeta de liga en Mi perfil: nombre y estado se parten en vez de desbordar la columna */
+.profile-league-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.profile-league-name { min-width: 0; font-weight: 700; font-size: 1rem; overflow-wrap: anywhere; }
 
 .page-subtitle {
   color: var(--text-2);
@@ -1217,7 +1229,15 @@ button.member-menu-item {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.draft-board-owner { font-size: 0.6rem; font-weight: 600; color: var(--info); white-space: nowrap; }
+.draft-board-owner {
+  max-width: 100%;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--info);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .draft-board-empty.current {
   outline: 2px solid var(--accent);
@@ -1287,8 +1307,8 @@ button.member-menu-item {
 .rival-team-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .rival-team-chevron { color: var(--text-3); font-size: 0.75rem; transition: transform 0.15s; }
 .rival-team-chevron.open { transform: rotate(90deg); }
-.rival-team-name { font-weight: 600; }
-.rival-team-size { color: var(--text-3); font-size: 0.85rem; }
+.rival-team-name { min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.rival-team-size { flex-shrink: 0; color: var(--text-3); font-size: 0.85rem; }
 .rival-team-tiers { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; margin-left: auto; }
 .tier-count {
   padding: 0.05rem 0.4rem;
@@ -1379,7 +1399,7 @@ button.member-menu-item {
   flex-shrink: 0;
 }
 
-.turn-order-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+.turn-order-name { flex: 1; min-width: 0; font-weight: 600; font-size: 0.9rem; overflow-wrap: anywhere; }
 
 .turn-order-arrows { display: flex; flex-direction: column; gap: 2px; }
 
@@ -1467,6 +1487,7 @@ button.member-menu-item {
   letter-spacing: -1.5px;
   line-height: 1.05;
   color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .hero-title .accent { color: var(--accent); }
@@ -2258,7 +2279,7 @@ a.btn-back, a.logo { text-decoration: none; }
 .activity-sprites { display: inline-flex; flex-shrink: 0; }
 .activity-sprites img { width: 36px; height: 36px; image-rendering: pixelated; }
 .activity-sprites img + img { margin-left: -10px; }
-.activity-text { flex: 1; min-width: 0; margin: 0; font-size: 0.875rem; line-height: 1.35; color: var(--text-2); }
+.activity-text { flex: 1; min-width: 0; margin: 0; font-size: 0.875rem; line-height: 1.35; color: var(--text-2); overflow-wrap: anywhere; }
 .activity-text strong { color: var(--text); font-weight: 600; }
 .activity-time { flex-shrink: 0; font-size: 0.75rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
 

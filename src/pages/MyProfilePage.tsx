@@ -105,8 +105,8 @@ export default function MyProfilePage() {
                 <div key={league.id} className="card" style={{ cursor: 'pointer' }}
                   onClick={() => navigate(`/leagues/${league.id}/players/${username}`)}>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{league.name}</div>
+                  <div className="profile-league-head">
+                    <div className="profile-league-name">{league.name}</div>
                     <span className={`badge ${league.status === 'ACTIVE' ? 'badge-green' : 'badge-yellow'}`}>
                       {league.status === 'ACTIVE' ? 'Activa' : 'Configuración'}
                     </span>
