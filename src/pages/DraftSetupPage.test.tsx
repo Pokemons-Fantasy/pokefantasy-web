@@ -35,8 +35,7 @@ const entry = (id: string, pokemonName: string, tier: 'S' | 'D'): ClosedListEntr
   id, pokemonId: 1, pokemonName, nominatedBy: 'ash', sprite: '', tier,
 });
 
-function renderPage() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function renderPage(queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })) {
   const router = createMemoryRouter([
     { path: '/leagues/:leagueId/draft/setup', element: <DraftSetupPage /> },
     { path: '/leagues/:leagueId/draft', element: <p>Pantalla del draft</p> },
@@ -134,6 +133,19 @@ describe('DraftSetupPage', () => {
   it('muestra el aviso de cobertura del presupuesto', async () => {
     renderPage();
     expect(await screen.findByText(/Con 1000 monedas llega para 33 Pokémon del tier más barato \(D, 30\)/)).toBeInTheDocument();
+  });
+
+  it('con el estado del draft cacheado de antes de preparar espera al refetch y no redirige', async () => {
+    // Vienes de Miembros: la caché dice "sin draft" y el refetch trae el draft en preparación.
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    queryClient.setQueryData(['draft-status', 'l1'], null);
+    queryClient.setQueryData(['league-detail', 'l1'], {
+      id: 'l1', name: 'Liga', createdBy: 'ash', status: 'SETUP',
+      members: [{ username: 'ash', leagueRole: 'ADMIN' }, { username: 'misty', leagueRole: 'USER' }],
+    });
+    renderPage(queryClient);
+    expect(await screen.findByRole('heading', { name: 'Preparar draft' })).toBeInTheDocument();
+    expect(screen.queryByText('Pantalla del draft')).not.toBeInTheDocument();
   });
 
   it('un jugador que no es admin va a la pantalla del draft', async () => {

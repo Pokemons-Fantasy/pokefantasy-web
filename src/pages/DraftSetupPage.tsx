@@ -32,7 +32,7 @@ export default function DraftSetupPage() {
   const [edits, setEdits] = useState<Partial<SetupForm>>({});
   const [confirm, setConfirm] = useState<Pending>(null);
 
-  const { data: draft, isLoading } = useQuery({
+  const { data: draft, isLoading, isFetching } = useQuery({
     queryKey: ['draft-status', leagueId], queryFn: () => getDraftStatus(leagueId!), enabled: !!leagueId,
   });
   const { data: pool = [] } = useQuery({
@@ -128,7 +128,9 @@ export default function DraftSetupPage() {
     },
   });
 
-  if (isLoading || !league) return <main className="page-content"><SkeletonTable rows={4} /></main>;
+  // Al llegar desde Miembros la caché aún dice "sin draft": se espera al refetch antes de decidir si redirigir.
+  const waitingForDraft = isLoading || (isFetching && draft?.status !== 'PENDING');
+  if (waitingForDraft || !league) return <main className="page-content"><SkeletonTable rows={4} /></main>;
   // Solo el admin y solo con el draft en preparación; el resto, a la pantalla del draft.
   if (!isAdmin || draft?.status !== 'PENDING' || !form) return <Navigate to={`/leagues/${leagueId}/draft`} replace />;
 
