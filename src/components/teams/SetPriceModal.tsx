@@ -3,6 +3,7 @@ import type { DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
 import { coinsLabel } from '../../utils/coins';
+import { CLAUSE_RAISE_MULTIPLIER, raisedClause } from '../../utils/clause';
 
 interface SetPriceModalProps {
   pick: DraftPick;
@@ -20,9 +21,9 @@ export default function SetPriceModal({
   const [inputVal, setInputVal] = useState('');
   const tier = tierByName.get(pick.pokemonName);
   const parsed = parseInt(inputVal, 10);
-  const newPrice = isNaN(parsed) ? 0 : parsed;
-  const investment = newPrice > currentPrice ? newPrice - currentPrice : 0;
-  const isValid = newPrice > currentPrice;
+  const investment = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+  const newPrice = raisedClause(currentPrice, investment);
+  const isValid = investment > 0;
   const canAfford = myBalance >= investment;
 
   return (
@@ -74,14 +75,14 @@ export default function SetPriceModal({
         {/* Input */}
         <div>
           <label style={{ fontSize: '0.82rem', color: 'var(--text-2)', display: 'block', marginBottom: '0.4rem' }}>
-            Nuevo precio (debe ser mayor que {currentPrice})
+            Monedas a invertir (cada una sube la cláusula {CLAUSE_RAISE_MULTIPLIER})
           </label>
           <input
             type="number"
-            min={currentPrice + 1}
+            min={1}
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
-            placeholder={`> ${currentPrice}`}
+            placeholder="Ej. 10"
             style={{
               width: '100%',
               padding: '0.5rem 0.75rem',
@@ -116,8 +117,12 @@ export default function SetPriceModal({
               <span>💰 {myBalance}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-2)' }}>Cláusula</span>
+              <span>💰 {currentPrice} → <strong>{newPrice}</strong></span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-3)' }}>Si te roban, recibirías</span>
-              <span style={{ color: 'var(--success)', fontWeight: 600 }}>💰 {newPrice * 2}</span>
+              <span style={{ color: 'var(--success)', fontWeight: 600 }}>💰 {newPrice}</span>
             </div>
             {!canAfford && (
               <span style={{ color: 'var(--danger)', fontWeight: 600 }}>

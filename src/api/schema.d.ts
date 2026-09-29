@@ -1209,13 +1209,15 @@ export interface components {
             id?: string;
             leagueId?: string;
             /** @enum {string} */
-            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS";
+            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED";
             actorUsername?: string;
             targetUsername?: string;
             pokemonName?: string;
             pokemonName2?: string;
             /** Format: int32 */
             coinsAmount?: number;
+            /** Format: int32 */
+            targetCoinsAmount?: number;
             fromTier?: string;
             toTier?: string;
             /** Format: int32 */
@@ -2409,7 +2411,7 @@ export interface operations {
                 page?: number;
                 size?: number;
                 username?: string;
-                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS")[];
+                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED")[];
             };
             header?: never;
             path: {

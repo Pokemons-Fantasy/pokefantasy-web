@@ -10,6 +10,7 @@ import TierBadge from '../components/TierBadge';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import UserAvatar from '../components/avatar/UserAvatar';
 import { spriteUrl } from '../utils/sprites';
+import { CLAUSE_RAISE_MULTIPLIER, victimCoins } from '../utils/clause';
 
 function coinDelta(event: ActivityEvent, username: string): number {
   const a = event.coinsAmount ?? 0;
@@ -21,7 +22,8 @@ function coinDelta(event: ActivityEvent, username: string): number {
     case 'BENCH_PURCHASE': return -a;
     case 'POKEMON_RELEASED': return a;
     case 'STEAL':
-      return event.actorUsername === username ? -a : 2 * a;
+      return event.actorUsername === username ? -a : victimCoins(event);
+    case 'CLAUSE_RAISED':  return -a;
     case 'TRADE_COMPLETED':
       return event.actorUsername === username ? -a : a;
     default: return 0;
@@ -37,6 +39,7 @@ function coinEventIcon(event: ActivityEvent, username: string): string {
     case 'POKEMON_RELEASED': return '🕊️';
     case 'BENCH_SWAP':     return '↔';
     case 'TRADE_COMPLETED': return '🤝';
+    case 'CLAUSE_RAISED':  return '🛡';
     case 'STEAL':
       return event.actorUsername === username ? '⚡' : '💰';
     default: return '🪙';
@@ -65,7 +68,9 @@ function coinEventLabel(event: ActivityEvent, username: string): string {
     case 'STEAL':
       return event.actorUsername === username
         ? `Robé ${event.pokemonName ?? ''} a ${event.targetUsername ?? ''} (-${a})`
-        : `Me robaron ${event.pokemonName ?? ''} (+${2 * a})`;
+        : `Me robaron ${event.pokemonName ?? ''} (+${victimCoins(event)})`;
+    case 'CLAUSE_RAISED':
+      return `Subí la cláusula de ${event.pokemonName ?? ''} en ${a * CLAUSE_RAISE_MULTIPLIER} (-${a})`;
     default: return event.type;
   }
 }

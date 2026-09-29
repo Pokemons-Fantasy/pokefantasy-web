@@ -13,12 +13,15 @@ export interface ActivityEvent {
     | 'TIER_CHANGE'
     | 'COIN_EARNED'
     | 'COIN_REVOKED'
-    | 'DRAFT_COINS';
+    | 'DRAFT_COINS'
+    | 'CLAUSE_RAISED';
   actorUsername: string;
   targetUsername?: string;
   pokemonName?: string;
   pokemonName2?: string;
   coinsAmount?: number;
+  /** STEAL: lo que cobró la víctima; falta en robos anteriores a la cláusula ×2 (ver `victimCoins`). */
+  targetCoinsAmount?: number;
   fromTier?: string;
   toTier?: string;
   roundNumber?: number;

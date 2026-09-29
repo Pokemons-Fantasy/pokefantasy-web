@@ -93,7 +93,7 @@ export default function StealModal({
                 ⚠️ {pick.username} recibirá
               </span>
               <span className="coin-badge" style={{ background: 'var(--accent-dim)' }}>
-                💰 {stealPrice * 2}
+                💰 {stealPrice}
               </span>
             </div>
           )}

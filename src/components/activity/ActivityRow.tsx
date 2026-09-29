@@ -4,6 +4,7 @@ import { formatTime } from '../../utils/dates';
 
 const ICON: Record<ActivityEvent['type'], string> = {
   STEAL: '⚡',
+  CLAUSE_RAISED: '🛡',
   TRADE_COMPLETED: '🤝',
   BENCH_SWAP: '↔',
   BENCH_PURCHASE: '🛒',
