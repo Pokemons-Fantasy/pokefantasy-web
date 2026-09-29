@@ -116,6 +116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leagues/{leagueId}/draft/pool/tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setPoolTiers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leagues/{leagueId}/draft/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateConfig"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/closed-list/{entryId}/tier": {
         parameters: {
             query?: never;
@@ -302,6 +334,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["startDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leagues/{leagueId}/draft/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["prepareDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leagues/{leagueId}/draft/pool/reset-tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPoolTiers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -804,6 +868,27 @@ export interface components {
         SetLeagueMvpRequest: {
             pokemonName?: string;
         };
+        SetDraftPoolTiersRequest: {
+            entryIds?: string[];
+            /** @enum {string} */
+            tier?: "S" | "A" | "B" | "C" | "D";
+        };
+        UpdateDraftConfigRequest: {
+            /** Format: int32 */
+            budget?: number;
+            /** Format: int32 */
+            priceS?: number;
+            /** Format: int32 */
+            priceA?: number;
+            /** Format: int32 */
+            priceB?: number;
+            /** Format: int32 */
+            priceC?: number;
+            /** Format: int32 */
+            priceD?: number;
+            snake?: boolean;
+            turnOrder?: string[];
+        };
         AssignTierRequest: {
             /** @enum {string} */
             tier?: "S" | "A" | "B" | "C" | "D";
@@ -1029,6 +1114,21 @@ export interface components {
             /** Format: int32 */
             coins?: number;
         };
+        DraftConfig: {
+            /** Format: int32 */
+            budget?: number;
+            /** Format: int32 */
+            priceS?: number;
+            /** Format: int32 */
+            priceA?: number;
+            /** Format: int32 */
+            priceB?: number;
+            /** Format: int32 */
+            priceC?: number;
+            /** Format: int32 */
+            priceD?: number;
+            snake?: boolean;
+        };
         DraftPickResponse: {
             username?: string;
             pokemonName?: string;
@@ -1042,6 +1142,8 @@ export interface components {
             customStealPrice?: number;
             /** Format: date-time */
             lockedUntil?: string;
+            /** Format: int32 */
+            price?: number;
         };
         DraftStatusResponse: {
             id?: string;
@@ -1055,6 +1157,10 @@ export interface components {
             draftHistory?: components["schemas"]["DraftPickResponse"][];
             /** Format: date-time */
             turnDeadline?: string;
+            config?: components["schemas"]["DraftConfig"];
+            budgets?: {
+                [key: string]: number;
+            };
         };
         ClosedListEntryResponse: {
             id?: string;
@@ -1103,7 +1209,7 @@ export interface components {
             id?: string;
             leagueId?: string;
             /** @enum {string} */
-            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED";
+            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS";
             actorUsername?: string;
             targetUsername?: string;
             pokemonName?: string;
@@ -1388,6 +1494,54 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    setPoolTiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDraftPoolTiersRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDraftConfigRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -1689,11 +1843,51 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["StartDraftRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    prepareDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    resetPoolTiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2215,7 +2409,7 @@ export interface operations {
                 page?: number;
                 size?: number;
                 username?: string;
-                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED")[];
+                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS")[];
             };
             header?: never;
             path: {

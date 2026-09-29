@@ -19,6 +19,7 @@ const TIERS: LeagueNavItem = { path: 'tiers', label: 'Gestionar tiers' };
 /** Pestañas de la liga según su fase: primero lo que más se usa en cada momento. */
 export function leagueTabs(phase: LeaguePhase): LeagueNavItem[] {
   switch (phase) {
+    case 'preparing':
     case 'draft': return [DRAFT, POOL, MEMBERS];
     case 'season': return [TEAMS, SCHEDULE, STANDINGS, ACTIVITY, DRAFT];
     default: return [MEMBERS, POOL, DRAFT];

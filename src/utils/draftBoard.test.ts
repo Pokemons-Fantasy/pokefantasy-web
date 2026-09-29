@@ -29,6 +29,12 @@ describe('buildDraftBoard', () => {
     expect(board.rounds[2].cells.every((c) => c.pick === null)).toBe(true);
   });
 
+  it('en snake las rondas pares se numeran de derecha a izquierda', () => {
+    const board = buildDraftBoard({ history: [], turnOrder: ORDER, totalRounds: 2, snake: true });
+    expect(board.rounds[0].cells.map((c) => c.pickNumber)).toEqual([1, 2, 3]);
+    expect(board.rounds[1].cells.map((c) => c.pickNumber)).toEqual([6, 5, 4]);
+  });
+
   it('marca la casilla del turno actual', () => {
     const board = buildDraftBoard({
       history: [pick('ash', 'mewtwo', 1)],

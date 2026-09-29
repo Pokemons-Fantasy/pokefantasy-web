@@ -13,6 +13,7 @@ const ICON: Record<ActivityEvent['type'], string> = {
   TIER_CHANGE: '◈',
   COIN_EARNED: '●',
   COIN_REVOKED: '●',
+  DRAFT_COINS: '●',
 };
 
 interface ActivityRowProps {

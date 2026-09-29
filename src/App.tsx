@@ -14,6 +14,7 @@ import LeagueMembersPage from './pages/LeagueMembersPage';
 import LeagueLayout from './components/league/LeagueLayout';
 import LeagueIndexRedirect from './components/league/LeagueIndexRedirect';
 import DraftPage from './pages/DraftPage';
+import DraftSetupPage from './pages/DraftSetupPage';
 import TeamsPage from './pages/TeamsPage';
 import LeagueConfigPage from './pages/LeagueConfigPage';
 import SchedulePage from './pages/SchedulePage';
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
               { path: 'members', element: <LeagueMembersPage /> },
               { path: 'pool', element: <PoolPage /> },
               { path: 'draft', element: <DraftPage /> },
+              { path: 'draft/setup', element: <DraftSetupPage /> },
               { path: 'teams', element: <TeamsPage /> },
               { path: 'config', element: <LeagueConfigPage /> },
               { path: 'schedule', element: <SchedulePage /> },

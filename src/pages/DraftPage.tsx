@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -11,13 +11,18 @@ import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
 import { openEventStream } from '../api/sse';
 import DraftBoard from '../components/draft/DraftBoard';
+import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 import Notice from '../components/Notice';
 import { buildDraftBoard } from '../utils/draftBoard';
+import { canAfford, draftPrice, remainingBudget, spendingByPlayer } from '../utils/draftBudget';
+import { coinsLabel } from '../utils/coins';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { spriteUrl } from '../utils/sprites';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -37,12 +42,21 @@ export default function DraftPage() {
     enabled: !!leagueId,
   });
 
+  // En preparación los tiers cambian sin que cambie el draft: el SSE también refresca el pool mientras tanto.
+  const statusRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    statusRef.current = draft?.status;
+  }, [draft?.status]);
+
   // SSE del draft (exige sesión y ser miembro de la liga). El proxy de Netlify corta la conexión cada
   // <26 s: se reconecta sola y al volver se refresca por si se perdió algún evento; mientras está caída,
   // polling cada 10 s.
   useEffect(() => {
     if (!leagueId) return;
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
+      if (statusRef.current === 'PENDING') queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
+    };
     let fallback: ReturnType<typeof setInterval> | null = null;
     const stopFallback = () => {
       if (fallback) clearInterval(fallback);
@@ -64,7 +78,7 @@ export default function DraftPage() {
     };
   }, [leagueId, queryClient]);
 
-  const { data: pool = [] } = useQuery({
+  const { data: pool = [], isSuccess: poolLoaded } = useQuery({
     queryKey: ['closed-list', leagueId],
     queryFn: () => getClosedList(leagueId!),
     enabled: !!leagueId,
@@ -76,7 +90,7 @@ export default function DraftPage() {
     enabled: !!leagueId,
   });
 
-  // Rondas del draft = maxTeamSize (mismo valor por defecto que DraftPickCommandHandler)
+  // Rondas del draft = maxTeamSize (mismo valor por defecto que DraftTurnService)
   const { data: settings } = useQuery({
     queryKey: ['league-settings', leagueId],
     queryFn: () => getLeagueSettings(leagueId!),
@@ -100,15 +114,35 @@ export default function DraftPage() {
   // draftHistory es el draft tal como se jugó; draft.picks son los equipos de ahora (con robos y trades)
   const history = draft?.draftHistory ?? [];
   const draftInProgress = draft?.status === 'IN_PROGRESS';
+  const config = draft?.config ?? null;
+  const myRemaining = remainingBudget(draft, username);
+  const priceOf = (entry: ClosedListEntry) => draftPrice(config, entry.tier);
+  const myTeamSize = draft?.picks.filter((p) => p.username === username).length ?? 0;
+  const isPlayer = !!username && !!draft?.turnOrder.includes(username);
+  // Misma regla que DraftTurnService.canPick; el backend es quien valida. Sin el pool cargado no se sabe.
+  const iAmOut = draftInProgress && isPlayer && poolLoaded && myRemaining !== null
+    && (myTeamSize >= totalRounds || !availablePool.some((e) => canAfford(priceOf(e), myRemaining)));
   const board = draft && buildDraftBoard({
     history,
     turnOrder: draft.turnOrder,
     currentPicks: draft.picks,
     totalRounds: draftInProgress ? totalRounds : 0,
     current: draftInProgress ? { round: draft.currentRound, username: draft.currentTurn } : null,
+    snake: !!config?.snake,
   });
   const tierByName = new Map(pool.map((p) => [p.pokemonName, p.tier]));
   const entryByName = new Map(pool.map((p) => [p.pokemonName, p]));
+  const spending = config ? spendingByPlayer(history, tierByName) : null;
+
+  // Al completarse el draft con la página abierta: aviso de lo que sobró, que ya está en el saldo.
+  const prevStatus = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (prevStatus.current === 'IN_PROGRESS' && draft?.status === 'COMPLETED' && myRemaining && myRemaining > 0) {
+      addToast('success', `Te sobraron ${coinsLabel(myRemaining)} del draft: pasan a tu saldo`);
+      queryClient.invalidateQueries({ queryKey: ['my-coins', leagueId] });
+    }
+    prevStatus.current = draft?.status;
+  }, [draft?.status, myRemaining, addToast, queryClient, leagueId]);
 
   const { mutate: pick, isPending: picking } = useMutation({
     mutationFn: (pokemonName: string) => draftPick(leagueId!, pokemonName),
@@ -164,7 +198,7 @@ export default function DraftPage() {
     : draft.status === 'COMPLETED' ? 'Completado'
     : draft.status === 'IN_PROGRESS' ? 'En progreso'
     : draft.status === 'CANCELLED' ? 'Cancelado'
-    : 'Pendiente';
+    : 'En preparación';
 
   const statusClass = !draft ? 'muted'
     : draft.status === 'COMPLETED' ? 'muted'
@@ -189,7 +223,7 @@ export default function DraftPage() {
         {!isLoading && !draft && (
           <div className="empty-state">
             <p>No hay draft activo en esta liga.</p>
-            <p style={{ marginTop: '0.4rem' }}>El admin debe iniciarlo desde el panel.</p>
+            <p style={{ marginTop: '0.4rem' }}>El admin debe prepararlo desde Miembros.</p>
           </div>
         )}
 
@@ -244,10 +278,42 @@ export default function DraftPage() {
                   : history.length}
               </div>
             </div>
+            {myRemaining !== null && draftInProgress && (
+              <div>
+                <div className="draft-stat-label">Te quedan</div>
+                <div className="draft-stat-value">{myRemaining} 🪙</div>
+              </div>
+            )}
           </div>
         )}
 
-        {draft?.status === 'IN_PROGRESS' && (
+        {draft?.status === 'PENDING' && (
+          <>
+            {isAdmin ? (
+              <Link className="btn-primary" to={`/leagues/${leagueId}/draft/setup`}>Continuar la preparación</Link>
+            ) : (
+              <Notice variant="info">El admin está preparando el draft</Notice>
+            )}
+            {config && (
+              <>
+                <p className="section-label">
+                  Presupuesto: {coinsLabel(config.budget)}{config.snake ? ' · snake' : ''}
+                </p>
+                <SetupTierBoard pool={pool} config={config} readOnly />
+              </>
+            )}
+          </>
+        )}
+
+        {draftInProgress && iAmOut && (
+          <Notice variant="info">
+            {myTeamSize >= totalRounds
+              ? 'Tu draft ha terminado: tienes el equipo completo'
+              : 'Tu draft ha terminado: no te llega para ningún Pokémon libre'}
+          </Notice>
+        )}
+
+        {draft?.status === 'IN_PROGRESS' && !iAmOut && (
           isMyTurn ? (
             <>
               <div className="my-turn-banner animate-in">
@@ -262,24 +328,41 @@ export default function DraftPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
               <div className="pokemon-grid">
-                {filtered.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className={`pokemon-card ${picking ? 'nominated' : ''}`}
-                    onClick={() => { if (!picking) setPendingPick(entry); }}
-                  >
-                    <img src={spriteUrl(entry.pokemonId)} alt={entry.pokemonName} className="pokemon-sprite" />
-                    <span className="pokemon-name">{entry.pokemonName}</span>
-                    <TierBadge tier={entry.tier} />
-                    <button
-                      className="pokemon-info-btn"
-                      onClick={(e) => { e.stopPropagation(); setDetailEntry(entry); }}
-                      title="Ver detalles"
-                    >
-                      i
-                    </button>
-                  </div>
-                ))}
+                {filtered.map((entry) => {
+                  const price = priceOf(entry);
+                  const affordable = canAfford(price, myRemaining);
+                  const name = capitalize(entry.pokemonName);
+                  const label = config
+                    ? `${name}, ${coinsLabel(price)}${affordable ? '' : ', no te llega'}`
+                    : name;
+                  return (
+                    <div key={entry.id} className={`pokemon-card${picking ? ' nominated' : ''}${affordable ? '' : ' unaffordable'}`}>
+                      <button
+                        type="button"
+                        className="pokemon-card-main"
+                        aria-label={label}
+                        aria-disabled={!affordable || picking}
+                        onClick={() => { if (affordable && !picking) setPendingPick(entry); }}
+                      >
+                        <img src={spriteUrl(entry.pokemonId)} alt="" className="pokemon-sprite" />
+                        <span className="pokemon-name">{entry.pokemonName}</span>
+                        <TierBadge tier={entry.tier} />
+                        {config && (
+                          <span className="pokemon-price">{affordable ? `${price} 🪙` : 'No te llega'}</span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className="pokemon-info-btn"
+                        onClick={() => setDetailEntry(entry)}
+                        title="Ver detalles"
+                        aria-label={`Ficha de ${name}`}
+                      >
+                        i
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </>
           ) : (
@@ -297,6 +380,8 @@ export default function DraftPage() {
               me={username}
               tierByName={tierByName}
               onSelect={(name) => setDetailEntry(entryByName.get(name) ?? null)}
+              budgets={draft.budgets}
+              spending={spending}
             />
           </div>
         )}
@@ -334,7 +419,10 @@ export default function DraftPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>¿Confirmar pick?</h2>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
-              Vas a elegir a <strong>{pendingPick.pokemonName}</strong>. Esta acción no se puede deshacer.
+              Vas a elegir a <strong>{pendingPick.pokemonName}</strong>
+              {config && myRemaining !== null && (
+                <> por {coinsLabel(priceOf(pendingPick))}: te quedarán {coinsLabel(myRemaining - priceOf(pendingPick))}</>
+              )}. Esta acción no se puede deshacer.
             </p>
             <div className="modal-actions">
               <button className="btn-ghost" onClick={() => setPendingPick(null)}>

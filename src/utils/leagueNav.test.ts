@@ -55,3 +55,10 @@ describe('activeSection', () => {
     expect(activeSection('players/ash')).toBe('standings');
   });
 });
+
+describe('fase de preparación del draft', () => {
+  it('el draft va primero', () => {
+    expect(leagueTabs('preparing').map((t) => t.path)).toEqual(['draft', 'pool', 'members']);
+    expect(firstTab('preparing')).toBe('draft');
+  });
+});

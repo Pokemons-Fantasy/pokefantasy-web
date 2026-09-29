@@ -17,7 +17,8 @@ import type {
   MatchDto, PlayerSeasonStats, PlayerStanding, RedeemInviteResponse, ScheduleResponse,
 } from './leagues';
 import type {
-  AvailablePokemon, BenchEntry, DraftPick, DraftStatus, TierAdjustmentResponse, TierChange,
+  AvailablePokemon, BenchEntry, DraftConfig, DraftConfigPayload, DraftPick, DraftStatus, TierAdjustmentResponse,
+  TierChange,
 } from './pokemons';
 import type { ProposeTradePayload, Trade } from './trades';
 
@@ -61,6 +62,8 @@ export type Contract = [
   Assert<FieldsMatch<BenchEntry, S['BenchEntryResponse']>>,
   Assert<FieldsMatch<DraftPick, S['DraftPickResponse']>>,
   Assert<FieldsMatch<DraftStatus, S['DraftStatusResponse']>>,
+  Assert<FieldsMatch<DraftConfig, S['DraftConfig']>>,
+  Assert<FieldsMatch<DraftConfigPayload, S['UpdateDraftConfigRequest']>>,
   Assert<FieldsMatch<TierChange, S['TierChangeDto']>>,
   Assert<FieldsMatch<TierAdjustmentResponse, S['TierAdjustmentResponse']>>,
   Assert<FieldsMatch<Trade, S['TradeResponse']>>,

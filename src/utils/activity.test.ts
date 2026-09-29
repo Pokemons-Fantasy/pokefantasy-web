@@ -118,3 +118,11 @@ describe('firstSeenEventId', () => {
     expect(firstSeenEventId(events, '2026-01-01T00:00:00')).toBeNull();
   });
 });
+
+describe('DRAFT_COINS', () => {
+  it('cuenta lo que sobró del draft y va con las monedas', () => {
+    const e = ev({ type: 'DRAFT_COINS', actorUsername: 'ash', coinsAmount: 120 });
+    expect(partsText(describeEvent(e))).toBe('ash recibió 120 monedas que le sobraron del draft');
+    expect(eventCategory('DRAFT_COINS')).toBe('coins');
+  });
+});

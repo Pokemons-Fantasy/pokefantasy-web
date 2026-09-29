@@ -359,6 +359,72 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/draft/pool/tiers": {
+            "put": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "setPoolTiers",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SetDraftPoolTiersRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/config": {
+            "put": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "updateConfig",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateDraftConfigRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/closed-list/{entryId}/tier": {
             "put": {
                 "tags": [
@@ -770,9 +836,54 @@
                                 "$ref": "#/components/schemas/StartDraftRequest"
                             }
                         }
-                    },
-                    "required": true
+                    }
                 },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/prepare": {
+            "post": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "prepareDraft",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/draft/pool/reset-tiers": {
+            "post": {
+                "tags": [
+                    "draft-controller"
+                ],
+                "operationId": "resetPoolTiers",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -1514,7 +1625,8 @@
                                     "MATCH_RESULT_REVERTED",
                                     "TIER_CHANGE",
                                     "COIN_EARNED",
-                                    "COIN_REVOKED"
+                                    "COIN_REVOKED",
+                                    "DRAFT_COINS"
                                 ]
                             },
                             "uniqueItems": true
@@ -1785,6 +1897,65 @@
                 "properties": {
                     "pokemonName": {
                         "type": "string"
+                    }
+                }
+            },
+            "SetDraftPoolTiersRequest": {
+                "type": "object",
+                "properties": {
+                    "entryIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "tier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    }
+                }
+            },
+            "UpdateDraftConfigRequest": {
+                "type": "object",
+                "properties": {
+                    "budget": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "snake": {
+                        "type": "boolean"
+                    },
+                    "turnOrder": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -2389,6 +2560,38 @@
                     }
                 }
             },
+            "DraftConfig": {
+                "type": "object",
+                "properties": {
+                    "budget": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceS": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceA": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceB": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceC": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "priceD": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "snake": {
+                        "type": "boolean"
+                    }
+                }
+            },
             "DraftPickResponse": {
                 "type": "object",
                 "properties": {
@@ -2417,6 +2620,10 @@
                     "lockedUntil": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "price": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },
@@ -2463,6 +2670,16 @@
                     "turnDeadline": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/DraftConfig"
+                    },
+                    "budgets": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
                     }
                 }
             },
@@ -2630,7 +2847,8 @@
                             "MATCH_RESULT_REVERTED",
                             "TIER_CHANGE",
                             "COIN_EARNED",
-                            "COIN_REVOKED"
+                            "COIN_REVOKED",
+                            "DRAFT_COINS"
                         ]
                     },
                     "actorUsername": {

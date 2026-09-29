@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../store/authStore';
@@ -8,7 +8,7 @@ import {
   getLeagueDetail, addMember, removeMember, promoteToAdmin, generateInviteLink, searchUsers,
 } from '../api/leagues';
 import { useDebounce } from '../hooks/useDebounce';
-import { getDraftStatus, startDraft } from '../api/pokemons';
+import { getDraftStatus, prepareDraft } from '../api/pokemons';
 import type { DraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -18,7 +18,6 @@ import UserAvatar from '../components/avatar/UserAvatar';
 import MemberMenu from '../components/league/MemberMenu';
 import type { MemberAction } from '../components/league/MemberMenu';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { moveTurn, shuffleTurnOrder, syncTurnOrder } from '../utils/turnOrder';
 
 type MemberActionKind = 'leave' | 'remove' | 'promote';
 
@@ -71,8 +70,6 @@ export default function LeagueMembersPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [memberSearch, setMemberSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  /** Orden colocado por el admin; el que se usa es `turnOrder`, sincronizado con los miembros. */
-  const [arrangedOrder, setArrangedOrder] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   const debouncedSearch = useDebounce(memberSearch, 300);
@@ -95,11 +92,6 @@ export default function LeagueMembersPage() {
     queryFn: () => getDraftStatus(leagueId!),
     enabled: !!leagueId,
   });
-
-  const turnOrder = useMemo(
-    () => syncTurnOrder(arrangedOrder, league?.members.map((m) => m.username) ?? []),
-    [arrangedOrder, league],
-  );
 
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
@@ -159,14 +151,16 @@ export default function LeagueMembersPage() {
     },
   });
 
-  const { mutate: initDraft, isPending: startingDraft } = useMutation({
-    mutationFn: () => startDraft(leagueId!, turnOrder),
+  const draftInSetup = draft?.status === 'PENDING';
+
+  const { mutate: prepare, isPending: preparing } = useMutation({
+    mutationFn: () => prepareDraft(leagueId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
-      navigate(`/leagues/${leagueId}/draft`);
+      navigate(`/leagues/${leagueId}/draft/setup`);
     },
-    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al iniciar draft')),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'No se pudo preparar el draft')),
   });
 
   const confirmPending = () => {
@@ -229,53 +223,21 @@ export default function LeagueMembersPage() {
         {isAdmin && !draftActive && (
           <>
             <hr className="divider" />
-            <p className="section-label">Iniciar draft</p>
-            <div className="turn-order-toolbar">
-              <p className="turn-order-hint">Ordena los jugadores para definir el orden de turnos.</p>
-              <button
-                type="button"
-                className="btn-ghost turn-order-shuffle"
-                title="Orden aleatorio"
-                onClick={() => setArrangedOrder(shuffleTurnOrder(turnOrder))}
-                disabled={turnOrder.length < 2}
-              >
-                Barajar
-              </button>
-            </div>
-
-            <div className="turn-order-list">
-              {turnOrder.map((player, i) => (
-                <div key={player} className="turn-order-item">
-                  <span className="turn-order-num">{i + 1}</span>
-                  <UserAvatar username={player} size={32} />
-                  <span className="turn-order-name">{player}</span>
-                  <div className="turn-order-arrows">
-                    <button
-                      className="arrow-btn"
-                      onClick={() => setArrangedOrder(moveTurn(turnOrder, i, -1))}
-                      disabled={i === 0}
-                      title="Subir"
-                      aria-label={`Subir a ${player}`}
-                    >↑</button>
-                    <button
-                      className="arrow-btn"
-                      onClick={() => setArrangedOrder(moveTurn(turnOrder, i, 1))}
-                      disabled={i === turnOrder.length - 1}
-                      title="Bajar"
-                      aria-label={`Bajar a ${player}`}
-                    >↓</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              className="btn-primary turn-order-start"
-              disabled={startingDraft || turnOrder.length === 0}
-              onClick={() => initDraft()}
-            >
-              {startingDraft ? 'Iniciando...' : '⚡ Iniciar draft'}
-            </button>
+            <p className="section-label">Draft</p>
+            {draftInSetup ? (
+              <Link className="btn-primary turn-order-start" to={`/leagues/${leagueId}/draft/setup`}>
+                Continuar la preparación
+              </Link>
+            ) : (
+              <>
+                <p className="turn-order-hint">
+                  Reparte los tiers, pon precios y presupuesto, y ordena los turnos. Al prepararlo se cierran las nominaciones.
+                </p>
+                <button className="btn-primary turn-order-start" disabled={preparing} onClick={() => prepare()}>
+                  {preparing ? 'Preparando...' : 'Preparar draft'}
+                </button>
+              </>
+            )}
           </>
         )}
 
