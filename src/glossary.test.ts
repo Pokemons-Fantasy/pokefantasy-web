@@ -46,6 +46,8 @@ function textosVisibles(archivo: string, codigo: string): { linea: number; texto
   }
 
   function visit(node: ts.Node) {
+    // Las clases CSS nunca se ven ("row-link standing-name" no es un "link")
+    if (ts.isJsxAttribute(node) && node.name.getText() === 'className') return;
     const padre = node.parent;
     const enAtributoVisible = padre && ts.isJsxAttribute(padre) && ATRIBUTOS_VISIBLES.has(padre.name.getText());
     if (ts.isJsxText(node)) add(node, node.text, true);
