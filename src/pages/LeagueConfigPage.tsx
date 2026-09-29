@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useBlocker, useParams } from 'react-router-dom';
+import { Link, useBlocker, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import {
   getLeagueDetail,
@@ -8,16 +8,15 @@ import {
   updateLeagueSettings,
   type LeagueSettings,
 } from '../api/leagues';
-import { getDraftStatus } from '../api/pokemons';
+import { getClosedList, getDraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from '../components/SkeletonTable';
-import GeneralSettingsSection from '../components/leagueConfig/GeneralSettingsSection';
-import TierPricesSection from '../components/leagueConfig/TierPricesSection';
-import TierDistributionSection from '../components/leagueConfig/TierDistributionSection';
-import ScheduleSection from '../components/leagueConfig/ScheduleSection';
-import TimeWindowsSection from '../components/leagueConfig/TimeWindowsSection';
-import PendingChangesSidebar from '../components/leagueConfig/PendingChangesSidebar';
+import CoinsMarketSection from '../components/leagueConfig/CoinsMarketSection';
+import DraftSettingsSection from '../components/leagueConfig/DraftSettingsSection';
+import CalendarSection from '../components/leagueConfig/CalendarSection';
+import SaveBar from '../components/SaveBar';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Notice from '../components/Notice';
 
 const DEFAULT_SETTINGS: LeagueSettings = {
@@ -70,11 +69,11 @@ function withDefaults(settings: LeagueSettings | undefined): LeagueSettings {
 const FIELD_LABELS: Record<keyof LeagueSettings, string> = {
   coinsPerWin: 'Monedas por victoria',
   coinsPerLoss: 'Monedas por derrota',
-  priceTierS: 'Precio tier S',
-  priceTierA: 'Precio tier A',
-  priceTierB: 'Precio tier B',
-  priceTierC: 'Precio tier C',
-  priceTierD: 'Precio tier D',
+  priceTierS: 'Precio de mercado S',
+  priceTierA: 'Precio de mercado A',
+  priceTierB: 'Precio de mercado B',
+  priceTierC: 'Precio de mercado C',
+  priceTierD: 'Precio de mercado D',
   seasonStartDate: 'Fecha inicio temporada',
   maxTeamSize: 'Tamaño máx. equipo',
   tierPctS: '% tier S',
@@ -91,6 +90,15 @@ const FIELD_LABELS: Record<keyof LeagueSettings, string> = {
 
 const FIELD_KEYS = Object.keys(FIELD_LABELS) as (keyof LeagueSettings)[];
 
+const DAY_NAMES = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
+/** Valor tal como se enseña en el resumen de cambios. */
+function displayValue(key: keyof LeagueSettings, value: LeagueSettings[keyof LeagueSettings]): string | number {
+  if (key === 'seasonStartDate') return (value as string | undefined) || '—';
+  if (key === 'stealWindowCloseDay' || key === 'swapWindowCloseDay') return DAY_NAMES[Number(value)] ?? String(value);
+  return (value as number | string | undefined) ?? 0;
+}
+
 export default function LeagueConfigPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
@@ -99,7 +107,6 @@ export default function LeagueConfigPage() {
 
   const [form, setForm] = useState<LeagueSettings>(DEFAULT_SETTINGS);
   const [error, setError] = useState('');
-  const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const { data: league } = useQuery({
     queryKey: ['league-detail', leagueId],
@@ -132,6 +139,16 @@ export default function LeagueConfigPage() {
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
   const draftInProgress = draft?.status === 'IN_PROGRESS';
+  const draftPreparing = draft?.status === 'PENDING';
+  // Antes de preparar el draft se enseña cuántos Pokémon caerían en cada tier (después, el reparto real
+  // está en Preparar draft).
+  const beforeDraft = draft === null || draft?.status === 'CANCELLED';
+  const { data: pool } = useQuery({
+    queryKey: ['closed-list', leagueId],
+    queryFn: () => getClosedList(leagueId!),
+    enabled: !!leagueId && beforeDraft,
+    staleTime: 60_000,
+  });
   const canEdit = isAdmin && !draftInProgress;
   const fieldsDisabled = !canEdit;
 
@@ -146,14 +163,9 @@ export default function LeagueConfigPage() {
   const pendingChanges = useMemo(() => {
     if (!settings) return [];
     const saved = withDefaults(settings);
-    return FIELD_KEYS.filter((key) => form[key] !== saved[key]).map((key) => {
-      const oldVal = saved[key];
-      const newVal = form[key];
-      if (key === 'seasonStartDate') {
-        return { label: FIELD_LABELS[key], old: oldVal || '—', new: newVal || '—' };
-      }
-      return { label: FIELD_LABELS[key], old: oldVal ?? 0, new: newVal ?? 0 };
-    });
+    return FIELD_KEYS.filter((key) => form[key] !== saved[key]).map((key) => ({
+      label: FIELD_LABELS[key], old: displayValue(key, saved[key]), new: displayValue(key, form[key]),
+    }));
   }, [settings, form]);
 
   const hasChanges = pendingChanges.length > 0;
@@ -180,7 +192,7 @@ export default function LeagueConfigPage() {
     mutationFn: (payload: LeagueSettings) => updateLeagueSettings(leagueId!, payload),
     onSuccess: (_data, payload) => {
       setError('');
-      setSavedAt(Date.now());
+      addToast('success', 'Configuración guardada');
       // Lo guardado pasa a ser la referencia ya: sin esto, salir antes del refetch pediría confirmación
       queryClient.setQueryData(['league-settings', leagueId], payload);
       queryClient.invalidateQueries({ queryKey: ['league-settings', leagueId] });
@@ -188,7 +200,6 @@ export default function LeagueConfigPage() {
     },
     onError: (err) => {
       addToast('error', extractErrorMessage(err, 'Error al guardar la configuración'));
-      setSavedAt(null);
     },
   });
 
@@ -217,17 +228,14 @@ export default function LeagueConfigPage() {
     if (settings) {
       setForm(withDefaults(settings));
       setError('');
-      setSavedAt(null);
     }
   };
 
   return (
     <>
       <main className="page-content">
-        <div className="section-header" style={{ marginBottom: '1.5rem' }}>
-          <div>
-            <h1 className="page-title">⚙️ Configuración de liga</h1>
-          </div>
+        <div className="section-header">
+          <h1 className="page-title">⚙️ Configuración de liga</h1>
         </div>
 
         {isLoading && <SkeletonTable rows={5} />}
@@ -244,64 +252,54 @@ export default function LeagueConfigPage() {
                 El draft está en curso. No se puede modificar la configuración hasta que termine o se cancele.
               </Notice>
             )}
+            {draftPreparing && (
+              <Notice variant="info">
+                Se está preparando el draft. La distribución de tiers solo se aplica al pulsar «Recalcular por BST»
+                y el tamaño máximo del equipo cambia las rondas del draft.
+                {isAdmin && <> <Link to={`/leagues/${leagueId}/draft/setup`}>Ir a Preparar draft</Link></>}
+              </Notice>
+            )}
 
-            {/* ── Two-column layout ─────────────────────────────────────────── */}
-            <div className="settings-two-col">
-
-              {/* Left column — form fields */}
-              <form
-                id="settings-form"
-                onSubmit={handleSubmit}
-                className="config-form animate-in"
-                style={{ maxWidth: 'none' }}
-              >
-                <GeneralSettingsSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
-                <TierPricesSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
-                <TierDistributionSection
-                  form={form}
-                  setField={setField}
-                  disabled={fieldsDisabled || saving}
-                  tierSum={tierSum}
-                  tierSumOk={tierSumOk}
-                />
-                <ScheduleSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
-                <TimeWindowsSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
-              </form>
-
-              {/* Right column — sticky sidebar */}
-              <PendingChangesSidebar
-                pendingChanges={pendingChanges}
-                error={error}
-                savedAt={savedAt}
-                canEdit={canEdit}
-                saving={saving}
+            <form id="settings-form" onSubmit={handleSubmit} className="config-form animate-in">
+              <CoinsMarketSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+              <DraftSettingsSection
+                form={form}
+                setField={setField}
+                disabled={fieldsDisabled || saving}
+                tierSum={tierSum}
                 tierSumOk={tierSumOk}
-                onCancel={handleCancel}
+                poolSize={beforeDraft ? pool?.length : undefined}
               />
+              <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+            </form>
 
-            </div>
+            {canEdit && hasChanges && (
+              <SaveBar
+                summary={`${pendingChanges.length} cambio${pendingChanges.length !== 1 ? 's' : ''} sin guardar`}
+                changes={pendingChanges}
+                error={error || (!tierSumOk ? `Los porcentajes de tier deben sumar 100 (ahora ${tierSum} %)` : null)}
+                saving={saving}
+                saveLabel="Guardar cambios"
+                formId="settings-form"
+                canSave={tierSumOk}
+                onDiscard={handleCancel}
+              />
+            )}
           </>
         )}
       </main>
 
       {blocker.state === 'blocked' && (
-        <div className="modal-overlay" onClick={() => blocker.reset()}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h2 className="modal-title">Cambios sin guardar</h2>
-            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-              Tienes {pendingChanges.length} cambio{pendingChanges.length !== 1 ? 's' : ''} sin guardar.
-              Si sales ahora se perderán.
-            </p>
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => blocker.reset()}>
-                Seguir editando
-              </button>
-              <button className="btn-danger" onClick={() => blocker.proceed()}>
-                Descartar cambios
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="¿Salir sin guardar?"
+          message={`Tienes ${pendingChanges.length} cambio${pendingChanges.length !== 1 ? 's' : ''} sin guardar. Si sales ahora se perderán.`}
+          confirmLabel="Salir"
+          pendingLabel="Saliendo..."
+          pending={false}
+          danger
+          onConfirm={() => blocker.proceed()}
+          onClose={() => blocker.reset()}
+        />
       )}
     </>
   );

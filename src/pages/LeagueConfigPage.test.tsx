@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -18,12 +18,14 @@ vi.mock('../api/leagues', async (importOriginal) => ({
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
   getDraftStatus: vi.fn(),
+  getClosedList: vi.fn(),
 }));
 
 const mockedLeagueDetail = vi.mocked(leaguesApi.getLeagueDetail);
 const mockedLeagueSettings = vi.mocked(leaguesApi.getLeagueSettings);
 const mockedUpdateSettings = vi.mocked(leaguesApi.updateLeagueSettings);
 const mockedDraftStatus = vi.mocked(pokemonsApi.getDraftStatus);
+const mockedClosedList = vi.mocked(pokemonsApi.getClosedList);
 
 const LEAGUE: LeagueDetail = {
   id: 'league-1',
@@ -78,6 +80,7 @@ describe('LeagueConfigPage', () => {
     mockedDraftStatus.mockResolvedValue(null);
     mockedLeagueSettings.mockResolvedValue(SETTINGS);
     mockedUpdateSettings.mockResolvedValue(undefined);
+    mockedClosedList.mockResolvedValue([]);
   });
 
   it('loads settings into the form with no pending changes', async () => {
@@ -88,15 +91,18 @@ describe('LeagueConfigPage', () => {
     expect(screen.queryByText(/cambio.*sin guardar/)).not.toBeInTheDocument();
   });
 
-  it('tracks a pending change when a field is edited, and Cancelar reverts it', async () => {
+  it('la barra de guardar solo aparece con cambios, y Descartar los deshace', async () => {
     renderPage();
     const coinsPerWin = await screen.findByLabelText('Monedas por victoria') as HTMLInputElement;
+    expect(screen.queryByRole('region', { name: 'Cambios sin guardar' })).not.toBeInTheDocument();
 
     await userEvent.clear(coinsPerWin);
     await userEvent.type(coinsPerWin, '150');
-    expect(await screen.findByText('1 cambio sin guardar')).toBeInTheDocument();
+    const bar = await screen.findByRole('region', { name: 'Cambios sin guardar' });
+    expect(within(bar).getByText('1 cambio sin guardar')).toBeInTheDocument();
+    expect(within(bar).getByText('Monedas por victoria')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'Descartar cambios' }));
     await waitFor(() => expect(coinsPerWin.value).toBe('100'));
     expect(screen.queryByText(/cambio.*sin guardar/)).not.toBeInTheDocument();
   });
@@ -145,9 +151,9 @@ describe('LeagueConfigPage', () => {
     await userEvent.type(coinsPerWin, '150');
 
     await leaveTo(router, '/leagues/league-1/teams');
-    expect(await screen.findByText('Cambios sin guardar')).toBeInTheDocument();
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Salir sin guardar?' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salir' }));
     expect(await screen.findByText('Pantalla de equipos')).toBeInTheDocument();
   });
 
@@ -158,7 +164,7 @@ describe('LeagueConfigPage', () => {
     await userEvent.type(coinsPerWin, '150');
 
     await leaveTo(router, '/leagues/league-1/teams');
-    await userEvent.click(await screen.findByRole('button', { name: 'Seguir editando' }));
+    await userEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Cancelar' }));
 
     expect(router.state.location.pathname).toBe('/leagues/league-1/config');
     expect(coinsPerWin.value).toBe('150');
@@ -181,5 +187,44 @@ describe('LeagueConfigPage', () => {
 
     await leaveTo(router, '/leagues/league-1/teams');
     expect(await screen.findByText('Pantalla de equipos')).toBeInTheDocument();
+  });
+
+  it('la distribución avisa si no suma 100 y "Ajustar" lo corrige tocando D', async () => {
+    renderPage();
+    const pctS = await screen.findByLabelText('Porcentaje del tier S') as HTMLInputElement;
+    await userEvent.clear(pctS);
+    await userEvent.type(pctS, '10');
+
+    expect(screen.getByText('Suma: 90 % (faltan 10)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustar para sumar 100' }));
+    expect((screen.getByLabelText('Porcentaje del tier D') as HTMLInputElement).value).toBe('30');
+    expect(screen.getByText('Suma: 100 % ✓')).toBeInTheDocument();
+  });
+
+  it('antes de preparar el draft enseña cuántos Pokémon caerían en cada tier', async () => {
+    mockedClosedList.mockResolvedValue(Array.from({ length: 10 }, (_, i) => (
+      { id: `e${i}`, pokemonId: i, pokemonName: `p${i}`, nominatedBy: 'admin1', sprite: '' }
+    )));
+    renderPage();
+    expect(await screen.findByText('Con los 10 Pokémon del pool: S 2 · A 2 · B 2 · C 2 · D 2')).toBeInTheDocument();
+  });
+
+  it('los precios de mercado tienen etiqueta y avisa de los que están a 0', async () => {
+    mockedLeagueSettings.mockResolvedValue({ ...SETTINGS, priceTierD: 0 });
+    renderPage();
+    expect(await screen.findByLabelText('Precio de mercado del tier S')).toHaveValue(500);
+    expect(screen.getByText(/El tier D tiene precio 0: robar esos Pokémon es gratis/)).toBeInTheDocument();
+  });
+
+  it('con el draft en preparación avisa de qué cambios afectan y enlaza a Preparar draft', async () => {
+    mockedDraftStatus.mockResolvedValue({
+      id: 'd1', status: 'PENDING', turnOrder: ['admin1'], currentTurn: null, currentRound: 1, picks: [],
+    });
+    renderPage();
+    expect(await screen.findByText(/Se está preparando el draft/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ir a Preparar draft' })).toHaveAttribute('href', '/leagues/league-1/draft/setup');
+    expect(mockedClosedList).not.toHaveBeenCalled();
   });
 });

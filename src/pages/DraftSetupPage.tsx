@@ -17,6 +17,7 @@ import DraftBudgetForm from '../components/draftSetup/DraftBudgetForm';
 import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 import TurnOrderEditor from '../components/draft/TurnOrderEditor';
 import ConfirmDialog from '../components/ConfirmDialog';
+import SaveBar from '../components/SaveBar';
 import Notice from '../components/Notice';
 import { SkeletonTable } from '../components/SkeletonTable';
 
@@ -149,12 +150,17 @@ export default function DraftSetupPage() {
         <p className="section-label">Orden de turnos</p>
         <TurnOrderEditor order={form.turnOrder} onChange={(turnOrder) => setEdits((prev) => ({ ...prev, turnOrder }))} />
 
-        <div className="draft-setup-save">
-          {error && <p className="error" role="alert">{error}</p>}
-          <button className="btn-primary" disabled={!dirty || !!error || saving} onClick={() => save(form)}>
-            {saving ? 'Guardando...' : 'Guardar'}
-          </button>
-        </div>
+        {dirty && (
+          <SaveBar
+            summary="Cambios sin guardar en presupuesto, precios u orden"
+            error={error}
+            saving={saving}
+            saveLabel="Guardar"
+            onSave={() => save(form)}
+            canSave={!error}
+            onDiscard={() => setEdits({})}
+          />
+        )}
 
         <hr className="divider" />
         <div className="section-header">
