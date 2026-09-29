@@ -16,6 +16,7 @@ const CATEGORY: Record<ActivityType, ActivityCategory> = {
   TIER_CHANGE: 'tier',
   COIN_EARNED: 'coins',
   COIN_REVOKED: 'coins',
+  DRAFT_COINS: 'coins',
 };
 
 export function eventCategory(type: ActivityType): ActivityCategory {
@@ -77,6 +78,8 @@ export function describeEvent(e: ActivityEvent): EventPart[] {
       return [user(e.actorUsername), txt(` ganó ${coinsLabel(coins)} · jornada ${round}`)];
     case 'COIN_REVOKED':
       return [user(e.actorUsername), txt(` devolvió ${coinsLabel(coins)} · jornada ${round}`)];
+    case 'DRAFT_COINS':
+      return [user(e.actorUsername), txt(` recibió ${coinsLabel(coins)} que le sobraron del draft`)];
     default:
       return [txt('Evento desconocido')];
   }

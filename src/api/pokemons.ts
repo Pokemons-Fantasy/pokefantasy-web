@@ -29,6 +29,21 @@ export interface ClosedListEntry {
   types?: string[];
 }
 
+export interface DraftConfig {
+  budget: number;
+  priceS: number;
+  priceA: number;
+  priceB: number;
+  priceC: number;
+  priceD: number;
+  snake: boolean;
+}
+
+/** Cuerpo de PUT draft/config. */
+export interface DraftConfigPayload extends DraftConfig {
+  turnOrder: string[];
+}
+
 export interface DraftPick {
   username: string;
   pokemonName: string;
@@ -39,6 +54,8 @@ export interface DraftPick {
   customStealPrice?: number | null;
   /** ISO timestamp hasta el que este pokémon está bloqueado. null/undefined = libre. */
   lockedUntil?: string | null;
+  /** Monedas pagadas en el draft. Ausente en drafts sin presupuesto. */
+  price?: number | null;
 }
 
 export interface DraftStatus {
@@ -52,6 +69,10 @@ export interface DraftStatus {
   draftHistory?: DraftPick[];
   /** ISO Instant deadline for current turn. null if timer disabled or draft not IN_PROGRESS. */
   turnDeadline?: string | null;
+  /** Presupuesto, precios por tier y snake. Ausente en drafts anteriores a la configuración. */
+  config?: DraftConfig | null;
+  /** Monedas que le quedan a cada jugador. Ausente si el draft no tiene presupuesto. */
+  budgets?: Record<string, number> | null;
 }
 
 export const getAvailablePokemons = async (): Promise<AvailablePokemon[]> => {
@@ -122,6 +143,27 @@ export const draftPick = async (leagueId: string, pokemonName: string): Promise<
 
 export const startDraft = async (leagueId: string, turnOrder: string[]): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/draft/start`, { turnOrder });
+};
+
+export const prepareDraft = async (leagueId: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/draft/prepare`);
+};
+
+export const updateDraftConfig = async (leagueId: string, payload: DraftConfigPayload): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/draft/config`, payload);
+};
+
+export const setDraftPoolTiers = async (leagueId: string, entryIds: string[], tier: Tier): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/draft/pool/tiers`, { entryIds, tier });
+};
+
+export const resetDraftPoolTiers = async (leagueId: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/draft/pool/reset-tiers`);
+};
+
+/** Empieza el draft preparado (sin body: el orden y la config ya están guardados). */
+export const startPreparedDraft = async (leagueId: string): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/draft/start`);
 };
 
 export const cancelDraft = async (leagueId: string): Promise<void> => {
