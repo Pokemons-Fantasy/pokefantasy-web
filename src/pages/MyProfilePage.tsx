@@ -12,6 +12,7 @@ import ChangePasswordForm from '../components/ChangePasswordForm';
 import { getMe } from '../api/auth';
 import UserAvatar from '../components/avatar/UserAvatar';
 import ProfilePhotoSection from '../components/avatar/ProfilePhotoSection';
+import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 
 export default function MyProfilePage() {
   const username = useAuthStore((s) => s.username);
@@ -107,9 +108,7 @@ export default function MyProfilePage() {
 
                   <div className="profile-league-head">
                     <div className="profile-league-name">{league.name}</div>
-                    <span className={`badge ${league.status === 'ACTIVE' ? 'badge-green' : 'badge-yellow'}`}>
-                      {league.status === 'ACTIVE' ? 'Activa' : 'Configuración'}
-                    </span>
+                    <LeaguePhaseBadge draftStatus={league.draftStatus} />
                   </div>
 
                   {/* Stats row — only when there are played games */}
