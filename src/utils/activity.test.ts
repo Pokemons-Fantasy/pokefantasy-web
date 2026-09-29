@@ -126,3 +126,12 @@ describe('DRAFT_COINS', () => {
     expect(eventCategory('DRAFT_COINS')).toBe('coins');
   });
 });
+
+describe('CLAUSE_RAISED', () => {
+  it('cuenta cuánto sube la cláusula (el doble de lo invertido) y va con los robos', () => {
+    const e = ev({ type: 'CLAUSE_RAISED', actorUsername: 'ash', pokemonName: 'charizard', coinsAmount: 100 });
+    expect(partsText(describeEvent(e))).toBe('ash subió la cláusula de Charizard en 200 · 100 monedas');
+    expect(eventCategory('CLAUSE_RAISED')).toBe('steal');
+    expect(ACTIVITY_FILTERS.find((f) => f.key === 'steal')?.types).toContain('CLAUSE_RAISED');
+  });
+});

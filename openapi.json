@@ -1626,7 +1626,8 @@
                                     "TIER_CHANGE",
                                     "COIN_EARNED",
                                     "COIN_REVOKED",
-                                    "DRAFT_COINS"
+                                    "DRAFT_COINS",
+                                    "CLAUSE_RAISED"
                                 ]
                             },
                             "uniqueItems": true
@@ -2848,7 +2849,8 @@
                             "TIER_CHANGE",
                             "COIN_EARNED",
                             "COIN_REVOKED",
-                            "DRAFT_COINS"
+                            "DRAFT_COINS",
+                            "CLAUSE_RAISED"
                         ]
                     },
                     "actorUsername": {
@@ -2864,6 +2866,10 @@
                         "type": "string"
                     },
                     "coinsAmount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "targetCoinsAmount": {
                         "type": "integer",
                         "format": "int32"
                     },

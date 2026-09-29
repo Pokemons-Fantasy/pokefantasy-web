@@ -1,4 +1,5 @@
 import type { ActivityEvent } from '../api/activity';
+import { CLAUSE_RAISE_MULTIPLIER } from './clause';
 import { coinsLabel } from './coins';
 import { formatDayLabel } from './dates';
 
@@ -7,6 +8,7 @@ export type ActivityCategory = 'steal' | 'trade' | 'bench' | 'match' | 'tier' | 
 
 const CATEGORY: Record<ActivityType, ActivityCategory> = {
   STEAL: 'steal',
+  CLAUSE_RAISED: 'steal',
   TRADE_COMPLETED: 'trade',
   BENCH_SWAP: 'bench',
   BENCH_PURCHASE: 'bench',
@@ -57,6 +59,9 @@ export function describeEvent(e: ActivityEvent): EventPart[] {
     case 'STEAL':
       return [user(e.actorUsername), txt(' robó a '), pokemon(e.pokemonName), txt(' de '), user(e.targetUsername),
         txt(` · ${coinsLabel(coins)}`)];
+    case 'CLAUSE_RAISED':
+      return [user(e.actorUsername), txt(' subió la cláusula de '), pokemon(e.pokemonName),
+        txt(` en ${coins * CLAUSE_RAISE_MULTIPLIER} · ${coinsLabel(coins)}`)];
     case 'TRADE_COMPLETED':
       return [user(e.actorUsername), txt(' cambió '), pokemon(e.pokemonName), txt(' a '), user(e.targetUsername),
         txt(' por '), pokemon(e.pokemonName2), ...(coins > 0 ? [txt(` · con ${coinsLabel(coins)}`)] : [])];

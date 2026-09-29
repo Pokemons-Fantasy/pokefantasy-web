@@ -81,7 +81,7 @@ describe('ActivityPage', () => {
     await user.click(robos);
 
     expect(robos).toHaveAttribute('aria-pressed', 'true');
-    await waitFor(() => expect(feed).toHaveBeenLastCalledWith('l1', 0, { username: undefined, types: ['STEAL'] }));
+    await waitFor(() => expect(feed).toHaveBeenLastCalledWith('l1', 0, { username: undefined, types: ['STEAL', 'CLAUSE_RAISED'] }));
   });
 
   it('"Solo lo mío" filtra por tu usuario', async () => {
