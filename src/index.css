@@ -1530,15 +1530,12 @@ button.member-menu-item {
   margin-bottom: 2.5rem;
 }
 
+/* Resplandor detrás de la Poké Ball: se desvanece dentro de la sección (un círculo recortado dejaba bordes rectos) */
 .hero-section::before {
   content: '';
   position: absolute;
-  top: -40%;
-  right: -10%;
-  width: 480px;
-  height: 480px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(251,191,36,0.06) 0%, transparent 65%);
+  inset: 0;
+  background: radial-gradient(circle at calc(100% - 5.5rem) 50%, rgba(251,191,36,0.08) 0%, transparent 5.5rem);
   pointer-events: none;
 }
 
@@ -1582,13 +1579,6 @@ button.member-menu-item {
   line-height: 1.6;
 }
 
-.hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-}
-
 .hero-ball {
   position: absolute;
   top: 50%;
@@ -1596,8 +1586,95 @@ button.member-menu-item {
   transform: translateY(-50%);
   width: 140px;
   height: 140px;
-  opacity: 0.06;
+  color: var(--text);
+  opacity: 0.07;
   pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 75%);
+  mask-image: radial-gradient(circle, #000 55%, transparent 75%);
+}
+
+/* ─── HOME ─── */
+
+.home-hero.compact { padding: 1.5rem 0 1.25rem; margin-bottom: 1.25rem; }
+.home-hero.compact .hero-title { font-size: clamp(1.6rem, 4vw, 2.25rem); }
+.home-hero.compact .hero-ball { width: 96px; height: 96px; }
+.home-steps { color: var(--text-3); }
+
+.home-leagues-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.home-leagues-head .section-label { margin: 0; }
+.home-leagues-all { font-size: 0.85rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.home-leagues-all:hover, .home-leagues-all:focus-visible { text-decoration: underline; }
+.home-league-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.home-league {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+a.home-league { transition: border-color 0.15s; }
+a.home-league:hover { border-color: var(--border-hover); }
+a.home-league:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.home-league-season { border-left: 3px solid var(--info); }
+.home-league-draft { border-left: 3px solid var(--success); }
+.home-league-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding-right: 1rem; }
+.home-league-name { margin: 0; font-size: 1rem; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.home-league-round { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--text-2); }
+.home-league-line { margin: 0; font-size: 0.875rem; color: var(--text-2); }
+.home-league-last { margin: 0; font-size: 0.8rem; color: var(--text-3); }
+.home-my-turn { color: var(--success); font-weight: 700; }
+.home-league-cta { font-size: 0.85rem; font-weight: 600; color: var(--accent); }
+.home-league-skeleton { height: 3.5rem; border-radius: var(--radius-sm); }
+.home-league .market-status { margin-bottom: 0; }
+
+.home-match {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.home-match-player { display: flex; align-items: center; gap: 0.5rem; min-width: 0; flex: 1; }
+.home-match-player:last-child { justify-content: flex-end; flex-direction: row-reverse; }
+.home-match-player > .member-avatar { flex-shrink: 0; }
+.home-match-name { min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-match-vs { flex-shrink: 0; font-size: 0.75rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+
+.home-league-links { display: flex; gap: 1rem; font-size: 0.85rem; }
+.home-league-links a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.home-league-links a:hover, .home-league-links a:focus-visible { text-decoration: underline; }
+
+.home-league-compact { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.75rem; padding: 0.85rem 1.25rem; }
+.home-league-compact .home-league-cta { margin-left: auto; }
+
+.home-live-dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-live-dot { animation: none; }
+}
+@media (max-width: 640px) {
+  .hero-ball { display: none; }
 }
 
 /* ─── NAV CARDS ─── */
@@ -1665,8 +1742,6 @@ button.member-menu-item {
 }
 
 .nav-card-gold h3  { color: var(--accent); }
-.nav-card-live h3  { color: var(--success); }
-.nav-card-setup h3 { color: var(--info); }
 
 .nav-card p {
   font-size: 0.825rem;
@@ -1711,73 +1786,6 @@ button.member-menu-item {
 .nav-card-icon-gold {
   background: rgba(251, 191, 36, 0.1) !important;
   border-color: rgba(251, 191, 36, 0.25) !important;
-}
-
-/* Green — Draft activo (live) */
-.nav-card-live {
-  background: linear-gradient(145deg, rgba(52,211,153,0.07) 0%, var(--surface) 55%);
-  border-color: rgba(52,211,153,0.22);
-  border-left: 3px solid rgba(52,211,153,0.5);
-}
-.nav-card-live:hover {
-  border-color: rgba(52,211,153,0.45);
-  border-left-color: var(--success);
-  box-shadow: 0 0 28px rgba(52,211,153,0.09), 0 4px 20px rgba(0,0,0,0.3);
-  transform: translateY(-3px);
-}
-.nav-card-live::after { background: var(--success); }
-
-.nav-card-live-dot {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--success);
-  animation: livePulse 1.8s ease-in-out infinite;
-}
-
-.nav-card-icon-green {
-  background: rgba(52, 211, 153, 0.1) !important;
-  border-color: rgba(52, 211, 153, 0.25) !important;
-}
-.nav-card-arrow-green { color: var(--success) !important; }
-
-/* Blue — Setup en curso */
-.nav-card-setup {
-  background: linear-gradient(145deg, rgba(129,140,248,0.07) 0%, var(--surface) 55%);
-  border-color: rgba(129,140,248,0.22);
-  border-left: 3px solid rgba(129,140,248,0.4);
-}
-.nav-card-setup:hover {
-  border-color: rgba(129,140,248,0.4);
-  border-left-color: var(--info);
-  box-shadow: 0 0 28px rgba(129,140,248,0.08), 0 4px 20px rgba(0,0,0,0.3);
-  transform: translateY(-3px);
-}
-.nav-card-setup::after { background: var(--info); }
-
-.nav-card-icon-blue {
-  background: rgba(129, 140, 248, 0.1) !important;
-  border-color: rgba(129, 140, 248, 0.25) !important;
-}
-.nav-card-arrow-blue { color: var(--info) !important; }
-
-/* League count badge */
-.nav-card-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--success-bg);
-  color: var(--success);
-  font-size: 0.65rem;
-  font-weight: 800;
-  margin-left: 0.4rem;
-  vertical-align: middle;
 }
 
 /* ─── STAT PILL ─── */
