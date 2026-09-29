@@ -141,10 +141,6 @@ export const draftPick = async (leagueId: string, pokemonName: string): Promise<
   await apiClient.post(`/v1/leagues/${leagueId}/draft/pick`, { pokemonName });
 };
 
-export const startDraft = async (leagueId: string, turnOrder: string[]): Promise<void> => {
-  await apiClient.post(`/v1/leagues/${leagueId}/draft/start`, { turnOrder });
-};
-
 export const prepareDraft = async (leagueId: string): Promise<void> => {
   await apiClient.post(`/v1/leagues/${leagueId}/draft/prepare`);
 };

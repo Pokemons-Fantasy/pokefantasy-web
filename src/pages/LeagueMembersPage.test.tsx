@@ -20,14 +20,14 @@ vi.mock('../api/leagues', async (importOriginal) => ({
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
   getDraftStatus: vi.fn(),
-  startDraft: vi.fn(),
+  prepareDraft: vi.fn(),
 }));
 
 const leagueDetail = vi.mocked(leaguesApi.getLeagueDetail);
 const removeMember = vi.mocked(leaguesApi.removeMember);
 const promoteToAdmin = vi.mocked(leaguesApi.promoteToAdmin);
 const draftStatus = vi.mocked(pokemonsApi.getDraftStatus);
-const startDraft = vi.mocked(pokemonsApi.startDraft);
+const prepareDraft = vi.mocked(pokemonsApi.prepareDraft);
 
 const member = (username: string, leagueRole: LeagueMember['leagueRole'] = 'USER'): LeagueMember =>
   ({ username, leagueRole });
@@ -41,6 +41,7 @@ function renderPage() {
         <Routes>
           <Route path="/leagues/:leagueId/members" element={<LeagueMembersPage />} />
           <Route path="/leagues/:leagueId/draft" element={<p>Pantalla del draft</p>} />
+          <Route path="/leagues/:leagueId/draft/setup" element={<p>Pantalla de preparación</p>} />
           <Route path="/leagues" element={<p>Mis ligas</p>} />
         </Routes>
       </MemoryRouter>
@@ -61,7 +62,7 @@ describe('LeagueMembersPage', () => {
     draftStatus.mockResolvedValue(null);
     removeMember.mockResolvedValue(undefined);
     promoteToAdmin.mockResolvedValue(undefined);
-    startDraft.mockResolvedValue(undefined);
+    prepareDraft.mockResolvedValue(undefined);
   });
 
   it('muestra el rol una sola vez y marca tu fila', async () => {
@@ -179,34 +180,17 @@ describe('LeagueMembersPage', () => {
     expect(screen.getByText(/misty perderá los picks que lleva en el draft/)).toBeInTheDocument();
   });
 
-  it('un miembro añadido después entra al final del orden de turnos', async () => {
-    const user = userEvent.setup();
+  it('el admin prepara el draft y va a la pantalla de preparación', async () => {
     renderPage();
-    await screen.findByRole('button', { name: 'Opciones de misty' });
-
-    // El admin coloca a misty primero; luego entra brock (la liga se vuelve a cargar)
-    await user.click(screen.getByRole('button', { name: 'Subir a misty' }));
-    leagueDetail.mockResolvedValue(league(member('ash', 'ADMIN'), member('misty'), member('brock')));
-    promoteToAdmin.mockResolvedValue(undefined);
-    await openMenu('misty');
-    await user.click(screen.getByRole('button', { name: 'Hacer admin' }));
-    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Hacer admin' }));
-    await screen.findByRole('button', { name: 'Opciones de brock' });
-
-    await user.click(screen.getByRole('button', { name: /Iniciar draft/ }));
-    await waitFor(() => expect(startDraft).toHaveBeenCalledWith('l1', ['misty', 'ash', 'brock']));
+    await userEvent.click(await screen.findByRole('button', { name: /Preparar draft/ }));
+    await waitFor(() => expect(prepareDraft).toHaveBeenCalledWith('l1'));
+    expect(await screen.findByText('Pantalla de preparación')).toBeInTheDocument();
   });
 
-  it('Barajar reordena los turnos sin perder a nadie', async () => {
-    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
-    leagueDetail.mockResolvedValue(league(member('ash', 'ADMIN'), member('misty'), member('brock')));
+  it('con el draft en preparación enlaza a continuar la preparación', async () => {
+    draftStatus.mockResolvedValue({ id: 'd1', status: 'PENDING', turnOrder: ['ash'], currentTurn: null, currentRound: 1, picks: [] });
     renderPage();
-    await screen.findByRole('button', { name: 'Opciones de brock' });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Barajar' }));
-    await userEvent.click(screen.getByRole('button', { name: /Iniciar draft/ }));
-
-    await waitFor(() => expect(startDraft).toHaveBeenCalledWith('l1', ['misty', 'brock', 'ash']));
-    random.mockRestore();
+    expect(await screen.findByRole('link', { name: 'Continuar la preparación' }))
+      .toHaveAttribute('href', '/leagues/l1/draft/setup');
   });
 });
