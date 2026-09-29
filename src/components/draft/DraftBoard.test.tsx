@@ -49,3 +49,25 @@ describe('DraftBoard', () => {
     expect(screen.getByLabelText('Ronda 2, pick 3: turno de ash')).toHaveTextContent('En turno');
   });
 });
+
+describe('DraftBoard con presupuesto', () => {
+  it('muestra lo que le queda a cada jugador, el precio de cada pick y el gasto por tiers', () => {
+    const history: DraftPick[] = [
+      { username: 'ash', pokemonName: 'mew', pokemonId: 151, round: 1, pickedAt: '2026-09-29T10:00:00Z', price: 200 },
+    ];
+    const board = buildDraftBoard({ history, turnOrder: ['ash', 'brock'] });
+    render(
+      <DraftBoard
+        board={board}
+        me="ash"
+        tierByName={new Map([['mew', 'S']])}
+        onSelect={() => {}}
+        budgets={{ ash: 800, brock: 1000 }}
+        spending={new Map([['ash', { counts: { S: 1, A: 0, B: 0, C: 0, D: 0 }, spent: 200 }]])}
+      />,
+    );
+    expect(screen.getByText('800')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ronda 1, pick 1: ash eligió Mew por 200 monedas')).toBeInTheDocument();
+    expect(screen.getByLabelText('ash: 1 S, 0 A, 0 B, 0 C, 0 D; gastado 200 monedas')).toBeInTheDocument();
+  });
+});

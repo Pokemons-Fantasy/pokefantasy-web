@@ -1249,6 +1249,17 @@ button.member-menu-item {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.draft-board-price { font-size: 0.6rem; color: var(--text-3); }
+.draft-board-budget { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-2); }
+.draft-board-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.65rem;
+  color: var(--text-2);
+  text-align: center;
+  white-space: nowrap;
+}
 
 .draft-board-empty.current {
   outline: 2px solid var(--accent);
