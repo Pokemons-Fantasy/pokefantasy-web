@@ -1,44 +1,50 @@
 import { Link } from 'react-router-dom';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { useQuery } from '@tanstack/react-query';
-import { getMyLeagues } from '../api/leagues';
+import { getMyLeagues, getSchedule } from '../api/leagues';
+import { getDraftStatus } from '../api/pokemons';
 import PendingTradesBanner from '../components/PendingTradesBanner';
 import PageHeader from '../components/PageHeader';
-import { homeFocus, leaguePhase } from '../utils/leaguePhase';
+import HomeLeagueCard from '../components/home/HomeLeagueCard';
+import { SkeletonGrid } from '../components/SkeletonGrid';
+import { leaguePhase } from '../utils/leaguePhase';
+import { leaguesByUrgency } from '../utils/home';
 
-const FOCUS_CARDS = {
-  draft: {
-    live: true, icon: '⚡', title: 'Draft en curso', path: '/draft', cta: 'Ir al draft',
-    single: 'ir directamente al draft.',
-    many: (n: number) => `${n} ligas con draft en curso.`,
-  },
-  setup: {
-    live: false, icon: '🎯', title: 'Continuar la preparación', path: '', cta: 'Continuar',
-    single: 'nominar Pokémon y arrancar.',
-    many: () => 'Continúa preparando tus ligas.',
-  },
-  season: {
-    live: false, icon: '📅', title: 'Temporada en curso', path: '/schedule', cta: 'Ver calendario',
-    single: 'consulta la jornada y la clasificación.',
-    many: (n: number) => `${n} ligas en temporada.`,
-  },
-} as const;
+/** Ligas que caben en la home; el resto, en "Ver todas". */
+const HOME_LEAGUES = 4;
 
 export default function HomePage() {
-  const username = useAuthStore((s) => s.username);
+  const username = useAuthStore((s) => s.username) ?? '';
 
-  const { data: leagues = [] } = useQuery({
+  const { data: leagues = [], isLoading } = useQuery({
     queryKey: ['my-leagues'],
     queryFn: getMyLeagues,
+    staleTime: 60_000,
   });
 
-  const activeLeagues = leagues.filter((l) => ['draft', 'season'].includes(leaguePhase(l.draftStatus)));
-  const focus = homeFocus(leagues);
-  const card = focus && FOCUS_CARDS[focus.phase];
-  const single = focus?.leagues.length === 1 ? focus.leagues[0] : null;
+  const shown = leaguesByUrgency(leagues).slice(0, HOME_LEAGUES);
+  const inSeason = shown.filter((l) => leaguePhase(l.draftStatus) === 'season');
+  const drafting = shown.filter((l) => leaguePhase(l.draftStatus) === 'draft');
 
-  // Una liga en esa fase → directo a su pantalla; varias → lista de ligas
-  const focusTarget = single && card ? `/leagues/${single.id}${card.path}` : '/leagues';
+  // Mismas claves que Calendario/Equipos y el draft: la caché se comparte entre pantallas.
+  const schedules = useQueries({
+    queries: inSeason.map((l) => ({
+      queryKey: ['schedule', l.id],
+      queryFn: () => getSchedule(l.id),
+      staleTime: 30_000,
+    })),
+  });
+  const drafts = useQueries({
+    queries: drafting.map((l) => ({
+      queryKey: ['draft-status', l.id],
+      queryFn: () => getDraftStatus(l.id),
+      staleTime: 15_000,
+    })),
+  });
+  const scheduleOf = new Map(inSeason.map((l, i) => [l.id, schedules[i]?.data]));
+  const draftOf = new Map(drafting.map((l, i) => [l.id, drafts[i]?.data]));
+
+  const noLeagues = !isLoading && leagues.length === 0;
 
   return (
     <div className="page-wrapper">
@@ -47,89 +53,65 @@ export default function HomePage() {
       <main className="page-content">
         <PendingTradesBanner />
 
-        {/* Hero */}
-        <section className="hero-section animate-in">
+        <section className={`hero-section home-hero animate-in${noLeagues ? '' : ' compact'}`}>
           <div className="hero-eyebrow">Pokémon Fantasy League</div>
           <h1 className="hero-title">
-            Bienvenido,<br />
-            <span className="accent">{username}</span>
+            Hola, <span className="accent">{username}</span>
           </h1>
-          <p className="hero-subtitle">
-            Nomina, draftea y compite con tus Pokémon favoritos en ligas privadas con amigos.
-          </p>
+          {noLeagues && (
+            <p className="hero-subtitle">
+              Nomina, draftea y compite con tus Pokémon favoritos en ligas privadas con amigos.
+            </p>
+          )}
 
           <svg className="hero-ball" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="50" cy="50" r="48" fill="none" stroke="white" strokeWidth="1.5"/>
-            <line x1="2" y1="50" x2="98" y2="50" stroke="white" strokeWidth="1.5"/>
-            <circle cx="50" cy="50" r="12" fill="none" stroke="white" strokeWidth="1.5"/>
-            <circle cx="50" cy="50" r="6" fill="white"/>
+            <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="2" y1="50" x2="98" y2="50" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="50" cy="50" r="6" fill="currentColor" />
           </svg>
         </section>
 
-        {/* Stat pills */}
-        {leagues.length > 0 && (
-          <div className="stat-pills animate-in" style={{ animationDelay: '0.1s' }}>
-            <div className="stat-pill">
-              <span className="stat-pill-value">{leagues.length}</span>
-              <span className="stat-pill-label">{leagues.length === 1 ? 'Liga' : 'Ligas'}</span>
+        {isLoading && <SkeletonGrid count={2} />}
+
+        {noLeagues && (
+          <div className="nav-cards stagger">
+            <Link className="nav-card nav-card-gold" to="/leagues">
+              <div className="nav-card-icon nav-card-icon-gold">🏆</div>
+              <h3>Crea o únete a una liga</h3>
+              <p>Crea una liga e invita a tus amigos, o abre el enlace de invitación que te hayan pasado.</p>
+              <span className="nav-card-arrow">Ir a Mis ligas <span>→</span></span>
+            </Link>
+            <div className="nav-card card-static">
+              <div className="nav-card-icon">📖</div>
+              <h3>Cómo funciona</h3>
+              <p>Crea una liga → nomina Pokémon → draftea → ¡compite!</p>
+              <span className="nav-card-arrow home-steps">3 pasos</span>
             </div>
-            {activeLeagues.length > 0 && (
-              <div className="stat-pill">
-                <span className="stat-pill-value" style={{ color: 'var(--success)' }}>
-                  {activeLeagues.length}
-                </span>
-                <span className="stat-pill-label">Activa{activeLeagues.length !== 1 ? 's' : ''}</span>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Navigation cards */}
-        <div className="nav-cards stagger">
-
-          {/* ── Mis ligas ── always shown, gold accent */}
-          <Link className="nav-card nav-card-gold" to="/leagues">
-            <div className="nav-card-icon nav-card-icon-gold">🏆</div>
-            <h3>Mis ligas</h3>
-            <p>Ver ligas activas, gestionar miembros y acceder al draft.</p>
-            <span className="nav-card-arrow">Ver ligas <span>→</span></span>
-          </Link>
-
-          {/* ── Fase destacada: draft en curso > setup > temporada ── */}
-          {focus && card && (
-            <Link className={`nav-card ${card.live ? 'nav-card-live' : 'nav-card-setup'}`} to={focusTarget}>
-              {card.live && <span className="nav-card-live-dot" aria-hidden="true" />}
-
-              <div className={`nav-card-icon ${card.live ? 'nav-card-icon-green' : 'nav-card-icon-blue'}`}>
-                {card.icon}
-              </div>
-
-              <h3>
-                {card.title}
-                {focus.leagues.length > 1 && <span className="nav-card-count">{focus.leagues.length}</span>}
-              </h3>
-
-              <p>
-                {single
-                  ? <><strong style={{ color: 'var(--text)' }}>{single.name}</strong> — {card.single}</>
-                  : card.many(focus.leagues.length)}
-              </p>
-
-              <span className={`nav-card-arrow ${card.live ? 'nav-card-arrow-green' : 'nav-card-arrow-blue'}`}>
-                {card.cta} <span>→</span>
-              </span>
-            </Link>
-          )}
-
-          {/* ── Cómo funciona ── static / info */}
-          <div className="nav-card card-static" style={{ cursor: 'default' }}>
-            <div className="nav-card-icon">📖</div>
-            <h3>Cómo funciona</h3>
-            <p>Crea una liga → nomina Pokémon → draftea → ¡compite!</p>
-            <span className="nav-card-arrow" style={{ color: 'var(--text-3)' }}>3 pasos</span>
-          </div>
-
-        </div>
+        {shown.length > 0 && (
+          <section className="home-leagues animate-in" aria-labelledby="home-leagues-title">
+            <div className="home-leagues-head">
+              <h2 id="home-leagues-title" className="section-label">Tus ligas</h2>
+              <Link className="home-leagues-all" to="/leagues">
+                {leagues.length > HOME_LEAGUES ? `Ver todas (${leagues.length})` : 'Mis ligas'} →
+              </Link>
+            </div>
+            <div className="home-league-list">
+              {shown.map((league) => (
+                <HomeLeagueCard
+                  key={league.id}
+                  league={league}
+                  username={username}
+                  schedule={scheduleOf.get(league.id)}
+                  draft={draftOf.get(league.id)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
