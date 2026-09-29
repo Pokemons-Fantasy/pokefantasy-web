@@ -78,7 +78,7 @@ export default function DraftPage() {
     };
   }, [leagueId, queryClient]);
 
-  const { data: pool = [] } = useQuery({
+  const { data: pool = [], isSuccess: poolLoaded } = useQuery({
     queryKey: ['closed-list', leagueId],
     queryFn: () => getClosedList(leagueId!),
     enabled: !!leagueId,
@@ -119,8 +119,8 @@ export default function DraftPage() {
   const priceOf = (entry: ClosedListEntry) => draftPrice(config, entry.tier);
   const myTeamSize = draft?.picks.filter((p) => p.username === username).length ?? 0;
   const isPlayer = !!username && !!draft?.turnOrder.includes(username);
-  // Misma regla que DraftTurnService.canPick; el backend es quien valida.
-  const iAmOut = draftInProgress && isPlayer && myRemaining !== null
+  // Misma regla que DraftTurnService.canPick; el backend es quien valida. Sin el pool cargado no se sabe.
+  const iAmOut = draftInProgress && isPlayer && poolLoaded && myRemaining !== null
     && (myTeamSize >= totalRounds || !availablePool.some((e) => canAfford(priceOf(e), myRemaining)));
   const board = draft && buildDraftBoard({
     history,

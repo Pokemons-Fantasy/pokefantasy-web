@@ -147,6 +147,16 @@ describe('DraftPage', () => {
       expect(screen.queryByText('Te quedan')).not.toBeInTheDocument();
     });
 
+    it('con el pool aún cargando no da tu draft por terminado', async () => {
+      vi.mocked(pokemonsApi.getClosedList).mockReturnValue(new Promise(() => {}));
+      vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+        status: 'IN_PROGRESS', currentTurn: 'brock', config: CONFIG, budgets: { ash: 300, brock: 300 },
+      }));
+      renderPage();
+      expect(await screen.findByText(/Esperando el turno de/)).toBeInTheDocument();
+      expect(screen.queryByText(/Tu draft ha terminado/)).not.toBeInTheDocument();
+    });
+
     it('sin dinero para ningún Pokémon libre tu draft ha terminado', async () => {
       vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([entry('e1', 'mew', 'S')]);
       vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
