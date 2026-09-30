@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cardLabel, cardState, matchesGen, matchesType, pokemonTypes } from './pool';
+import { cardLabel, cardState, matchesGen, matchesType, pokemonTypes, nominationsOpen, showsTiers } from './pool';
 
 const p = (id: number, name: string, types?: string[] | null) => ({ id, name, spriteUrl: '', types });
 
@@ -47,5 +47,25 @@ describe('cardState / cardLabel', () => {
     expect(cardLabel('full', 'pikachu')).toBe('Pikachu, ya tienes el máximo de nominaciones');
     expect(cardLabel('closed', 'pikachu')).toBe('Pikachu, nominaciones cerradas');
     expect(cardLabel('own-closed', 'pikachu')).toBe('Pikachu, nominado por ti');
+  });
+});
+
+describe('nominationsOpen', () => {
+  it('abiertas sin draft o con el draft cancelado, cerradas en el resto', () => {
+    expect(nominationsOpen(null)).toBe(true);
+    expect(nominationsOpen('CANCELLED')).toBe(true);
+    expect(nominationsOpen('PENDING')).toBe(false);
+    expect(nominationsOpen('IN_PROGRESS')).toBe(false);
+    expect(nominationsOpen('COMPLETED')).toBe(false);
+  });
+});
+
+describe('showsTiers', () => {
+  it('solo desde que se prepara el draft', () => {
+    expect(showsTiers(null)).toBe(false);
+    expect(showsTiers('CANCELLED')).toBe(false);
+    expect(showsTiers('PENDING')).toBe(true);
+    expect(showsTiers('IN_PROGRESS')).toBe(true);
+    expect(showsTiers('COMPLETED')).toBe(true);
   });
 });

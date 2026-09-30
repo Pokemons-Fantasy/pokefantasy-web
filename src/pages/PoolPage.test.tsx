@@ -115,4 +115,23 @@ describe('PoolPage', () => {
     expect(await screen.findByRole('button', { name: 'Bulbasaur, nominaciones cerradas (Planta, Veneno)' }))
       .toHaveAttribute('aria-disabled', 'true');
   });
+
+  it('con el draft cancelado se puede volver a nominar y no salen los tiers', async () => {
+    const user = userEvent.setup();
+    api.getDraftStatus.mockResolvedValue({ ...PENDING, status: 'CANCELLED' });
+    renderPage();
+
+    expect(await screen.findByText('El draft se canceló: las nominaciones vuelven a estar abiertas.')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Nominar Bulbasaur (Planta, Veneno)' }));
+    await waitFor(() => expect(api.nominatePokemon).toHaveBeenCalledWith('l1', 'bulbasaur'));
+    // Las entradas traen tier 'C' del draft cancelado: no se pinta
+    expect(screen.queryByText('C')).not.toBeInTheDocument();
+  });
+
+  it('con el draft en marcha sí salen los tiers', async () => {
+    api.getDraftStatus.mockResolvedValue({ ...PENDING, status: 'IN_PROGRESS' });
+    renderPage();
+    await screen.findByRole('button', { name: /^Pikachu/ });
+    expect(screen.getAllByText('C').length).toBeGreaterThan(0);
+  });
 });

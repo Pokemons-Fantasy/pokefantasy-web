@@ -25,7 +25,9 @@ import {
   cardState,
   matchesGen,
   matchesType,
+  nominationsOpen,
   pokemonTypes,
+  showsTiers,
   type GenFilter,
 } from '../utils/pool';
 
@@ -62,8 +64,10 @@ export default function PoolPage() {
 
   const myNominations = closedList.filter((e) => e.nominatedBy === username);
   const entryByName = new Map(closedList.map((e) => [e.pokemonName, e]));
-  // Misma regla que NominatePokemonCommandHandler: solo se nomina mientras la liga no tiene draft
-  const nominationsClosed = !!draftStatus;
+  const phaseStatus = draftStatus?.status ?? null;
+  const nominationsClosed = !nominationsOpen(phaseStatus);
+  // Sin draft o tras cancelarlo los tiers no significan nada (se recalculan al preparar el siguiente)
+  const tierOf = (entry: ClosedListEntry | undefined) => (showsTiers(phaseStatus) ? entry?.tier : undefined);
   const canNominate = !nominationsClosed && myNominations.length < MAX_NOMINATIONS;
   const pct = (myNominations.length / MAX_NOMINATIONS) * 100;
   // Con un backend anterior la lista no trae tipos: sin filtro por tipo
@@ -107,11 +111,14 @@ export default function PoolPage() {
               </div>
             </div>
           </div>
-          <LeaguePhaseBadge draftStatus={draftStatus?.status ?? null} />
+          <LeaguePhaseBadge draftStatus={phaseStatus} />
         </div>
 
-        {draftStatus?.status === 'PENDING' && (
+        {phaseStatus === 'PENDING' && (
           <Notice variant="info">Nominaciones cerradas: se está preparando el draft</Notice>
+        )}
+        {phaseStatus === 'CANCELLED' && (
+          <Notice variant="info">El draft se canceló: las nominaciones vuelven a estar abiertas.</Notice>
         )}
 
         <div className="gen-tabs" role="group" aria-label="Generación">
@@ -179,7 +186,7 @@ export default function PoolPage() {
                 name={pokemon.name}
                 types={types}
                 state={state}
-                tier={entry?.tier}
+                tier={tierOf(entry)}
                 nominatedBy={entry?.nominatedBy}
                 busy={nominating || denominating}
                 onToggle={() => (state === 'own' ? denominate(pokemon.name) : nominate(pokemon.name))}
@@ -193,7 +200,7 @@ export default function PoolPage() {
         <PokemonDetailModal
           pokemonId={detailEntry.pokemonId}
           pokemonName={detailEntry.pokemonName}
-          tier={detailEntry.tier}
+          tier={tierOf(detailEntry)}
           stats={detailEntry.stats}
           types={detailEntry.types}
           onClose={() => setDetailEntry(null)}
