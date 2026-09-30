@@ -23,6 +23,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { spriteUrl } from '../utils/sprites';
 import { showsTiers } from '../utils/pool';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import PushPrompt from '../components/push/PushPrompt';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -224,6 +225,8 @@ export default function DraftPage() {
             )}
           </div>
         </div>
+
+        {(draft?.status === 'PENDING' || draft?.status === 'IN_PROGRESS') && <PushPrompt context="draft" />}
 
         {isLoading && <SkeletonTable rows={5} />}
         {!isLoading && !draft && (
