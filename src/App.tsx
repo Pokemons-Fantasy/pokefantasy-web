@@ -28,6 +28,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { RouteErrorBoundary } from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { useNotificationSse } from './hooks/useNotificationSse';
+import { resumeWebPush } from './push/webPush';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,16 @@ function deepLinkPath(url: string): string {
 
 function GlobalNotifications() {
   useNotificationSse();
+  return null;
+}
+
+/** Al abrir la web o entrar: si este usuario tenía los avisos web activados, se vuelve a registrar el token. */
+function WebPushResume() {
+  const username = useAuthStore((s) => s.username);
+  useEffect(() => {
+    if (!username || Capacitor.isNativePlatform()) return;
+    resumeWebPush(username).catch(() => {});
+  }, [username]);
   return null;
 }
 
@@ -71,6 +82,7 @@ function RootLayout() {
       <ToastContainer />
       <DeepLinkHandler />
       <GlobalNotifications />
+      <WebPushResume />
       <RouteErrorBoundary>
         <Outlet />
       </RouteErrorBoundary>

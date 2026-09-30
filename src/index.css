@@ -1046,6 +1046,66 @@ button.member-menu-item {
 .notice-warning { background: var(--warning-bg); border-color: var(--warning-border); border-left-color: var(--warning); color: var(--warning); }
 .notice-danger  { background: var(--danger-bg);  border-color: var(--danger-border);  border-left-color: var(--danger);  color: var(--danger); }
 
+/* Avisos push: aviso propio e interruptor */
+.push-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius);
+}
+.push-prompt-text { flex: 1 1 16rem; margin: 0; font-size: 0.875rem; color: var(--text); }
+.push-prompt-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+.push-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+.push-toggle:disabled { opacity: 0.6; cursor: default; }
+.push-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.push-toggle-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.push-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.4rem - 6px);
+  height: calc(1.4rem - 6px);
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: transform 0.15s;
+}
+.push-toggle.on .push-toggle-track { background: var(--accent-dim); border-color: var(--accent); }
+.push-toggle.on .push-toggle-thumb { transform: translateX(1.1rem); background: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .push-toggle-track, .push-toggle-thumb { transition: none; }
+}
+
 .my-turn-banner {
   background: rgba(251, 191, 36, 0.07);
   border: 1px solid rgba(251, 191, 36, 0.25);

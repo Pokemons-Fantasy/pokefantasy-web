@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { logout as apiLogout } from '../api/auth';
+import { forgetWebPushOnLogout } from '../push/webPush';
 import { useToastStore } from './toastStore';
 import type { LastSession } from '../utils/session';
 
@@ -27,7 +28,9 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         const user = get().username;
         set({ username: null, lastSession: user ? { user, path: currentPath() } : null });
-        apiLogout().catch(() => {});
+        // Antes de cerrar la sesión en el back (necesita la cookie): este navegador deja de recibir sus avisos
+        const forget = user ? forgetWebPushOnLogout(user) : Promise.resolve();
+        forget.catch(() => {}).finally(() => { apiLogout().catch(() => {}); });
       },
       expireSession: () => {
         const user = get().username;

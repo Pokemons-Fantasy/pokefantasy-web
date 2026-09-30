@@ -13,6 +13,20 @@ import { getMe } from '../api/auth';
 import UserAvatar from '../components/avatar/UserAvatar';
 import ProfilePhotoSection from '../components/avatar/ProfilePhotoSection';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
+import PushToggle from '../components/push/PushToggle';
+import { useWebPush } from '../hooks/useWebPush';
+
+/** Sección de avisos: solo si este navegador puede tenerlos (en la app nativa no). */
+function PushSection() {
+  const { status } = useWebPush();
+  if (status === 'hidden') return null;
+  return (
+    <>
+      <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Notificaciones</p>
+      <PushToggle />
+    </>
+  );
+}
 
 export default function MyProfilePage() {
   const username = useAuthStore((s) => s.username);
@@ -196,6 +210,9 @@ export default function MyProfilePage() {
         {/* ── Foto de perfil ── */}
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Foto de perfil</p>
         <ProfilePhotoSection username={username ?? ''} />
+
+        {/* ── Notificaciones (web) ── */}
+        <PushSection />
 
         {/* ── Cuenta ── */}
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>

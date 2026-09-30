@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { apiClient, onSessionExpired } from './api/client'
+import { onSessionExpired } from './api/client'
+import { registerPushToken } from './api/push'
 import './index.css'
 import App from './App.tsx'
 import { Capacitor } from '@capacitor/core'
@@ -25,7 +26,7 @@ if (Capacitor.isNativePlatform()) {
 
   PushNotifications.addListener('registration', async ({ value: fcmToken }) => {
     try {
-      await apiClient.post('/v1/users/push-token', { token: fcmToken })
+      await registerPushToken(fcmToken)
     } catch (e) {
       console.warn('Failed to register push token', e)
     }

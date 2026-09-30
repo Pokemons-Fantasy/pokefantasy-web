@@ -6,6 +6,7 @@ import { getDraftStatus } from '../api/pokemons';
 import PendingTradesBanner from '../components/PendingTradesBanner';
 import PageHeader from '../components/PageHeader';
 import HomeLeagueCard from '../components/home/HomeLeagueCard';
+import PushPrompt from '../components/push/PushPrompt';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { leaguePhase } from '../utils/leaguePhase';
 import { leaguesByUrgency } from '../utils/home';
@@ -71,6 +72,8 @@ export default function HomePage() {
             <circle cx="50" cy="50" r="6" fill="currentColor" />
           </svg>
         </section>
+
+        {shown.length > 0 && <PushPrompt context="home" />}
 
         {isLoading && <SkeletonGrid count={2} />}
 

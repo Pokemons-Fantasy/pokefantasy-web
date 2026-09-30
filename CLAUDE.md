@@ -78,7 +78,8 @@ Rutas y estructura completa: `vault/40 Frontend/Estructura frontend.md`.
 | Cláusula de robo mostrada (subida ×2, lo que cobró la víctima) | `utils/clause.ts` |
 | Tema claro/oscuro y status bar | `hooks/useTheme.ts` |
 | Foto de perfil (foto o inicial, URL versionada) | `components/avatar/UserAvatar` + `avatarUrl` (`api/auth`); versiones de los miembros en `AvatarVersionsContext`, que provee `LeagueLayout` (ADR-014) |
-| Registro del token push | `main.tsx` (único uso de `apiClient` fuera de `src/api/`) |
+| Registro del token push en la app nativa | `main.tsx` (con `registerPushToken` de `api/push`) |
+| Avisos push en la web (activar, dar de baja, service worker) | `src/push/webPush.ts` + `public/firebase-messaging-sw.js` (ADR-016) |
 
 ### 3. Decisiones intencionadas (no "arreglarlas")
 
@@ -97,7 +98,7 @@ Antes de cambiarlas, leer la nota en `vault/70 Decisiones/` y preguntar.
 `pages` → `components` → `utils`; cualquiera puede leer `store` y usar `api`. Prohibido:
 - Llamar a `axios` / `apiClient` / `fetch` desde páginas o componentes: toda llamada va en una función de `src/api/*.ts`.
 - Editar `src/api/schema.d.ts` a mano.
-- Guardar tokens o datos sensibles en `localStorage` / JS.
+- Guardar tokens de sesión o datos sensibles en `localStorage` / JS. El token FCM de los avisos web sí se guarda (`pf:web-push:<usuario>`): identifica el navegador ante FCM y no da acceso a nada (ADR-016).
 - Decidir en el front si una operación está permitida (ventanas, bloqueos, saldo, regla de tier) de forma distinta al backend: el front usa lo que expone la API para mostrar y deshabilitar, y el backend es quien valida.
 - Lógica de negocio en componentes cuando cabe en una función pura de `utils/` (con test).
 - Sprites fuera del CDN, estados de error con `useState` locales, textos "Cargando..." en vez de skeletons.
@@ -131,6 +132,7 @@ Flujos completos (robo, pick del draft, resultado): `vault/20 Arquitectura/Flujo
 | Estado global de cliente | Store Zustand en `src/store/` (solo si no es estado de servidor) |
 | Suscripción SSE nueva | Hook en `src/hooks/` que invalida queries |
 | Estilos | Tokens en `src/index.css`; colores de tier en `utils/colors.ts` |
+| Integración con Firebase en la web (avisos push) | `src/push/` (Firebase solo con `import()` dinámico) |
 | Plugin nativo | `@capacitor/*` + `npm run cap:sync` (ver `vault/40 Frontend/App Android.md`) |
 
 ### 8. Cuándo parar y preguntar
