@@ -174,7 +174,7 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["registerPushToken"];
-        delete?: never;
+        delete: operations["unregisterPushToken"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1582,6 +1582,28 @@ export interface operations {
         };
     };
     registerPushToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterPushTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unregisterPushToken: {
         parameters: {
             query?: never;
             header?: never;
