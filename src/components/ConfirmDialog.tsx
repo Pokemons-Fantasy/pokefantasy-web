@@ -4,6 +4,8 @@ interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmLabel: string;
+  /** Texto del botón de volver; cambiarlo cuando "Cancelar" se confunda con la acción (p. ej. cancelar el draft). */
+  cancelLabel?: string;
   pendingLabel: string;
   pending: boolean;
   /** Acción destructiva: botón rojo. */
@@ -17,7 +19,7 @@ interface ConfirmDialogProps {
  * Escape y el fondo cierran, y mientras la acción está en curso no se puede cerrar.
  */
 export default function ConfirmDialog({
-  title, message, confirmLabel, pendingLabel, pending, danger = false, onConfirm, onClose,
+  title, message, confirmLabel, cancelLabel = 'Cancelar', pendingLabel, pending, danger = false, onConfirm, onClose,
 }: ConfirmDialogProps) {
   const titleId = useId();
   const messageId = useId();
@@ -53,7 +55,7 @@ export default function ConfirmDialog({
         <p id={messageId} className="confirm-dialog-message">{message}</p>
         <div className="modal-actions">
           <button ref={cancelRef} type="button" className="btn-ghost" onClick={onClose} disabled={pending}>
-            Cancelar
+            {cancelLabel}
           </button>
           <button
             type="button"

@@ -120,6 +120,7 @@ export default function DraftSetupPage() {
     onSuccess: () => {
       setConfirm(null);
       refreshDraft();
+      refreshPool(); // Vuelve sin tiers: se recalculan al preparar otra vez
       queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
       navigate(`/leagues/${leagueId}/pool`);
     },

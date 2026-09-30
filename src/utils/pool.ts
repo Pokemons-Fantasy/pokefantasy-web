@@ -1,4 +1,4 @@
-import type { AvailablePokemon, ClosedListEntry } from '../api/pokemons';
+import type { AvailablePokemon, ClosedListEntry, DraftStatus } from '../api/pokemons';
 
 export type GenFilter = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9' | 'regional';
 
@@ -74,4 +74,19 @@ export function cardLabel(state: CardState, name: string, nominatedBy?: string):
 /** Si la card responde al pulsarla: nominar (libre) o quitar (tuya con las nominaciones abiertas). */
 export function isActionable(state: CardState): boolean {
   return state === 'free' || state === 'own';
+}
+
+type DraftPhaseStatus = DraftStatus['status'] | null | undefined;
+
+/**
+ * Mismo criterio que Nominate/DenominatePokemonCommandHandler: se nomina sin draft o con el último
+ * cancelado. Mientras carga el estado se deja abierto, como antes (el backend valida igual).
+ */
+export function nominationsOpen(status: DraftPhaseStatus): boolean {
+  return !status || status === 'CANCELLED';
+}
+
+/** Los tiers existen desde que se prepara el draft; sin draft o tras cancelarlo no significan nada. */
+export function showsTiers(status: DraftPhaseStatus): boolean {
+  return status === 'PENDING' || status === 'IN_PROGRESS' || status === 'COMPLETED';
 }

@@ -18,6 +18,7 @@ vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
   getDraftStatus: vi.fn(),
   getClosedList: vi.fn(),
+  cancelDraft: vi.fn(),
 }));
 
 class FakeEventSource {
@@ -62,6 +63,21 @@ describe('DraftPage', () => {
       tierPctS: 20, tierPctA: 20, tierPctB: 20, tierPctC: 20, tierPctD: 20, maxTeamSize: 2,
     });
     vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([]);
+  });
+
+  it('cancelar el draft pide confirmación con lo que pasa y lo cancela', async () => {
+    const user = userEvent.setup();
+    vi.mocked(pokemonsApi.cancelDraft).mockResolvedValue(undefined);
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({ status: 'IN_PROGRESS', currentTurn: 'brock' }));
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Cancelar draft' }));
+    const dialog = screen.getByRole('alertdialog', { name: '¿Cancelar el draft?' });
+    expect(dialog).toHaveTextContent('Se reabren las nominaciones y el pool pierde los tiers');
+    expect(screen.getByRole('button', { name: 'Seguir con el draft' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Sí, cancelar el draft' }));
+    await vi.waitFor(() => expect(pokemonsApi.cancelDraft).toHaveBeenCalledWith('l1'));
   });
 
   it('con historial muestra el tablero y los picks del draft', async () => {

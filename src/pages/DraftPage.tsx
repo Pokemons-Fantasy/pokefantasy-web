@@ -13,6 +13,7 @@ import { openEventStream } from '../api/sse';
 import DraftBoard from '../components/draft/DraftBoard';
 import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 import Notice from '../components/Notice';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { buildDraftBoard } from '../utils/draftBoard';
 import { canAfford, draftPrice, remainingBudget, spendingByPlayer } from '../utils/draftBudget';
 import { coinsLabel } from '../utils/coins';
@@ -163,6 +164,8 @@ export default function DraftPage() {
       setShowCancelModal(false);
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['league-detail', leagueId] });
+      // El pool pierde los tiers al cancelar
+      queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
     onError: (err) => {
       setShowCancelModal(false);
@@ -397,22 +400,17 @@ export default function DraftPage() {
       </main>
 
       {showCancelModal && (
-        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>¿Cancelar el draft?</h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
-              El draft se cancelará y podrás iniciar uno nuevo. Los picks ya realizados no se revierten.
-            </p>
-            <div className="modal-actions">
-              <button className="btn-ghost" onClick={() => setShowCancelModal(false)}>
-                Volver
-              </button>
-              <button className="btn-danger" disabled={cancelling} onClick={() => cancel()}>
-                {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="¿Cancelar el draft?"
+          message="Se reabren las nominaciones y el pool pierde los tiers. Los picks hechos no cuentan: el siguiente draft empieza de cero."
+          confirmLabel="Sí, cancelar el draft"
+          cancelLabel="Seguir con el draft"
+          pendingLabel="Cancelando..."
+          pending={cancelling}
+          danger
+          onConfirm={() => cancel()}
+          onClose={() => setShowCancelModal(false)}
+        />
       )}
       {pendingPick && (
         <div className="modal-overlay" onClick={() => setPendingPick(null)}>
