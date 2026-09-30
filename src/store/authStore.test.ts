@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAuthStore } from './authStore';
 import { useToastStore } from './toastStore';
+import * as webPush from '../push/webPush';
+import * as auth from '../api/auth';
 
 vi.mock('../api/auth', () => ({ logout: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../push/webPush', () => ({ forgetWebPushOnLogout: vi.fn().mockResolvedValue(undefined) }));
 
 describe('authStore.expireSession', () => {
   beforeEach(() => useToastStore.setState({ toasts: [] }));
@@ -41,5 +44,18 @@ describe('authStore: última sesión', () => {
     useAuthStore.getState().logout();
     useAuthStore.getState().setAuth('misty');
     expect(useAuthStore.getState().lastSession).toBeNull();
+  });
+});
+
+describe('authStore: avisos web al cerrar sesión', () => {
+  it('da de baja el token de este navegador antes de cerrar la sesión en el back', async () => {
+    const calls: string[] = [];
+    vi.mocked(webPush.forgetWebPushOnLogout).mockImplementation(async () => { calls.push('forget'); });
+    vi.mocked(auth.logout).mockImplementation(async () => { calls.push('logout'); });
+    useAuthStore.setState({ username: 'ash' });
+
+    useAuthStore.getState().logout();
+    await vi.waitFor(() => expect(calls).toEqual(['forget', 'logout']));
+    expect(webPush.forgetWebPushOnLogout).toHaveBeenCalledWith('ash');
   });
 });

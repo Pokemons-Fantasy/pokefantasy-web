@@ -78,7 +78,8 @@ Rutas y estructura completa: `vault/40 Frontend/Estructura frontend.md`.
 | Cláusula de robo mostrada (subida ×2, lo que cobró la víctima) | `utils/clause.ts` |
 | Tema claro/oscuro y status bar | `hooks/useTheme.ts` |
 | Foto de perfil (foto o inicial, URL versionada) | `components/avatar/UserAvatar` + `avatarUrl` (`api/auth`); versiones de los miembros en `AvatarVersionsContext`, que provee `LeagueLayout` (ADR-014) |
-| Registro del token push | `main.tsx` (único uso de `apiClient` fuera de `src/api/`) |
+| Registro del token push en la app nativa | `main.tsx` (con `registerPushToken` de `api/push`) |
+| Avisos push en la web (activar, dar de baja, service worker) | `src/push/webPush.ts` + `public/firebase-messaging-sw.js` (ADR-016) |
 
 ### 3. Decisiones intencionadas (no "arreglarlas")
 
@@ -131,6 +132,7 @@ Flujos completos (robo, pick del draft, resultado): `vault/20 Arquitectura/Flujo
 | Estado global de cliente | Store Zustand en `src/store/` (solo si no es estado de servidor) |
 | Suscripción SSE nueva | Hook en `src/hooks/` que invalida queries |
 | Estilos | Tokens en `src/index.css`; colores de tier en `utils/colors.ts` |
+| Integración con Firebase en la web (avisos push) | `src/push/` (Firebase solo con `import()` dinámico) |
 | Plugin nativo | `@capacitor/*` + `npm run cap:sync` (ver `vault/40 Frontend/App Android.md`) |
 
 ### 8. Cuándo parar y preguntar
