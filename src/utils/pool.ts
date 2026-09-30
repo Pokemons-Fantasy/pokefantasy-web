@@ -90,3 +90,28 @@ export function nominationsOpen(status: DraftPhaseStatus): boolean {
 export function showsTiers(status: DraftPhaseStatus): boolean {
   return status === 'PENDING' || status === 'IN_PROGRESS' || status === 'COMPLETED';
 }
+
+/** Qué parte del Pool se ve: todo, lo nominado por cualquiera o solo lo tuyo. */
+export type PoolView = 'all' | 'nominated' | 'mine';
+
+export function matchesView(entry: Pick<ClosedListEntry, 'nominatedBy'> | undefined, view: PoolView, username: string | null): boolean {
+  if (view === 'nominated') return !!entry;
+  if (view === 'mine') return !!entry && entry.nominatedBy === username;
+  return true;
+}
+
+/** Agrupa por quién nominó: primero tú y después el resto por nombre. Conserva el orden de dentro de cada grupo. */
+export function groupByNominator<T extends { entry?: Pick<ClosedListEntry, 'nominatedBy'> }>(
+  items: T[], username: string | null,
+): { nominatedBy: string; items: T[] }[] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    if (!item.entry) continue;
+    const list = groups.get(item.entry.nominatedBy) ?? [];
+    list.push(item);
+    groups.set(item.entry.nominatedBy, list);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => (a === username ? -1 : b === username ? 1 : a.localeCompare(b)))
+    .map(([nominatedBy, list]) => ({ nominatedBy, items: list }));
+}

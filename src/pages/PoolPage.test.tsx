@@ -134,4 +134,27 @@ describe('PoolPage', () => {
     await screen.findByRole('button', { name: /^Pikachu/ });
     expect(screen.getAllByText('C').length).toBeGreaterThan(0);
   });
+
+  it('"Nominados" enseña solo el pool, agrupado por quién nominó, y "Los míos" solo lo tuyo', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Nominados (2)' }));
+    expect(screen.getByRole('heading', { name: 'Tus nominaciones · 1' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'misty · 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Pikachu/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Bulbasaur/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Los míos (1)' }));
+    expect(screen.getByRole('button', { name: /^Quitar Squirtle/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Pikachu/ })).not.toBeInTheDocument();
+  });
+
+  it('el filtro de nominados se combina con la búsqueda', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: 'Nominados (2)' }));
+    await user.type(screen.getByRole('searchbox', { name: 'Buscar Pokémon' }), 'bulba');
+    expect(screen.getByText('Ningún Pokémon nominado coincide con los filtros.')).toBeInTheDocument();
+  });
 });

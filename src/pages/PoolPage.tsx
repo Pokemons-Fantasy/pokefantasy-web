@@ -23,12 +23,15 @@ import {
   GEN_TABS,
   POKEMON_TYPES,
   cardState,
+  groupByNominator,
   matchesGen,
   matchesType,
+  matchesView,
   nominationsOpen,
   pokemonTypes,
   showsTiers,
   type GenFilter,
+  type PoolView,
 } from '../utils/pool';
 
 const MAX_NOMINATIONS = 16;
@@ -41,6 +44,7 @@ export default function PoolPage() {
   const [search, setSearch] = useState('');
   const [genFilter, setGenFilter] = useState<GenFilter>('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [view, setView] = useState<PoolView>('all');
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
 
   const { data: available = [], isLoading: loadingPokemons } = useQuery({
@@ -90,7 +94,14 @@ export default function PoolPage() {
     .filter((p) => p.name.toLowerCase().includes(query))
     .filter((p) => matchesGen(p, genFilter))
     .map((p) => ({ pokemon: p, entry: entryByName.get(p.name), types: pokemonTypes(p, entryByName.get(p.name)) }))
-    .filter((c) => !hasTypes || matchesType(c.types, typeFilter));
+    .filter((c) => !hasTypes || matchesType(c.types, typeFilter))
+    .filter((c) => matchesView(c.entry, view, username));
+  const groups = view === 'nominated' ? groupByNominator(cards, username) : null;
+  const VIEWS: { key: PoolView; label: string }[] = [
+    { key: 'all', label: 'Todos' },
+    { key: 'nominated', label: `Nominados (${closedList.length})` },
+    { key: 'mine', label: `Los míos (${myNominations.length})` },
+  ];
 
   return (
     <>
@@ -120,6 +131,20 @@ export default function PoolPage() {
         {phaseStatus === 'CANCELLED' && (
           <Notice variant="info">El draft se canceló: las nominaciones vuelven a estar abiertas.</Notice>
         )}
+
+        <div className="gen-tabs pool-view-tabs" role="group" aria-label="Mostrar">
+          {VIEWS.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              className={`gen-tab${view === v.key ? ' active' : ''}`}
+              aria-pressed={view === v.key}
+              onClick={() => setView(v.key)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
 
         <div className="gen-tabs" role="group" aria-label="Generación">
           {GEN_TABS.map((tab) => (
@@ -172,29 +197,43 @@ export default function PoolPage() {
         {loadingPokemons && <SkeletonGrid count={8} cardHeight="110px" />}
 
         {!loadingPokemons && cards.length === 0 && (
-          <p className="empty-state">Ningún Pokémon coincide con los filtros.</p>
+          <p className="empty-state">
+            {view === 'all' ? 'Ningún Pokémon coincide con los filtros.'
+              : view === 'mine' && myNominations.length === 0 ? 'Todavía no has nominado ningún Pokémon.'
+              : closedList.length === 0 ? 'Todavía no hay ningún Pokémon nominado.'
+              : 'Ningún Pokémon nominado coincide con los filtros.'}
+          </p>
         )}
 
-        <div className="pokemon-grid pool-grid">
-          {cards.map(({ pokemon, entry, types }) => {
-            const isOwn = entry?.nominatedBy === username;
-            const state = cardState({ isNominated: !!entry, isOwn, nominationsClosed, canNominate });
-            return (
-              <PoolCard
-                key={pokemon.id}
-                id={pokemon.id}
-                name={pokemon.name}
-                types={types}
-                state={state}
-                tier={tierOf(entry)}
-                nominatedBy={entry?.nominatedBy}
-                busy={nominating || denominating}
-                onToggle={() => (state === 'own' ? denominate(pokemon.name) : nominate(pokemon.name))}
-                onInfo={entry ? () => setDetailEntry(entry) : undefined}
-              />
-            );
-          })}
-        </div>
+        {(groups ?? [{ nominatedBy: '', items: cards }]).map((group) => (
+          <section key={group.nominatedBy || 'all'} className="pool-group" aria-labelledby={group.nominatedBy ? `pool-group-${group.nominatedBy}` : undefined}>
+            {group.nominatedBy && (
+              <h2 id={`pool-group-${group.nominatedBy}`} className="pool-group-title">
+                {group.nominatedBy === username ? 'Tus nominaciones' : group.nominatedBy} · {group.items.length}
+              </h2>
+            )}
+            <div className="pokemon-grid pool-grid">
+              {group.items.map(({ pokemon, entry, types }) => {
+                const isOwn = entry?.nominatedBy === username;
+                const state = cardState({ isNominated: !!entry, isOwn, nominationsClosed, canNominate });
+                return (
+                  <PoolCard
+                    key={pokemon.id}
+                    id={pokemon.id}
+                    name={pokemon.name}
+                    types={types}
+                    state={state}
+                    tier={tierOf(entry)}
+                    nominatedBy={entry?.nominatedBy}
+                    busy={nominating || denominating}
+                    onToggle={() => (state === 'own' ? denominate(pokemon.name) : nominate(pokemon.name))}
+                    onInfo={entry ? () => setDetailEntry(entry) : undefined}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </main>
       {detailEntry && (
         <PokemonDetailModal
