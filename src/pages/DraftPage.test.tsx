@@ -80,6 +80,32 @@ describe('DraftPage', () => {
     await vi.waitFor(() => expect(pokemonsApi.cancelDraft).toHaveBeenCalledWith('l1'));
   });
 
+  it('el tablero de un draft cancelado no pinta los tiers que quedaron en el pool', async () => {
+    vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([
+      { id: 'e1', pokemonId: 150, pokemonName: 'mewtwo', nominatedBy: 'ash', sprite: '', tier: 'S' },
+    ]);
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+      status: 'CANCELLED', draftHistory: [pick('ash', 'mewtwo', 1)], picks: [pick('ash', 'mewtwo', 1)],
+    }));
+    renderPage();
+
+    expect(await screen.findByRole('region', { name: 'Tablero del draft' })).toBeInTheDocument();
+    expect(screen.queryByText('S')).not.toBeInTheDocument();
+  });
+
+  it('el tablero de un draft completado sí pinta los tiers', async () => {
+    vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([
+      { id: 'e1', pokemonId: 150, pokemonName: 'mewtwo', nominatedBy: 'ash', sprite: '', tier: 'S' },
+    ]);
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+      draftHistory: [pick('ash', 'mewtwo', 1)], picks: [pick('ash', 'mewtwo', 1)],
+    }));
+    renderPage();
+
+    expect(await screen.findByRole('region', { name: 'Tablero del draft' })).toBeInTheDocument();
+    expect(await screen.findByText('S')).toBeInTheDocument();
+  });
+
   it('con historial muestra el tablero y los picks del draft', async () => {
     vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
       draftHistory: [pick('ash', 'mewtwo', 1), pick('brock', 'onix', 1)],

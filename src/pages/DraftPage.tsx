@@ -21,6 +21,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { spriteUrl } from '../utils/sprites';
+import { showsTiers } from '../utils/pool';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -131,7 +132,9 @@ export default function DraftPage() {
     current: draftInProgress ? { round: draft.currentRound, username: draft.currentTurn } : null,
     snake: !!config?.snake,
   });
-  const tierByName = new Map(pool.map((p) => [p.pokemonName, p.tier]));
+  // Con el draft cancelado los tiers del pool no valen (se recalculan al preparar otro): ni tablero ni ficha los pintan
+  const tiered = showsTiers(draft?.status);
+  const tierByName = new Map(tiered ? pool.map((p) => [p.pokemonName, p.tier]) : []);
   const entryByName = new Map(pool.map((p) => [p.pokemonName, p]));
   const spending = config ? spendingByPlayer(history, tierByName) : null;
 
@@ -444,7 +447,7 @@ export default function DraftPage() {
         <PokemonDetailModal
           pokemonId={detailEntry.pokemonId}
           pokemonName={detailEntry.pokemonName}
-          tier={detailEntry.tier}
+          tier={tiered ? detailEntry.tier : undefined}
           stats={detailEntry.stats}
           types={detailEntry.types}
           onClose={() => setDetailEntry(null)}
