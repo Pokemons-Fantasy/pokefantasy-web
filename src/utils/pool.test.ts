@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cardLabel, cardState, matchesGen, matchesType, pokemonTypes, nominationsOpen, showsTiers } from './pool';
+import { cardLabel, cardState, matchesGen, matchesType, pokemonTypes, nominationsOpen, showsTiers, matchesView, groupByNominator } from './pool';
 
 const p = (id: number, name: string, types?: string[] | null) => ({ id, name, spriteUrl: '', types });
 
@@ -67,5 +67,31 @@ describe('showsTiers', () => {
     expect(showsTiers('PENDING')).toBe(true);
     expect(showsTiers('IN_PROGRESS')).toBe(true);
     expect(showsTiers('COMPLETED')).toBe(true);
+  });
+});
+
+describe('matchesView', () => {
+  const mine = { nominatedBy: 'ash' };
+  const theirs = { nominatedBy: 'misty' };
+  it('todo, lo nominado por cualquiera o solo lo tuyo', () => {
+    expect(matchesView(undefined, 'all', 'ash')).toBe(true);
+    expect(matchesView(undefined, 'nominated', 'ash')).toBe(false);
+    expect(matchesView(theirs, 'nominated', 'ash')).toBe(true);
+    expect(matchesView(theirs, 'mine', 'ash')).toBe(false);
+    expect(matchesView(mine, 'mine', 'ash')).toBe(true);
+  });
+});
+
+describe('groupByNominator', () => {
+  it('tú primero, el resto por nombre, sin los no nominados', () => {
+    const items = [
+      { id: 1, entry: { nominatedBy: 'misty' } },
+      { id: 2 },
+      { id: 3, entry: { nominatedBy: 'ash' } },
+      { id: 4, entry: { nominatedBy: 'brock' } },
+      { id: 5, entry: { nominatedBy: 'misty' } },
+    ];
+    expect(groupByNominator(items, 'ash').map((g) => [g.nominatedBy, g.items.map((i) => i.id)]))
+      .toEqual([['ash', [3]], ['brock', [4]], ['misty', [1, 5]]]);
   });
 });
