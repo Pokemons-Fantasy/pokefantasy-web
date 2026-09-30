@@ -2592,6 +2592,24 @@ a.btn-back, a.logo { text-decoration: none; }
 }
 
 .pool-type-tabs { margin-top: -0.25rem; }
+
+/* Filtros del Pool: en escritorio se reparten en varias líneas (la tira con scroll oculto no se ve ni se
+   desplaza con la rueda); en móvil siguen siendo una tira que se desliza, con el borde con más filtros difuminado */
+@media (min-width: 641px) {
+  .pool-filter-row { flex-wrap: wrap; overflow-x: visible; }
+}
+.pool-filter-row.fade-end {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+}
+.pool-filter-row.fade-start {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+  mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+}
+.pool-filter-row.fade-start.fade-end {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+}
 .type-tab { display: inline-flex; align-items: center; gap: 0.35rem; }
 .type-tab::before {
   content: '';
