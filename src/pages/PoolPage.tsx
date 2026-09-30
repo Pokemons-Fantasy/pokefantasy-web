@@ -12,6 +12,7 @@ import {
 import type { ClosedListEntry } from '../api/pokemons';
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import PoolCard from '../components/pool/PoolCard';
+import FilterRow from '../components/pool/FilterRow';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
@@ -132,7 +133,7 @@ export default function PoolPage() {
           <Notice variant="info">El draft se canceló: las nominaciones vuelven a estar abiertas.</Notice>
         )}
 
-        <div className="gen-tabs pool-view-tabs" role="group" aria-label="Mostrar">
+        <FilterRow label="Mostrar" className="pool-view-tabs">
           {VIEWS.map((v) => (
             <button
               key={v.key}
@@ -144,9 +145,9 @@ export default function PoolPage() {
               {v.label}
             </button>
           ))}
-        </div>
+        </FilterRow>
 
-        <div className="gen-tabs" role="group" aria-label="Generación">
+        <FilterRow label="Generación">
           {GEN_TABS.map((tab) => (
             <button
               key={tab.key}
@@ -158,10 +159,10 @@ export default function PoolPage() {
               {tab.label}
             </button>
           ))}
-        </div>
+        </FilterRow>
 
         {hasTypes && (
-          <div className="gen-tabs pool-type-tabs" role="group" aria-label="Tipo">
+          <FilterRow label="Tipo" className="pool-type-tabs">
             <button
               type="button"
               className={`gen-tab${typeFilter === 'all' ? ' active' : ''}`}
@@ -182,7 +183,7 @@ export default function PoolPage() {
                 {typeLabel(type)}
               </button>
             ))}
-          </div>
+          </FilterRow>
         )}
 
         <input
