@@ -20,3 +20,8 @@ export function priceForTier(settings: LeagueSettings | undefined, tier: Tier | 
   };
   return map[tier] ?? 0;
 }
+
+/** Lo que se recibe al liberar un Pokémon: su precio de mercado entero (ReleasePokemonCommandHandler). */
+export function releaseReward(settings: LeagueSettings | undefined, tier: Tier | null | undefined): number {
+  return priceForTier(settings, tier);
+}

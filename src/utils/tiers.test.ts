@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { tierRank, priceForTier, TIER_ORDER } from './tiers';
+import { tierRank, priceForTier, TIER_ORDER, releaseReward } from './tiers';
 import type { LeagueSettings } from '../api/leagues';
 
 describe('TIER_ORDER', () => {
@@ -48,5 +48,17 @@ describe('priceForTier', () => {
   it('returns 0 when tier is null/undefined', () => {
     expect(priceForTier(settings, null)).toBe(0);
     expect(priceForTier(settings, undefined)).toBe(0);
+  });
+});
+
+describe('releaseReward', () => {
+  it('al liberar se recibe el precio de mercado entero del tier, no la mitad', () => {
+    const settings = {
+      coinsPerWin: 100, coinsPerLoss: 50,
+      priceTierS: 75, priceTierA: 40, priceTierB: 30, priceTierC: 20, priceTierD: 10,
+      tierPctS: 20, tierPctA: 20, tierPctB: 20, tierPctC: 20, tierPctD: 20,
+    };
+    expect(releaseReward(settings, 'S')).toBe(75);
+    expect(releaseReward(settings, null)).toBe(0);
   });
 });
