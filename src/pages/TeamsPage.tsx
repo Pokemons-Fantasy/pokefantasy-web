@@ -14,7 +14,7 @@ import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues
 import { getTrades } from '../api/trades';
 import ProposeTradeModal from '../components/ProposeTradeModal';
 import TradesModal from '../components/TradesModal';
-import { priceForTier } from '../utils/tiers';
+import { priceForTier, releaseReward } from '../utils/tiers';
 import { deriveTeams } from '../utils/teams';
 import BenchActionModal from '../components/teams/BenchActionModal';
 import SwapModal from '../components/teams/SwapModal';
@@ -208,7 +208,7 @@ export default function TeamsPage() {
       Haptics.impact({ style: ImpactStyle.Medium });
       const name = releaseModalPick?.pokemonName ?? '';
       const tier = tierByName.get(name);
-      const reward = Math.floor(priceForTier(leagueSettings, tier) / 2);
+      const reward = releaseReward(leagueSettings, tier);
       setReleaseModalPick(null);
       queryClient.invalidateQueries({ queryKey: ['draft-status', leagueId] });
       queryClient.invalidateQueries({ queryKey: ['bench', leagueId] });
@@ -337,7 +337,7 @@ export default function TeamsPage() {
       {releaseModalPick && (
         <ReleaseModal
           pick={releaseModalPick}
-          rewardCoins={Math.floor(priceForTier(leagueSettings, tierByName.get(releaseModalPick.pokemonName)) / 2)}
+          rewardCoins={releaseReward(leagueSettings, tierByName.get(releaseModalPick.pokemonName))}
           currentCoins={myBalance}
           tierByName={tierByName}
           releasing={releasing}

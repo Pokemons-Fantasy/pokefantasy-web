@@ -28,8 +28,8 @@ export default function CoinsMarketSection({ form, setField, disabled }: Section
       <div className="config-field">
         <span className="config-label" id="config-market-prices">Precios de mercado por tier</span>
         <span className="config-hint">
-          Durante la temporada: cláusula de robo inicial de cada Pokémon y precio de compra en el banquillo. Al
-          liberar uno se recibe la mitad. El precio de cada pick del draft se fija al preparar el draft.
+          Durante la temporada: cláusula de robo inicial de cada Pokémon, precio de compra en el banquillo y lo que
+          se recibe al liberarlo. El precio de cada pick del draft se fija al preparar el draft.
         </span>
         <TierNumberRow
           values={tierValues(form, PRICE_KEY)}
