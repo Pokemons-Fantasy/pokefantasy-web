@@ -13,6 +13,9 @@ export const storage = {
   remove(key: string) {
     try { localStorage.removeItem(key); } catch { /* idem */ }
   },
+  keys(): string[] {
+    try { return Object.keys(localStorage); } catch { return []; }
+  },
 };
 
 /** Lo que el navegador permite ahora mismo, para `webPushStatus`. */

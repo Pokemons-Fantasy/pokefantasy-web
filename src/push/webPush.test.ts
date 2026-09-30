@@ -20,6 +20,7 @@ import * as api from '../api/push';
 import { disableWebPush, enableWebPush, forgetWebPushOnLogout, resumeWebPush } from './webPush';
 
 const registration = { scope: '/' } as ServiceWorkerRegistration;
+const subscription = { unsubscribe: vi.fn(async () => true) };
 
 function stubBrowser(permission: NotificationPermission, answer: NotificationPermission = permission) {
   vi.stubGlobal('Notification', {
@@ -28,7 +29,10 @@ function stubBrowser(permission: NotificationPermission, answer: NotificationPer
   });
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
-    value: { register: vi.fn(async () => registration) },
+    value: {
+      register: vi.fn(async () => registration),
+      getRegistration: vi.fn(async () => ({ pushManager: { getSubscription: async () => subscription } })),
+    },
   });
 }
 
@@ -66,15 +70,39 @@ describe('push/webPush', () => {
     expect(localStorage.getItem('pf:web-push:ash')).toBeNull();
   });
 
-  it('desactivar da de baja el token en el back y en Firebase y olvida la preferencia', async () => {
+  it('desactivar da de baja el token en el back, anula la suscripción del navegador y olvida la preferencia', async () => {
     stubBrowser('granted');
     localStorage.setItem('pf:web-push:ash', 'browser-token');
 
     await disableWebPush('ash');
 
     expect(api.unregisterPushToken).toHaveBeenCalledWith('browser-token');
-    expect(messaging.deleteToken).toHaveBeenCalled();
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+    // Sin cargar Firebase: su deleteToken registraría otro service worker en su scope por defecto
+    expect(messaging.deleteToken).not.toHaveBeenCalled();
     expect(localStorage.getItem('pf:web-push:ash')).toBeNull();
+  });
+
+  it('si entra otra cuenta sin avisos y la anterior los tenía, anula la suscripción de este navegador', async () => {
+    // ash no cerró sesión (caducó): su token sigue a su nombre en el back
+    stubBrowser('granted');
+    localStorage.setItem('pf:web-push:ash', 'browser-token');
+    localStorage.setItem('pf:web-push-dismissed:brock', '1');
+
+    await resumeWebPush('brock');
+
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(api.registerPushToken).not.toHaveBeenCalled();
+    expect(localStorage.getItem('pf:web-push:ash')).toBe('browser-token');
+  });
+
+  it('sin avisos de nadie en este navegador, entrar no toca la suscripción', async () => {
+    stubBrowser('granted');
+    localStorage.setItem('pf:web-push-dismissed:ash', '1');
+
+    await resumeWebPush('brock');
+
+    expect(subscription.unsubscribe).not.toHaveBeenCalled();
   });
 
   it('al cerrar sesión da de baja el token pero recuerda que las quería', async () => {

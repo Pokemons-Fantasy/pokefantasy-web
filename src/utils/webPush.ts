@@ -36,3 +36,6 @@ export function shouldPrompt(status: WebPushStatus, dismissed: boolean): boolean
 export const pushTokenKey = (username: string) => `pf:web-push:${username}`;
 /** "Ahora no" de este usuario en este navegador. */
 export const pushDismissedKey = (username: string) => `pf:web-push-dismissed:${username}`;
+/** Clave de los avisos activados por otra cuenta en este navegador (no los propios ni sus "Ahora no"). */
+export const isOtherAccountPushKey = (key: string, username: string) =>
+  key.startsWith(pushTokenKey('')) && key !== pushTokenKey(username);

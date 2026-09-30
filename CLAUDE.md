@@ -98,7 +98,7 @@ Antes de cambiarlas, leer la nota en `vault/70 Decisiones/` y preguntar.
 `pages` → `components` → `utils`; cualquiera puede leer `store` y usar `api`. Prohibido:
 - Llamar a `axios` / `apiClient` / `fetch` desde páginas o componentes: toda llamada va en una función de `src/api/*.ts`.
 - Editar `src/api/schema.d.ts` a mano.
-- Guardar tokens o datos sensibles en `localStorage` / JS.
+- Guardar tokens de sesión o datos sensibles en `localStorage` / JS. El token FCM de los avisos web sí se guarda (`pf:web-push:<usuario>`): identifica el navegador ante FCM y no da acceso a nada (ADR-016).
 - Decidir en el front si una operación está permitida (ventanas, bloqueos, saldo, regla de tier) de forma distinta al backend: el front usa lo que expone la API para mostrar y deshabilitar, y el backend es quien valida.
 - Lógica de negocio en componentes cuando cabe en una función pura de `utils/` (con test).
 - Sprites fuera del CDN, estados de error con `useState` locales, textos "Cargando..." en vez de skeletons.

@@ -1,5 +1,5 @@
 import { registerPushToken, unregisterPushToken } from '../api/push';
-import { pushDismissedKey, pushTokenKey } from '../utils/webPush';
+import { isOtherAccountPushKey, pushDismissedKey, pushTokenKey } from '../utils/webPush';
 import { firebaseWebConfig } from './config';
 import { storage } from './env';
 
@@ -25,6 +25,18 @@ async function browserToken(): Promise<string> {
 }
 
 /**
+ * Anula la suscripción push de este navegador (hay una sola, compartida por las cuentas que entren en él):
+ * FCM da su token por caducado y el back lo borra en el siguiente envío. Sin Firebase: su `deleteToken`
+ * registraría otro service worker en su scope por defecto.
+ */
+async function dropBrowserSubscription(): Promise<void> {
+  if (!('serviceWorker' in navigator)) return;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = await registration?.pushManager.getSubscription();
+  await subscription?.unsubscribe();
+}
+
+/**
  * Activa los avisos en este navegador. Llamarla directamente desde el clic: pedir el permiso es lo primero
  * (Safari solo lo concede dentro del gesto del usuario, antes de cualquier espera).
  */
@@ -43,18 +55,19 @@ export async function disableWebPush(username: string): Promise<void> {
   const token = storage.get(pushTokenKey(username));
   storage.remove(pushTokenKey(username));
   if (token) await unregisterPushToken(token).catch(() => {});
-  try {
-    const { messaging } = await messagingInstance();
-    const { deleteToken } = await import('firebase/messaging');
-    await deleteToken(messaging);
-  } catch {
-    // Sin Firebase o sin red: el back ya no lo tiene, que es lo que importa
-  }
+  await dropBrowserSubscription().catch(() => {});
 }
 
 /** Al entrar o al abrir la web: si este usuario las tenía activadas, vuelve a registrar el token (puede rotar). */
 export async function resumeWebPush(username: string): Promise<void> {
-  if (!storage.get(pushTokenKey(username))) return;
+  if (!storage.get(pushTokenKey(username))) {
+    // Otra cuenta los tenía aquí y quizá no cerró sesión (caducó): su token sigue a su nombre en el back y
+    // este navegador mostraría sus avisos a quien acaba de entrar
+    if (storage.keys().some((key) => isOtherAccountPushKey(key, username))) {
+      await dropBrowserSubscription();
+    }
+    return;
+  }
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   if (!firebaseWebConfig()) return;
   const token = await browserToken();

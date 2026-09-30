@@ -18,19 +18,17 @@ self.addEventListener('push', (event) => {
   const link = data.link || (payload.fcmOptions && payload.fcmOptions.link) || '/';
   const tag = data.tag || notification.tag;
 
-  event.waitUntil((async () => {
-    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    // Con la web a la vista ya salen los avisos en pantalla (SSE): igual que hace el SDK de Firebase
-    if (windows.some((client) => client.visibilityState === 'visible')) return;
-    await self.registration.showNotification(notification.title || 'PokeFantasy', {
-      body: notification.body || '',
-      icon: notification.icon || '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      tag: tag || undefined,
-      renotify: !!tag,
-      data: { link },
-    });
-  })());
+  // Se muestra siempre, también con la web a la vista: el turno del draft y el cierre de ventana no tienen
+  // otro aviso fuera del Draft, y Safari retira el permiso si un push no muestra nada. La etiqueta evita
+  // que se acumulen avisos repetidos.
+  event.waitUntil(self.registration.showNotification(notification.title || 'PokeFantasy', {
+    body: notification.body || '',
+    icon: notification.icon || '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: tag || undefined,
+    renotify: !!tag,
+    data: { link },
+  }));
 });
 
 self.addEventListener('notificationclick', (event) => {

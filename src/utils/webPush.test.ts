@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pushDismissedKey, pushTokenKey, shouldPrompt, webPushStatus, type WebPushEnv } from './webPush';
+import { isOtherAccountPushKey, pushDismissedKey, pushTokenKey, shouldPrompt, webPushStatus, type WebPushEnv } from './webPush';
 
 const env = (patch: Partial<WebPushEnv> = {}): WebPushEnv => ({
   native: false, configured: true, supported: true, ios: false, standalone: false,
@@ -42,5 +42,14 @@ describe('claves por usuario', () => {
     expect(pushTokenKey('ash')).toBe('pf:web-push:ash');
     expect(pushDismissedKey('ash')).toBe('pf:web-push-dismissed:ash');
     expect(pushTokenKey('ash')).not.toBe(pushTokenKey('brock'));
+  });
+});
+
+describe('isOtherAccountPushKey', () => {
+  it('reconoce los avisos activados de otra cuenta, no los propios ni los "Ahora no"', () => {
+    expect(isOtherAccountPushKey('pf:web-push:ash', 'brock')).toBe(true);
+    expect(isOtherAccountPushKey('pf:web-push:brock', 'brock')).toBe(false);
+    expect(isOtherAccountPushKey('pf:web-push-dismissed:ash', 'brock')).toBe(false);
+    expect(isOtherAccountPushKey('auth-storage', 'brock')).toBe(false);
   });
 });
