@@ -28,6 +28,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { RouteErrorBoundary } from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { useNotificationSse } from './hooks/useNotificationSse';
+import DocumentTitle, { type TitleHandle } from './components/DocumentTitle';
 import { resumeWebPush } from './push/webPush';
 
 const queryClient = new QueryClient();
@@ -83,6 +84,7 @@ function RootLayout() {
       <DeepLinkHandler />
       <GlobalNotifications />
       <WebPushResume />
+      <DocumentTitle />
       <RouteErrorBoundary>
         <Outlet />
       </RouteErrorBoundary>
@@ -90,37 +92,40 @@ function RootLayout() {
   );
 }
 
+/** Sección en el título de la pestaña (DocumentTitle). */
+const title = (value: TitleHandle['title']): TitleHandle => ({ title: value });
+
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
+      { path: '/login', handle: title('Entrar'), element: <LoginPage /> },
+      { path: '/register', handle: title('Crear cuenta'), element: <RegisterPage /> },
       {
         element: <ProtectedRoute />,
         children: [
-          { path: '/', element: <HomePage /> },
-          { path: '/profile', element: <MyProfilePage /> },
-          { path: '/leagues', element: <LeaguesPage /> },
+          { path: '/', handle: title('Inicio'), element: <HomePage /> },
+          { path: '/profile', handle: title('Mi perfil'), element: <MyProfilePage /> },
+          { path: '/leagues', handle: title('Mis ligas'), element: <LeaguesPage /> },
           {
             path: '/leagues/:leagueId',
             element: <LeagueLayout />,
             children: [
               { index: true, element: <LeagueIndexRedirect /> },
-              { path: 'members', element: <LeagueMembersPage /> },
-              { path: 'pool', element: <PoolPage /> },
-              { path: 'draft', element: <DraftPage /> },
-              { path: 'draft/setup', element: <DraftSetupPage /> },
-              { path: 'teams', element: <TeamsPage /> },
-              { path: 'config', element: <LeagueConfigPage /> },
-              { path: 'schedule', element: <SchedulePage /> },
-              { path: 'tiers', element: <TierManagementPage /> },
-              { path: 'activity', element: <ActivityPage /> },
-              { path: 'standings', element: <StandingsPage /> },
-              { path: 'players/:username', element: <PlayerProfilePage /> },
+              { path: 'members', handle: title('Miembros'), element: <LeagueMembersPage /> },
+              { path: 'pool', handle: title('Pool'), element: <PoolPage /> },
+              { path: 'draft', handle: title('Draft'), element: <DraftPage /> },
+              { path: 'draft/setup', handle: title('Preparar draft'), element: <DraftSetupPage /> },
+              { path: 'teams', handle: title('Equipos'), element: <TeamsPage /> },
+              { path: 'config', handle: title('Configuración'), element: <LeagueConfigPage /> },
+              { path: 'schedule', handle: title('Calendario'), element: <SchedulePage /> },
+              { path: 'tiers', handle: title('Gestionar tiers'), element: <TierManagementPage /> },
+              { path: 'activity', handle: title('Actividad'), element: <ActivityPage /> },
+              { path: 'standings', handle: title('Clasificación'), element: <StandingsPage /> },
+              { path: 'players/:username', handle: title((params) => params.username ?? 'Jugador'), element: <PlayerProfilePage /> },
             ],
           },
-          { path: '/invite/:token', element: <InvitePage /> },
+          { path: '/invite/:token', handle: title('Invitación'), element: <InvitePage /> },
         ],
       },
       { path: '*', element: <Navigate to="/" replace /> },
@@ -140,18 +145,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <div style={{
-        position: 'fixed',
-        bottom: '0.6rem',
-        right: '1rem',
-        fontSize: '0.7rem',
-        color: 'var(--text-3)',
-        pointerEvents: 'none',
-        userSelect: 'none',
-        zIndex: 9999,
-      }}>
-        v{__APP_VERSION__}
-      </div>
     </QueryClientProvider>
   );
 }

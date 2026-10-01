@@ -1046,6 +1046,15 @@ button.member-menu-item {
 .notice-warning { background: var(--warning-bg); border-color: var(--warning-border); border-left-color: var(--warning); color: var(--warning); }
 .notice-danger  { background: var(--danger-bg);  border-color: var(--danger-border);  border-left-color: var(--danger);  color: var(--danger); }
 
+/* Versión de la app: texto pequeño al pie (panel de la cuenta, Mi perfil, login) */
+.app-version {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  color: var(--text-3);
+  text-align: center;
+  user-select: none;
+}
+
 /* Avisos push: aviso propio e interruptor */
 /* Banquillo: Pokémon de mejor tier al alcance entregando el peor del equipo */
 .bench-upgrade-chip {

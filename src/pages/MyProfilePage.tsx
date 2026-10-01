@@ -14,6 +14,7 @@ import UserAvatar from '../components/avatar/UserAvatar';
 import ProfilePhotoSection from '../components/avatar/ProfilePhotoSection';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 import PushToggle from '../components/push/PushToggle';
+import AppVersion from '../components/AppVersion';
 import { useWebPush } from '../hooks/useWebPush';
 
 /** Sección de avisos: solo si este navegador puede tenerlos (en la app nativa no). */
@@ -218,6 +219,7 @@ export default function MyProfilePage() {
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>
         <ChangePasswordForm />
 
+        <AppVersion />
       </main>
     </div>
   );
