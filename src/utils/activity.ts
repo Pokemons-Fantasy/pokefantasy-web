@@ -67,7 +67,7 @@ export function describeEvent(e: ActivityEvent): EventPart[] {
         txt(' por '), pokemon(e.pokemonName2), ...(coins > 0 ? [txt(` · con ${coinsLabel(coins)}`)] : [])];
     case 'BENCH_SWAP':
       return [user(e.actorUsername), txt(' cambió '), pokemon(e.pokemonName), txt(' por '), pokemon(e.pokemonName2),
-        txt(' del banquillo')];
+        txt(' del banquillo' + (coins > 0 ? ` · +${coinsLabel(coins)}` : coins < 0 ? ` · pagó ${coinsLabel(-coins)}` : ''))];
     case 'BENCH_PURCHASE':
       return [user(e.actorUsername), txt(' compró a '), pokemon(e.pokemonName), txt(` del banquillo · ${coinsLabel(coins)}`)];
     case 'POKEMON_RELEASED':

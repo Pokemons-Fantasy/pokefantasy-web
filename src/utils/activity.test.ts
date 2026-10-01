@@ -32,6 +32,10 @@ describe('describeEvent', () => {
   it('intercambio con el banquillo, compra y liberación', () => {
     expect(partsText(describeEvent(ev({ type: 'BENCH_SWAP', actorUsername: 'ash', pokemonName: 'onix', pokemonName2: 'lapras' }))))
       .toBe('ash cambió Onix por Lapras del banquillo');
+    expect(partsText(describeEvent(ev({ type: 'BENCH_SWAP', actorUsername: 'ash', pokemonName: 'rattata', pokemonName2: 'lapras', coinsAmount: -300 }))))
+      .toBe('ash cambió Rattata por Lapras del banquillo · pagó 300 monedas');
+    expect(partsText(describeEvent(ev({ type: 'BENCH_SWAP', actorUsername: 'ash', pokemonName: 'mew', pokemonName2: 'onix', coinsAmount: 350 }))))
+      .toBe('ash cambió Mew por Onix del banquillo · +350 monedas');
     expect(partsText(describeEvent(ev({ type: 'BENCH_PURCHASE', actorUsername: 'ash', pokemonName: 'eevee', coinsAmount: 5 }))))
       .toBe('ash compró a Eevee del banquillo · 5 monedas');
     expect(partsText(describeEvent(ev({ type: 'POKEMON_RELEASED', actorUsername: 'ash', pokemonName: 'eevee', coinsAmount: 2 }))))
