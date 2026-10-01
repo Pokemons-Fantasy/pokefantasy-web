@@ -24,6 +24,5 @@ describe('web instalable', () => {
     expect(html).not.toContain('favicon.svg');
     expect(icons).toContain('/public/icons/apple-touch-icon.png');
     expect(icons).toContain('/public/icons/favicon-48.png');
-    expect(icons).toContain('/public/icons/badge-96.png');
   });
 });

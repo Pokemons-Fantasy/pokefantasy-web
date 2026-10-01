@@ -24,23 +24,3 @@ await icon(512, 'icon-512.png');
 await icon(512, 'icon-maskable-512.png', 0.8);
 await icon(180, 'apple-touch-icon.png');
 await icon(48, 'favicon-48.png');
-
-// Icono pequeño de los avisos (badge): Android lo pinta solo con la transparencia, así que va monocromo:
-// las letras del icono en blanco sobre fondo transparente, recortadas y centradas con margen.
-const SIZE = 96;
-const INNER = 80;
-// Dos pasos: sharp recorta (trim) antes de aplicar el umbral si van en la misma cadena
-const binary = await sharp('resources/icon.png').removeAlpha().greyscale().threshold(80).png().toBuffer();
-const letters = await sharp(binary).trim().toBuffer();
-const mask = await sharp(letters)
-  .resize(INNER, INNER, { fit: 'contain', background: '#000000' })
-  .extend({ top: 8, bottom: 8, left: 8, right: 8, background: '#000000' })
-  .extractChannel(0)
-  .raw()
-  .toBuffer();
-if (mask.length !== SIZE * SIZE) throw new Error(`máscara del badge con tamaño inesperado: ${mask.length}`);
-await sharp({ create: { width: SIZE, height: SIZE, channels: 3, background: '#ffffff' } })
-  .joinChannel(mask, { raw: { width: SIZE, height: SIZE, channels: 1 } })
-  .png()
-  .toFile(`${OUT}/badge-96.png`);
-console.log(`✓ ${OUT}/badge-96.png`);
