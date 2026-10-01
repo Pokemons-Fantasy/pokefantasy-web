@@ -1776,11 +1776,6 @@ a.home-league:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 @media (prefers-reduced-motion: reduce) {
   .home-live-dot { animation: none; }
 }
-/* En móvil no caben la Poké Ball y su resplandor junto al saludo: fuera los dos (el brillo solo quedaba vacío) */
-@media (max-width: 640px) {
-  .hero-ball,
-  .hero-section::before { display: none; }
-}
 
 /* ─── NAV CARDS ─── */
 
