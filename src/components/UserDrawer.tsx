@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { League } from '../api/leagues';
 import UserAvatar from './avatar/UserAvatar';
 import PushToggle from './push/PushToggle';
+import AppVersion from './AppVersion';
 
 interface UserDrawerProps {
   username: string;
@@ -131,6 +132,7 @@ export default function UserDrawer({
           <button type="button" className="btn-danger" onClick={onLogout}>
             Cerrar sesión
           </button>
+          <AppVersion />
         </div>
       </div>
     </div>,
