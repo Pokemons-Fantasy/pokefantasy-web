@@ -11,7 +11,7 @@ function loadWorker(windows: { visibilityState: string; url: string; focus?: () 
     skipWaiting: vi.fn(),
     location: { origin: 'https://pokefantasy.netlify.app' },
     clients: { matchAll: vi.fn(async () => windows), openWindow: vi.fn(async () => {}), claim: vi.fn() },
-    registration: { showNotification: vi.fn<(title: string, options?: NotificationOptions) => Promise<void>>(async () => {}) },
+    registration: { showNotification: vi.fn(async () => {}) },
   };
   new Function('self', source)(self);
   return { handlers, self };
@@ -38,10 +38,10 @@ describe('firebase-messaging-sw', () => {
 
     expect(self.registration.showNotification).toHaveBeenCalledWith('¡Te toca en el draft!', expect.objectContaining({
       body: 'Liga Kanto', tag: 'draft-turn-l1', renotify: true,
+      // Android pinta el icono pequeño solo con la transparencia: tiene que ser monocromo
+      badge: '/icons/badge-96.png',
       data: { link: 'https://pokefantasy.netlify.app/leagues/l1/draft' },
     }));
-    // Sin badge: con badge-96.png, Chrome en Android recibía el push y no mostraba el aviso (2026-10-01)
-    expect(vi.mocked(self.registration.showNotification).mock.calls[0][1]).not.toHaveProperty('badge');
   });
 
   it('sin etiqueta no pide volver a sonar; sin enlace abre la home', async () => {
