@@ -24,8 +24,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(notification.title || 'PokeFantasy', {
     body: notification.body || '',
     icon: notification.icon || '/icons/icon-192.png',
-    // Android pinta el icono pequeño solo con la transparencia: monocromo, o sale un cuadrado blanco
-    badge: '/icons/badge-96.png',
+    // Sin badge: con uno propio (badge-96.png), Chrome en Android recibía el push y no mostraba el aviso.
+    // Sin él, Android pone el icono pequeño genérico de Chrome.
     tag: tag || undefined,
     renotify: !!tag,
     data: { link },
