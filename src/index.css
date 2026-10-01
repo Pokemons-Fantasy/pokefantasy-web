@@ -1631,12 +1631,17 @@ button.member-menu-item {
   margin-bottom: 2.5rem;
 }
 
-/* Resplandor detrás de la Poké Ball: se desvanece dentro de la sección (un círculo recortado dejaba bordes rectos) */
+/* Resplandor detrás de la Poké Ball, centrado en ella. closest-side: se apaga al llegar al borde más cercano
+   de la sección, así nunca queda cortado en rectángulo (la cabecera compacta solo mide ~108 px de alto) */
+.hero-section {
+  --hero-ball-size: 140px;
+}
 .hero-section::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at calc(100% - 5.5rem) 50%, rgba(251,191,36,0.08) 0%, transparent 5.5rem);
+  background: radial-gradient(circle closest-side at calc(100% - 2rem - var(--hero-ball-size) / 2) 50%,
+    var(--accent-dim), transparent);
   pointer-events: none;
 }
 
@@ -1685,20 +1690,17 @@ button.member-menu-item {
   top: 50%;
   right: 2rem;
   transform: translateY(-50%);
-  width: 140px;
-  height: 140px;
+  width: var(--hero-ball-size);
+  height: var(--hero-ball-size);
   color: var(--text);
   opacity: 0.07;
   pointer-events: none;
-  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 75%);
-  mask-image: radial-gradient(circle, #000 55%, transparent 75%);
 }
 
 /* ─── HOME ─── */
 
-.home-hero.compact { padding: 1.5rem 0 1.25rem; margin-bottom: 1.25rem; }
+.home-hero.compact { padding: 1.5rem 0 1.25rem; margin-bottom: 1.25rem; --hero-ball-size: 96px; }
 .home-hero.compact .hero-title { font-size: clamp(1.6rem, 4vw, 2.25rem); }
-.home-hero.compact .hero-ball { width: 96px; height: 96px; }
 .home-steps { color: var(--text-3); }
 
 .home-leagues-head {
@@ -1774,8 +1776,10 @@ a.home-league:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 @media (prefers-reduced-motion: reduce) {
   .home-live-dot { animation: none; }
 }
+/* En móvil no caben la Poké Ball y su resplandor junto al saludo: fuera los dos (el brillo solo quedaba vacío) */
 @media (max-width: 640px) {
-  .hero-ball { display: none; }
+  .hero-ball,
+  .hero-section::before { display: none; }
 }
 
 /* ─── NAV CARDS ─── */
