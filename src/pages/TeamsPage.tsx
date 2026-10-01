@@ -481,6 +481,8 @@ export default function TeamsPage() {
             swapWindowClosed={swapWindowClosed}
             canInteract={!!myTeam}
             myBalance={myBalance}
+            myPicks={myTeam?.picks ?? []}
+            leagueSettings={leagueSettings}
             tierByName={tierByName}
             entryByName={entryByName}
             onCardClick={handleBenchCardClick}

@@ -1047,6 +1047,24 @@ button.member-menu-item {
 .notice-danger  { background: var(--danger-bg);  border-color: var(--danger-border);  border-left-color: var(--danger);  color: var(--danger); }
 
 /* Avisos push: aviso propio e interruptor */
+/* Banquillo: Pokémon de mejor tier al alcance entregando el peor del equipo */
+.bench-upgrade-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.6rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+}
+
 .push-prompt {
   display: flex;
   flex-wrap: wrap;

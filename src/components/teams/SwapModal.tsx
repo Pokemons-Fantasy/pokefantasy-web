@@ -3,8 +3,9 @@ import type { BenchEntry, DraftPick, Tier } from '../../api/pokemons';
 import type { LeagueSettings } from '../../api/leagues';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
-import { tierRank, priceForTier } from '../../utils/tiers';
 import { coinsLabel } from '../../utils/coins';
+import { isPickLocked } from '../../utils/teams';
+import { swapQuote } from '../../utils/benchSwap';
 
 interface SwapModalProps {
   benchEntry: BenchEntry;
@@ -18,28 +19,19 @@ interface SwapModalProps {
   onBack?: () => void;
 }
 
+/**
+ * Cambiar un Pokémon del equipo por uno de la banca. Se paga (o se cobra) la diferencia de precio de mercado
+ * entre los dos tiers: subir de tier cuesta, bajar da monedas. El que se entrega debe estar desbloqueado.
+ */
 export default function SwapModal({
   benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, onConfirm, onClose, onBack,
 }: SwapModalProps) {
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
-  const takeTierRank = tierRank(takeTier);
-
-  const giveTarget_tier = giveTarget ? tierByName.get(giveTarget) : undefined;
-  const priceGive = giveTarget ? priceForTier(leagueSettings, giveTarget_tier) : 0;
-  const priceTake = priceForTier(leagueSettings, takeTier);
-  const net = priceGive - priceTake; // positive = receive coins; negative = pay coins
-
-  // Net coin change after selection (only meaningful if giveTarget is valid)
-  const netCostAbovePrice = giveTarget && tierRank(giveTarget_tier) <= takeTierRank
-    ? net
+  const marketPrice = benchEntry.price ?? 0;
+  const quote = giveTarget
+    ? swapQuote(leagueSettings, tierByName.get(giveTarget), takeTier, myBalance)
     : null;
-
-  // Overall affordability: bench entry base price + net (if negative)
-  const basePrice = benchEntry.price ?? 0;
-  const extraCost = netCostAbovePrice !== null && netCostAbovePrice < 0 ? -netCostAbovePrice : 0;
-  const totalCost = basePrice + extraCost;
-  const canAffordBase = basePrice === 0 || myBalance >= basePrice;
 
   return (
     <div
@@ -55,6 +47,7 @@ export default function SwapModal({
             className="btn-ghost"
             style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
             onClick={onClose}
+            aria-label="Cerrar"
           >
             ✕
           </button>
@@ -87,8 +80,8 @@ export default function SwapModal({
                 Tier {takeTier}
               </div>
             )}
-            {basePrice > 0 ? (
-              <span className="coin-badge coin-badge-lg">💰 {coinsLabel(basePrice)}</span>
+            {marketPrice > 0 ? (
+              <span className="coin-badge coin-badge-lg" title="Precio de mercado de su tier">💰 {coinsLabel(marketPrice)}</span>
             ) : (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
@@ -98,55 +91,17 @@ export default function SwapModal({
               </span>
             )}
           </div>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Tu saldo</div>
+            <span className="coin-badge">💰 {myBalance}</span>
+          </div>
         </div>
 
-        {/* Balance row (only shown when there's a base cost) */}
-        {basePrice > 0 && (
-          <div style={{
-            background: canAffordBase ? 'var(--success-bg)' : 'var(--danger-bg)',
-            border: `1px solid ${canAffordBase ? 'var(--success-border)' : 'var(--danger-border)'}`,
-            borderRadius: 10,
-            padding: '0.75rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.75rem',
-            flexWrap: 'wrap',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>Tu saldo</span>
-              <span className="coin-badge" style={!canAffordBase ? {
-                background: 'rgba(107,114,128,0.15)',
-                borderColor: 'rgba(107,114,128,0.25)',
-                color: 'var(--text-3)',
-              } : {}}>
-                💰 {myBalance}
-              </span>
-            </div>
-            {canAffordBase ? (
-              <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: 600 }}>
-                ✓ Saldo suficiente
-              </span>
-            ) : (
-              <span style={{ fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 600 }}>
-                Te faltan {coinsLabel(basePrice - myBalance)}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Can't afford base — stop here */}
-        {!canAffordBase && (
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-2)', textAlign: 'center', padding: '0.5rem 0' }}>
-            Necesitas <strong style={{ color: 'var(--accent)' }}>💰 {basePrice}</strong> para fichar a este Pokémon.
-          </p>
-        )}
-
         {/* Team pokemon selection */}
-        {canAffordBase && myPicks.length > 0 && (
+        {myPicks.length > 0 && (
           <>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', fontWeight: 500, marginBottom: '0.25rem' }}>
-              ¿Qué Pokémon de tu equipo entregas?
+              ¿Qué Pokémon de tu equipo entregas? Si es de un tier inferior, pagas la diferencia.
             </p>
             <div
               className="pokemon-grid pokemon-grid-modal"
@@ -154,23 +109,31 @@ export default function SwapModal({
             >
               {myPicks.map((pick) => {
                 const giveTier = tierByName.get(pick.pokemonName);
-                const isInvalidTier = tierRank(giveTier) > takeTierRank;
+                const locked = isPickLocked(pick);
                 const isChosen = giveTarget === pick.pokemonName;
+                const choose = () => !locked && setGiveTarget(isChosen ? null : pick.pokemonName);
 
                 return (
                   <div
                     key={pick.pokemonName}
+                    role="button"
+                    tabIndex={locked ? -1 : 0}
+                    aria-pressed={isChosen}
+                    aria-disabled={locked}
                     className="pokemon-card"
                     style={{
-                      cursor: isInvalidTier ? 'not-allowed' : 'pointer',
-                      opacity: isInvalidTier ? 0.4 : 1,
+                      cursor: locked ? 'not-allowed' : 'pointer',
+                      opacity: locked ? 0.4 : 1,
                       border: isChosen ? '1px solid var(--accent)' : undefined,
                       background: isChosen ? 'var(--accent-dim)' : undefined,
                       transform: isChosen ? 'translateY(-2px)' : undefined,
                       boxShadow: isChosen ? '0 0 14px var(--accent-glow)' : undefined,
                     }}
-                    title={isInvalidTier ? `Tier ${giveTier ?? '?'} — no puedes dar un tier inferior` : undefined}
-                    onClick={() => !isInvalidTier && setGiveTarget(isChosen ? null : pick.pokemonName)}
+                    title={locked ? 'Bloqueado: recién robado o intercambiado' : undefined}
+                    onClick={choose}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }
+                    }}
                   >
                     <img
                       src={spriteUrl(pick.pokemonId)}
@@ -180,51 +143,45 @@ export default function SwapModal({
                     />
                     <span className="pokemon-name">{pick.pokemonName}</span>
                     <TierBadge tier={giveTier} />
+                    {locked && <span style={{ fontSize: '0.68rem', color: 'var(--warning)' }}>🔒 Bloqueado</span>}
                   </div>
                 );
               })}
             </div>
 
-            {/* Net coin change after selecting a give pokemon */}
-            {netCostAbovePrice !== null && (
+            {/* Monedas del intercambio y saldo resultante */}
+            {quote && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                flexWrap: 'wrap',
+                gap: '0.35rem 0.5rem',
                 padding: '0.6rem 0.9rem',
                 borderRadius: 8,
-                background: netCostAbovePrice > 0
-                  ? 'var(--success-bg)'
-                  : netCostAbovePrice < 0
-                  ? 'var(--danger-bg)'
-                  : 'rgba(255,255,255,0.04)',
+                background: quote.net > 0 ? 'var(--success-bg)' : quote.net < 0 ? 'var(--danger-bg)' : 'var(--surface-2)',
                 border: `1px solid ${
-                  netCostAbovePrice > 0
-                    ? 'var(--success-border)'
-                    : netCostAbovePrice < 0
-                    ? 'var(--danger-border)'
-                    : 'rgba(255,255,255,0.1)'
+                  quote.net > 0 ? 'var(--success-border)' : quote.net < 0 ? 'var(--danger-border)' : 'var(--border)'
                 }`,
                 fontSize: '0.82rem',
               }}>
-                {netCostAbovePrice > 0 ? (
+                {quote.net > 0 ? (
                   <>
-                    <span style={{ color: 'var(--success)', fontWeight: 700 }}>+💰 {netCostAbovePrice}</span>
-                    <span style={{ color: 'var(--text-2)' }}>— recibes monedas por dar un tier superior</span>
+                    <span style={{ color: 'var(--success)', fontWeight: 700 }}>+💰 {quote.net}</span>
+                    <span style={{ color: 'var(--text-2)' }}>: recibes la diferencia por bajar de tier</span>
                   </>
-                ) : netCostAbovePrice < 0 ? (
+                ) : quote.net < 0 ? (
                   <>
-                    <span style={{ color: 'var(--danger)', fontWeight: 700 }}>−💰 {-netCostAbovePrice}</span>
-                    <span style={{ color: 'var(--text-2)' }}>— pagas la diferencia de tier</span>
+                    <span style={{ color: 'var(--danger)', fontWeight: 700 }}>−💰 {-quote.net}</span>
+                    <span style={{ color: 'var(--text-2)' }}>: pagas la diferencia de tier</span>
                   </>
                 ) : (
                   <span style={{ color: 'var(--text-3)' }}>Sin coste adicional</span>
                 )}
-                {netCostAbovePrice < 0 && myBalance < totalCost && (
-                  <span style={{ color: 'var(--danger)', marginLeft: 'auto' }}>
-                    Saldo insuficiente
-                  </span>
-                )}
+                <span style={{ marginLeft: 'auto', fontWeight: 600, color: quote.affordable ? 'var(--text)' : 'var(--danger)' }}>
+                  {quote.affordable
+                    ? `Te quedan 💰 ${quote.balanceAfter}`
+                    : `Te faltan ${coinsLabel(-quote.balanceAfter)}`}
+                </span>
               </div>
             )}
           </>
@@ -240,15 +197,13 @@ export default function SwapModal({
               Cancelar
             </button>
           )}
-          {canAffordBase && (
-            <button
-              className="btn-primary"
-              disabled={!giveTarget || swapping || (netCostAbovePrice !== null && netCostAbovePrice < 0 && myBalance < totalCost)}
-              onClick={() => giveTarget && onConfirm(giveTarget)}
-            >
-              {swapping ? 'Intercambiando…' : 'Confirmar intercambio'}
-            </button>
-          )}
+          <button
+            className="btn-primary"
+            disabled={!giveTarget || swapping || !quote?.affordable}
+            onClick={() => giveTarget && onConfirm(giveTarget)}
+          >
+            {swapping ? 'Intercambiando…' : 'Confirmar intercambio'}
+          </button>
         </div>
 
       </div>

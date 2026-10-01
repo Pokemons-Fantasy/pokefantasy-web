@@ -38,6 +38,8 @@ describe('firebase-messaging-sw', () => {
 
     expect(self.registration.showNotification).toHaveBeenCalledWith('¡Te toca en el draft!', expect.objectContaining({
       body: 'Liga Kanto', tag: 'draft-turn-l1', renotify: true,
+      // Android pinta el icono pequeño solo con la transparencia: tiene que ser monocromo
+      badge: '/icons/badge-96.png',
       data: { link: 'https://pokefantasy.netlify.app/leagues/l1/draft' },
     }));
   });

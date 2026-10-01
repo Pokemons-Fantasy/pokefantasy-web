@@ -24,7 +24,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(notification.title || 'PokeFantasy', {
     body: notification.body || '',
     icon: notification.icon || '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    // Android pinta el icono pequeño solo con la transparencia: monocromo, o sale un cuadrado blanco
+    badge: '/icons/badge-96.png',
     tag: tag || undefined,
     renotify: !!tag,
     data: { link },
