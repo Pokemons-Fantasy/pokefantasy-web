@@ -189,6 +189,20 @@ describe('DraftPage', () => {
       expect(screen.queryByText('Te quedan')).not.toBeInTheDocument();
     });
 
+    it('fuera de tu turno ves el pool con tiers y precios para ir mirando, pero no eliges', async () => {
+      vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([entry('e1', 'mew', 'S'), entry('e2', 'abra', 'D')]);
+      vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+        status: 'IN_PROGRESS', currentTurn: 'brock', config: CONFIG, budgets: { ash: 100, brock: 300 },
+      }));
+      renderPage();
+      expect(await screen.findByText(/Esperando el turno de/)).toHaveTextContent('puedes ir mirando el pool');
+      const abra = await screen.findByRole('button', { name: 'Abra, 30 monedas' });
+      expect(abra).toHaveAttribute('aria-disabled', 'true');
+      await userEvent.click(abra);
+      expect(screen.queryByText('¿Confirmar pick?')).not.toBeInTheDocument();
+      expect(screen.getByRole('group', { name: 'Tier' })).toHaveTextContent('Todos (2)');
+    });
+
     it('con el pool aún cargando no da tu draft por terminado', async () => {
       vi.mocked(pokemonsApi.getClosedList).mockReturnValue(new Promise(() => {}));
       vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({

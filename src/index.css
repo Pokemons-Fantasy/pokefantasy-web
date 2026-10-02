@@ -2746,3 +2746,25 @@ a.btn-back, a.logo { text-decoration: none; }
 .pokemon-card.unaffordable .pokemon-card-main { cursor: not-allowed; }
 .pokemon-price { font-size: 0.75rem; font-weight: 600; color: var(--text-2); }
 .pokemon-card.unaffordable .pokemon-price { color: var(--text-3); }
+
+/* Pool del draft: visible todo el draft; fuera de tu turno solo se consulta. Favoritos con estrella */
+.draft-pool-label { align-self: center; margin-right: 0.25rem; font-size: 0.75rem; color: var(--text-3); white-space: nowrap; }
+.pokemon-card.browse .pokemon-card-main { cursor: default; }
+.pokemon-card.favorite { border-color: var(--accent-glow); }
+.pokemon-fav-btn {
+  position: absolute;
+  top: 24px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+.pokemon-fav-btn.on { color: var(--accent); }
+.pokemon-fav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 4px; }
