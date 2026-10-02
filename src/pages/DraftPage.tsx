@@ -5,12 +5,13 @@ import { motion } from 'motion/react';
 import { useAuthStore } from '../store/authStore';
 import { getDraftStatus, draftPick, getClosedList, cancelDraft, autoPickDraft } from '../api/pokemons';
 import type { ClosedListEntry } from '../api/pokemons';
-import TierBadge from '../components/TierBadge';
 import { SkeletonTable } from '../components/SkeletonTable';
 import PokemonDetailModal from '../components/PokemonDetailModal';
 import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
 import { openEventStream } from '../api/sse';
 import DraftBoard from '../components/draft/DraftBoard';
+import DraftPoolGrid from '../components/draft/DraftPoolGrid';
+import { useDraftFavorites } from '../hooks/useDraftFavorites';
 import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 import Notice from '../components/Notice';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -20,22 +21,19 @@ import { coinsLabel } from '../utils/coins';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { spriteUrl } from '../utils/sprites';
 import { showsTiers } from '../utils/pool';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import PushPrompt from '../components/push/PushPrompt';
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function DraftPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
-  const [search, setSearch] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
   const [pendingPick, setPendingPick] = useState<ClosedListEntry | null>(null);
+  const { favorites, toggle: toggleFavorite } = useDraftFavorites(username, leagueId);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -108,9 +106,6 @@ export default function DraftPage() {
 
   const pickedNames = new Set(draft?.picks?.map((p) => p.pokemonName) ?? []);
   const availablePool = pool.filter((p) => !pickedNames.has(p.pokemonName));
-  const filtered = availablePool.filter((p) =>
-    p.pokemonName.toLowerCase().includes(search.toLowerCase())
-  );
 
   const isMyTurn = draft?.status === 'IN_PROGRESS' && draft.currentTurn === username;
 
@@ -322,63 +317,32 @@ export default function DraftPage() {
           </Notice>
         )}
 
-        {draft?.status === 'IN_PROGRESS' && !iAmOut && (
-          isMyTurn ? (
-            <>
+        {draftInProgress && draft && (
+          <>
+            {!iAmOut && (isMyTurn ? (
               <div className="my-turn-banner animate-in">
                 <span className="my-turn-dot" />
                 ⚡ ¡Es tu turno! Elige un Pokémon del pool
               </div>
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Buscar en el pool..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="pokemon-grid">
-                {filtered.map((entry) => {
-                  const price = priceOf(entry);
-                  const affordable = canAfford(price, myRemaining);
-                  const name = capitalize(entry.pokemonName);
-                  const label = config
-                    ? `${name}, ${coinsLabel(price)}${affordable ? '' : ', no te llega'}`
-                    : name;
-                  return (
-                    <div key={entry.id} className={`pokemon-card${picking ? ' nominated' : ''}${affordable ? '' : ' unaffordable'}`}>
-                      <button
-                        type="button"
-                        className="pokemon-card-main"
-                        aria-label={label}
-                        aria-disabled={!affordable || picking}
-                        onClick={() => { if (affordable && !picking) setPendingPick(entry); }}
-                      >
-                        <img src={spriteUrl(entry.pokemonId)} alt="" className="pokemon-sprite" />
-                        <span className="pokemon-name">{entry.pokemonName}</span>
-                        <TierBadge tier={entry.tier} />
-                        {config && (
-                          <span className="pokemon-price">{affordable ? `${price} 🪙` : 'No te llega'}</span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        className="pokemon-info-btn"
-                        onClick={() => setDetailEntry(entry)}
-                        title="Ver detalles"
-                        aria-label={`Ficha de ${name}`}
-                      >
-                        i
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
-              Esperando el turno de <strong style={{ color: 'var(--accent)' }}>{draft.currentTurn}</strong>...
-            </p>
-          )
+            ) : (
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
+                Esperando el turno de <strong style={{ color: 'var(--accent)' }}>{draft.currentTurn}</strong>.
+                Mientras, puedes ir mirando el pool y marcar tus favoritos ☆.
+              </p>
+            ))}
+            {/* Visible todo el draft: fuera de tu turno solo se consulta; en tu turno, además, se elige */}
+            <DraftPoolGrid
+              entries={availablePool}
+              config={config}
+              remaining={myRemaining}
+              canPick={isMyTurn && !iAmOut}
+              picking={picking}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              onPick={setPendingPick}
+              onInfo={setDetailEntry}
+            />
+          </>
         )}
 
         {board && (history.length > 0 || draftInProgress) && (
