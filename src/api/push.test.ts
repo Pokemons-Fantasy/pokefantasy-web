@@ -11,9 +11,9 @@ describe('api/push', () => {
     expect(post).toHaveBeenCalledWith('/v1/users/push-token', { token: 'tok-1' });
   });
 
-  it('da de baja el token con DELETE y el token en el cuerpo', async () => {
+  it('da de baja el token con DELETE, el token en el cuerpo y un tope de 5 s', async () => {
     const del = vi.spyOn(apiClient, 'delete').mockResolvedValue({ data: undefined });
     await unregisterPushToken('tok-1');
-    expect(del).toHaveBeenCalledWith('/v1/users/push-token', { data: { token: 'tok-1' } });
+    expect(del).toHaveBeenCalledWith('/v1/users/push-token', { data: { token: 'tok-1' }, timeout: 5000 });
   });
 });

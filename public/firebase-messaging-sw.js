@@ -34,8 +34,11 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = new URL((event.notification.data && event.notification.data.link) || '/', self.location.origin);
-  if (target.origin !== self.location.origin) return;
+  const link = new URL((event.notification.data && event.notification.data.link) || '/', self.location.origin);
+  // El back pone el origen de su WEB_URL: si es otro (en local o en un deploy preview), la misma ruta en este
+  const target = link.origin === self.location.origin
+    ? link
+    : new URL(link.pathname + link.search + link.hash, self.location.origin);
 
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
