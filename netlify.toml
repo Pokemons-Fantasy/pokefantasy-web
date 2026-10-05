@@ -1,0 +1,18 @@
+# Redirecciones de la web (antes en public/_redirects). Van aquí porque solo netlify.toml admite `signed`, y en
+# este orden: Netlify procesa _redirects antes que este fichero y su "/*" se tragaría la API.
+
+# La web llama a la API en /api de su propio dominio y Netlify la reenvía a Render (ADR-013). `signed`: Netlify
+# firma cada petición (cabecera x-nf-sign, HS256 con la variable API_SIGNATURE_TOKEN de Netlify) para que el
+# back se fíe de la IP del cliente que manda (X-Nf-Client-Connection-Ip); en Render es NETLIFY_PROXY_SECRET.
+[[redirects]]
+  from = "/api/*"
+  to = "https://pokefantasy.onrender.com/:splat"
+  status = 200
+  force = true
+  signed = "API_SIGNATURE_TOKEN"
+
+# SPA: cualquier otra ruta la resuelve React Router.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

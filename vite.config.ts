@@ -10,7 +10,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Igual que public/_redirects: sin VITE_API_URL, `npm run dev` habla con producción a través de /api
+      // Igual que el proxy de netlify.toml: sin VITE_API_URL, `npm run dev` habla con producción a través de /api
       '/api': {
         target: 'https://pokefantasy.onrender.com',
         changeOrigin: true,

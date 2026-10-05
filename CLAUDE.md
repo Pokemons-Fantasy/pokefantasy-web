@@ -16,7 +16,7 @@ Toda la documentación y el conocimiento del proyecto (back y front) vive en el 
 
 | Repo | Local path | Base branch | Deploy |
 |------|-----------|-------------|--------|
-| Backend | `C:\PokeFantasy\pokefantasy` | `develop` | Render (auto on push to `develop`) |
+| Backend | `C:\PokeFantasy\pokefantasy` | `develop` | Render (auto on push to `main`, solo al sacar versión) |
 | Frontend | `C:\PokeFantasy\pokefantasy-web` | `main` | Netlify (auto on push to `main`) |
 
 ## Git workflow (mandatory)
@@ -90,7 +90,7 @@ Antes de cambiarlas, leer la nota en `vault/70 Decisiones/` y preguntar.
 - **Los equipos se derivan de `draft.picks`**, no de un endpoint de equipos (ADR-006).
 - **El código usa los tipos escritos a mano de `src/api/*.ts`**, no `schema.d.ts` directamente; `contract.ts` comprueba en compilación que cuadran con el backend (solo campos primitivos; la nulabilidad no se compara porque springdoc no marca `required`) (ADR-010).
 - **SSE + polling de respaldo**: si el `EventSource` se cierra, se vuelve a polling (10 s draft, 120 s usuario). No quitar el fallback.
-- **La web llama a la API en `/api` de su propio dominio** y Netlify (`public/_redirects`) la reenvía a Render: así la cookie de sesión no es de terceros y Safari/iOS la acepta. La app nativa llama a Render directamente. Sin `VITE_API_URL`, `npm run dev` usa el mismo proxy (`vite.config.ts`) contra producción a propósito; en local se usa `.env.local` (ADR-013).
+- **La web llama a la API en `/api` de su propio dominio** y Netlify (`netlify.toml`, proxy firmado para que el back se fíe de la IP del cliente) la reenvía a Render: así la cookie de sesión no es de terceros y Safari/iOS la acepta. La app nativa llama a Render directamente. Sin `VITE_API_URL`, `npm run dev` usa el mismo proxy (`vite.config.ts`) contra producción a propósito; en local se usa `.env.local` (ADR-013).
 - **Router de datos** (`createBrowserRouter`): las subrutas de liga cuelgan de `LeagueLayout` y Configuración bloquea la salida con `useBlocker`. El error boundary global se reinicia con `resetKey`, no con `key={pathname}` (remontaría los layouts). Tests de páginas con `useBlocker`: `createMemoryRouter` (ADR-012).
 
 ### 4. Qué puede tocar qué
@@ -146,7 +146,7 @@ También parar si el cambio necesita algo que el backend no expone todavía (ped
 ## Reglas de detalle
 
 - **Tipos de la API** (tras cambiar un DTO, enum o endpoint en el backend):
-  1. `npm run api:spec` descarga `http://localhost:8080/v3/api-docs` a `openapi.json` (o `npm run api:spec -- <url>`). El backend sirve la spec sin Mongo ni Redis con `SPRING_MAIN_LAZY_INITIALIZATION=true`.
+  1. `npm run api:spec` descarga `http://localhost:8080/v3/api-docs` a `openapi.json` (o `npm run api:spec -- <url>`). El backend sirve la spec solo arrancado con `API_DOCS_ENABLED=true` (apagada por defecto), y sin Mongo ni Redis con `SPRING_MAIN_LAZY_INITIALIZATION=true`.
   2. `npm run api:types` regenera `src/api/schema.d.ts`.
   3. Si `tsc` falla en `src/api/contract.ts`, un tipo escrito a mano en `src/api/*.ts` ya no cuadra con el backend: corregirlo. Tipo de respuesta nuevo → añadir su entrada en `contract.ts`.
   4. Commitear `openapi.json` y `src/api/schema.d.ts` juntos.
