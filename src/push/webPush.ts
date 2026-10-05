@@ -77,11 +77,17 @@ export async function resumeWebPush(username: string): Promise<void> {
 
 /**
  * Al cerrar sesión (antes de cerrarla en el back, que necesita la cookie): este navegador deja de recibir
- * los avisos de esta cuenta. La preferencia se queda para reanudarlos si vuelve a entrar.
+ * los avisos de esta cuenta. Además de la baja en el back, anula la suscripción: si la baja no llega (back
+ * dormido, sin red), FCM da el token por caducado y el back lo borra en el siguiente envío. La preferencia se
+ * queda: al volver a entrar, `resumeWebPush` genera un token nuevo sin volver a pedir permiso.
  */
 export async function forgetWebPushOnLogout(username: string): Promise<void> {
   const token = storage.get(pushTokenKey(username));
-  if (token) await unregisterPushToken(token).catch(() => {});
+  if (!token) return;
+  await Promise.all([
+    unregisterPushToken(token).catch(() => {}),
+    dropBrowserSubscription().catch(() => {}),
+  ]);
 }
 
 export const dismissWebPushPrompt = (username: string) => storage.set(pushDismissedKey(username), '1');

@@ -105,13 +105,35 @@ describe('push/webPush', () => {
     expect(subscription.unsubscribe).not.toHaveBeenCalled();
   });
 
-  it('al cerrar sesión da de baja el token pero recuerda que las quería', async () => {
+  it('al cerrar sesión da de baja el token y anula la suscripción, pero recuerda que las quería', async () => {
+    stubBrowser('granted');
     localStorage.setItem('pf:web-push:ash', 'browser-token');
 
     await forgetWebPushOnLogout('ash');
 
     expect(api.unregisterPushToken).toHaveBeenCalledWith('browser-token');
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(messaging.deleteToken).not.toHaveBeenCalled();
     expect(localStorage.getItem('pf:web-push:ash')).toBe('browser-token');
+  });
+
+  it('al cerrar sesión, aunque la baja en el back falle, la suscripción queda anulada', async () => {
+    stubBrowser('granted');
+    localStorage.setItem('pf:web-push:ash', 'browser-token');
+    vi.mocked(api.unregisterPushToken).mockRejectedValueOnce(new Error('timeout of 5000ms exceeded'));
+
+    await expect(forgetWebPushOnLogout('ash')).resolves.toBeUndefined();
+
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
+
+  it('al cerrar sesión sin avisos activados no toca nada', async () => {
+    stubBrowser('granted');
+
+    await forgetWebPushOnLogout('ash');
+
+    expect(api.unregisterPushToken).not.toHaveBeenCalled();
+    expect(subscription.unsubscribe).not.toHaveBeenCalled();
   });
 
   it('al entrar las reanuda solo si ese usuario las tenía y el permiso sigue concedido', async () => {

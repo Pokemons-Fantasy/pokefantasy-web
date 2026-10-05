@@ -69,4 +69,14 @@ describe('firebase-messaging-sw', () => {
     await dispatch(empty.handlers.notificationclick, { notification: { close, data: { link: '/leagues/l1/draft' } } });
     expect(empty.self.clients.openWindow).toHaveBeenCalledWith('https://pokefantasy.netlify.app/leagues/l1/draft');
   });
+
+  it('con un enlace de otro dominio abre la misma pantalla en este', async () => {
+    const { handlers, self } = loadWorker([]);
+
+    await dispatch(handlers.notificationclick, {
+      notification: { close: vi.fn(), data: { link: 'http://localhost:5173/leagues/l1/draft?tab=pool#top' } },
+    });
+
+    expect(self.clients.openWindow).toHaveBeenCalledWith('https://pokefantasy.netlify.app/leagues/l1/draft?tab=pool#top');
+  });
 });
