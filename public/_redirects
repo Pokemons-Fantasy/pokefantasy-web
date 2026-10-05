@@ -1,2 +1,3 @@
+/__cabeceras  https://httpbin.org/anything  200
 /api/*  https://pokefantasy.onrender.com/:splat  200
 /* /index.html 200
