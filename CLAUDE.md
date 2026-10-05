@@ -16,7 +16,7 @@ Toda la documentación y el conocimiento del proyecto (back y front) vive en el 
 
 | Repo | Local path | Base branch | Deploy |
 |------|-----------|-------------|--------|
-| Backend | `C:\PokeFantasy\pokefantasy` | `develop` | Render (auto on push to `develop`) |
+| Backend | `C:\PokeFantasy\pokefantasy` | `develop` | Render (auto on push to `main`, solo al sacar versión) |
 | Frontend | `C:\PokeFantasy\pokefantasy-web` | `main` | Netlify (auto on push to `main`) |
 
 ## Git workflow (mandatory)
@@ -146,7 +146,7 @@ También parar si el cambio necesita algo que el backend no expone todavía (ped
 ## Reglas de detalle
 
 - **Tipos de la API** (tras cambiar un DTO, enum o endpoint en el backend):
-  1. `npm run api:spec` descarga `http://localhost:8080/v3/api-docs` a `openapi.json` (o `npm run api:spec -- <url>`). El backend sirve la spec sin Mongo ni Redis con `SPRING_MAIN_LAZY_INITIALIZATION=true`.
+  1. `npm run api:spec` descarga `http://localhost:8080/v3/api-docs` a `openapi.json` (o `npm run api:spec -- <url>`). El backend sirve la spec solo arrancado con `API_DOCS_ENABLED=true` (apagada por defecto), y sin Mongo ni Redis con `SPRING_MAIN_LAZY_INITIALIZATION=true`.
   2. `npm run api:types` regenera `src/api/schema.d.ts`.
   3. Si `tsc` falla en `src/api/contract.ts`, un tipo escrito a mano en `src/api/*.ts` ya no cuadra con el backend: corregirlo. Tipo de respuesta nuevo → añadir su entrada en `contract.ts`.
   4. Commitear `openapi.json` y `src/api/schema.d.ts` juntos.
