@@ -11,6 +11,14 @@
   force = true
   signed = "API_SIGNATURE_TOKEN"
 
+# SPIKE (no mergear): ver la firma que manda Netlify
+[[redirects]]
+  from = "/__cabeceras"
+  to = "https://httpbin.org/anything"
+  status = 200
+  force = true
+  signed = "API_SIGNATURE_TOKEN"
+
 # SPA: cualquier otra ruta la resuelve React Router.
 [[redirects]]
   from = "/*"
