@@ -227,4 +227,15 @@ describe('LeagueConfigPage', () => {
     expect(screen.getByRole('link', { name: 'Ir a Preparar draft' })).toHaveAttribute('href', '/leagues/league-1/draft/setup');
     expect(mockedClosedList).not.toHaveBeenCalled();
   });
+
+  it('con el draft completado los porcentajes de tier son de solo lectura y lo explica', async () => {
+    mockedDraftStatus.mockResolvedValue({
+      id: 'd1', status: 'COMPLETED', turnOrder: ['admin1'], currentTurn: null, currentRound: 1, picks: [],
+    });
+    renderPage();
+    expect(await screen.findByText(/Los tiers de esta temporada ya están fijados/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Porcentaje del tier S')).toBeDisabled();
+    // El resto de la configuración sigue editable
+    expect(screen.getByLabelText('Monedas por victoria')).toBeEnabled();
+  });
 });
