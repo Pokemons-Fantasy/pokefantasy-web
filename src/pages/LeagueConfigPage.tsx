@@ -140,6 +140,7 @@ export default function LeagueConfigPage() {
   );
   const draftInProgress = draft?.status === 'IN_PROGRESS';
   const draftPreparing = draft?.status === 'PENDING';
+  const draftCompleted = draft?.status === 'COMPLETED';
   // Antes de preparar el draft se enseña cuántos Pokémon caerían en cada tier (después, el reparto real
   // está en Preparar draft).
   const beforeDraft = draft === null || draft?.status === 'CANCELLED';
@@ -269,6 +270,7 @@ export default function LeagueConfigPage() {
                 tierSum={tierSum}
                 tierSumOk={tierSumOk}
                 poolSize={beforeDraft ? pool?.length : undefined}
+                tiersFixed={draftCompleted}
               />
               <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
             </form>
