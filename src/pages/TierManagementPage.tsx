@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getClosedList, getDraftStatus, assignTiers } from '../api/pokemons';
-import type { Tier, TierChange } from '../api/pokemons';
+import type { Tier } from '../api/pokemons';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -16,7 +15,6 @@ export default function TierManagementPage() {
   const queryClient = useQueryClient();
 
   const addToast = useToastStore((s) => s.addToast);
-  const [lastChanges, setLastChanges] = useState<TierChange[]>([]);
 
   const { data: closedList = [], isLoading: loadingList } = useQuery({
     queryKey: ['closed-list', leagueId],
@@ -45,12 +43,13 @@ export default function TierManagementPage() {
 
   const isDraftCompleted = draft?.status === 'COMPLETED';
 
+  // Solo se mueven los elegidos: los conteos de cada tier pueden cambiar.
   const { mutate: doAdjust, isPending: adjusting } = useMutation({
     mutationFn: ({ entryIds, tier }: { entryIds: string[]; tier: Tier }) =>
       assignTiers(leagueId!, entryIds, tier),
-    onSuccess: (data) => {
-      setLastChanges(data.changes);
-      addToast('success', 'Tiers ajustados');
+    onSuccess: (data, { tier }) => {
+      const n = data.changes.length;
+      addToast('success', `${n} ${n === 1 ? 'Pokémon movido' : 'Pokémon movidos'} a ${tier}`);
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
     onError: (err) => addToast('error', extractErrorMessage(err, 'Error al ajustar tiers')),
@@ -74,51 +73,15 @@ export default function TierManagementPage() {
         </div>
       )}
 
-      {isDraftCompleted && (
-        <>
-          {/* Last changes panel */}
-          {lastChanges.length > 0 && (
-            <div role="status" style={{
-              padding: '0.75rem 1rem',
-              borderRadius: 10,
-              background: 'var(--success-bg)',
-              border: '1px solid var(--success-border)',
-              fontSize: '0.82rem',
-              marginBottom: '1.25rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.2rem',
-            }}>
-              <div style={{ fontWeight: 600, color: 'var(--success)', marginBottom: '0.25rem' }}>
-                Tiers actualizados
-              </div>
-              {lastChanges.map((c) => (
-                <div key={c.pokemonId} style={{ color: 'var(--text-2)', textTransform: 'capitalize' }}>
-                  {c.pokemonName}: {c.oldTier} → {c.newTier}
-                </div>
-              ))}
-              <button
-                className="btn-ghost"
-                style={{ alignSelf: 'flex-start', marginTop: '0.35rem', fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                onClick={() => setLastChanges([])}
-              >
-                Cerrar
-              </button>
-            </div>
-          )}
-
-          {loadingList ? (
-            <SkeletonGrid count={6} />
-          ) : (
-            <SetupTierBoard
-              pool={closedList}
-              moving={adjusting}
-              cascade
-              onMove={(entryIds, tier) => { setLastChanges([]); doAdjust({ entryIds, tier }); }}
-            />
-          )}
-        </>
-      )}
+      {isDraftCompleted && (loadingList ? (
+        <SkeletonGrid count={6} />
+      ) : (
+        <SetupTierBoard
+          pool={closedList}
+          moving={adjusting}
+          onMove={(entryIds, tier) => doAdjust({ entryIds, tier })}
+        />
+      ))}
     </main>
   );
 }

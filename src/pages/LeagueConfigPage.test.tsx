@@ -228,14 +228,13 @@ describe('LeagueConfigPage', () => {
     expect(mockedClosedList).not.toHaveBeenCalled();
   });
 
-  it('con el draft completado los porcentajes de tier son de solo lectura y lo explica', async () => {
+  it('con el draft completado los porcentajes se editan para el próximo draft y enlaza a Gestión de tiers', async () => {
     mockedDraftStatus.mockResolvedValue({
       id: 'd1', status: 'COMPLETED', turnOrder: ['admin1'], currentTurn: null, currentRound: 1, picks: [],
     });
     renderPage();
-    expect(await screen.findByText(/Los tiers de esta temporada ya están fijados/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Porcentaje del tier S')).toBeDisabled();
-    // El resto de la configuración sigue editable
-    expect(screen.getByLabelText('Monedas por victoria')).toBeEnabled();
+    expect(await screen.findByText(/Se aplican al preparar el próximo draft/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Porcentaje del tier S')).toBeEnabled();
+    expect(screen.getByRole('link', { name: 'Gestión de tiers' })).toHaveAttribute('href', '/leagues/league-1/tiers');
   });
 });

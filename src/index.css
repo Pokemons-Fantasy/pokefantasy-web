@@ -2730,8 +2730,6 @@ a.btn-back, a.logo { text-decoration: none; }
   padding: 0.6rem 0.9rem; margin-top: 1rem; border-radius: 12px;
   background: var(--surface-2); border: 1px solid var(--border);
 }
-.setup-move-extra { font-size: 0.75em; color: var(--text-3); }
-.setup-move-hint { flex-basis: 100%; margin: 0; font-size: 0.75rem; color: var(--text-3); }
 
 /* Cards del draft con precio */
 .pokemon-card-main {
