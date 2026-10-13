@@ -164,6 +164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leagues/{leagueId}/closed-list/tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["assignTiers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users/push-token": {
         parameters: {
             query?: never;
@@ -905,6 +921,11 @@ export interface components {
             /** @enum {string} */
             newTier?: "S" | "A" | "B" | "C" | "D";
         };
+        AssignTiersRequest: {
+            entryIds?: string[];
+            /** @enum {string} */
+            tier?: "S" | "A" | "B" | "C" | "D";
+        };
         RegisterPushTokenRequest: {
             token?: string;
         };
@@ -1567,6 +1588,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AssignTierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TierAdjustmentResponse"];
+                };
+            };
+        };
+    };
+    assignTiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignTiersRequest"];
             };
         };
         responses: {

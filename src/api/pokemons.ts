@@ -222,14 +222,15 @@ export interface TierAdjustmentResponse {
   changes: TierChange[];
 }
 
-export const assignTier = async (
+/** Con el draft terminado: mueve los Pokémon (del mismo tier) y el back hace la cascada que mantiene los conteos. */
+export const assignTiers = async (
   leagueId: string,
-  entryId: string,
+  entryIds: string[],
   tier: Tier
 ): Promise<TierAdjustmentResponse> => {
   const { data } = await apiClient.put<TierAdjustmentResponse>(
-    `/v1/leagues/${leagueId}/closed-list/${entryId}/tier`,
-    { tier }
+    `/v1/leagues/${leagueId}/closed-list/tiers`,
+    { entryIds, tier }
   );
   return data;
 };

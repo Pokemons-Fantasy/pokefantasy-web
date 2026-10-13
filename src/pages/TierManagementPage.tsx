@@ -2,148 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getClosedList, getDraftStatus, assignTier } from '../api/pokemons';
-import type { ClosedListEntry, Tier, TierChange } from '../api/pokemons';
+import { getClosedList, getDraftStatus, assignTiers } from '../api/pokemons';
+import type { Tier, TierChange } from '../api/pokemons';
 import { getLeagueDetail } from '../api/leagues';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
-import { spriteUrl } from '../utils/sprites';
-import { tierRank, TIER_ORDER } from '../utils/tiers';
-import { TIER_COLORS } from '../utils/colors';
-
-
-// ── TierAdjustModal ───────────────────────────────────────────────────────────
-
-interface TierAdjustModalProps {
-  entry: ClosedListEntry;
-  adjusting: boolean;
-  onConfirm: (newTier: Tier) => void;
-  onClose: () => void;
-}
-
-function TierAdjustModal({ entry, adjusting, onConfirm, onClose }: TierAdjustModalProps) {
-  const [selected, setSelected] = useState<Tier | null>(null);
-  const currentTier = entry.tier!;
-  const steps = selected ? Math.abs(tierRank(selected) - tierRank(currentTier)) - 1 : null;
-  const colors = TIER_COLORS[currentTier];
-
-  return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal animate-in-fast" style={{ maxWidth: 420 }}>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Ajustar tier</h2>
-          <button
-            className="btn-ghost"
-            style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Pokemon info */}
-        <div style={{
-          background: 'var(--surface-2)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: '1rem 1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1.25rem',
-        }}>
-          <img
-            src={spriteUrl(entry.pokemonId)}
-            alt={entry.pokemonName}
-            style={{ width: 80, height: 80, imageRendering: 'pixelated', display: 'block', flexShrink: 0 }}
-          />
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem', textTransform: 'capitalize', marginBottom: '0.4rem' }}>
-              {entry.pokemonName}
-            </div>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 26, height: 26,
-              borderRadius: '50%',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              background: colors.bg,
-              border: `1px solid ${colors.border}`,
-              color: colors.text,
-            }}>
-              {currentTier}
-            </span>
-          </div>
-        </div>
-
-        {/* Tier selector */}
-        <div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-2)', marginBottom: '0.6rem' }}>
-            Nuevo tier:
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {TIER_ORDER.filter((t) => t !== currentTier).map((t) => {
-              const c = TIER_COLORS[t];
-              const isSelected = selected === t;
-              return (
-                <button
-                  key={t}
-                  onClick={() => setSelected(t)}
-                  style={{
-                    width: 40, height: 40,
-                    borderRadius: '50%',
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    border: isSelected ? `2px solid ${c.text}` : `1px solid ${c.border}`,
-                    background: isSelected ? c.bg : 'var(--surface-2)',
-                    color: isSelected ? c.text : 'var(--text-2)',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {t}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Cascade warning */}
-        {steps !== null && steps > 0 && (
-          <div style={{
-            padding: '0.6rem 0.9rem',
-            borderRadius: 8,
-            background: 'var(--accent-dim)',
-            border: '1px solid var(--accent-glow)',
-            fontSize: '0.82rem',
-            color: 'var(--accent)',
-          }}>
-            Esto producirá una cascada de {steps} {steps === 1 ? 'intercambio adicional' : 'intercambios adicionales'} para mantener los conteos equilibrados.
-          </div>
-        )}
-
-        <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose} disabled={adjusting}>
-            Cancelar
-          </button>
-          <button
-            className="btn-primary"
-            disabled={!selected || adjusting}
-            onClick={() => selected && onConfirm(selected)}
-          >
-            {adjusting ? 'Ajustando...' : 'Confirmar'}
-          </button>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────────────────────────
+import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 
 export default function TierManagementPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -151,8 +16,6 @@ export default function TierManagementPage() {
   const queryClient = useQueryClient();
 
   const addToast = useToastStore((s) => s.addToast);
-  const [activeTab, setActiveTab] = useState<Tier>('S');
-  const [modalEntry, setModalEntry] = useState<ClosedListEntry | null>(null);
   const [lastChanges, setLastChanges] = useState<TierChange[]>([]);
 
   const { data: closedList = [], isLoading: loadingList } = useQuery({
@@ -183,15 +46,14 @@ export default function TierManagementPage() {
   const isDraftCompleted = draft?.status === 'COMPLETED';
 
   const { mutate: doAdjust, isPending: adjusting } = useMutation({
-    mutationFn: ({ entryId, tier }: { entryId: string; tier: Tier }) =>
-      assignTier(leagueId!, entryId, tier),
+    mutationFn: ({ entryIds, tier }: { entryIds: string[]; tier: Tier }) =>
+      assignTiers(leagueId!, entryIds, tier),
     onSuccess: (data) => {
       setLastChanges(data.changes);
-      setModalEntry(null);
-      addToast('success', 'Tier ajustado');
+      addToast('success', 'Tiers ajustados');
       queryClient.invalidateQueries({ queryKey: ['closed-list', leagueId] });
     },
-    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al ajustar tier')),
+    onError: (err) => addToast('error', extractErrorMessage(err, 'Error al ajustar tiers')),
   });
 
   // Redirect if not admin (once data is loaded) — tras todos los hooks, nunca antes.
@@ -199,126 +61,64 @@ export default function TierManagementPage() {
     return <Navigate to={`/leagues/${leagueId}`} replace />;
   }
 
-  const countByTier = (t: Tier) => closedList.filter((e) => e.tier === t).length;
-  const tabEntries = closedList.filter((e) => e.tier === activeTab);
-
   return (
-    <>
-      {/* Tier adjust modal */}
-      {modalEntry && (
-        <TierAdjustModal
-          entry={modalEntry}
-          adjusting={adjusting}
-          onConfirm={(tier) => doAdjust({ entryId: modalEntry.id, tier })}
-          onClose={() => setModalEntry(null)}
-        />
+    <main className="page-content">
+      <h1 className="page-title">Gestión de tiers</h1>
+
+      {!isDraftCompleted && (
+        <div className="empty-state">
+          <p>El draft debe estar completado para ajustar tiers.</p>
+          <Link className="btn-ghost" to={`/leagues/${leagueId}`}>
+            Volver a la liga
+          </Link>
+        </div>
       )}
 
-      <main className="page-content">
-        <h1 className="page-title">Gestión de tiers</h1>
-
-        {!isDraftCompleted && (
-          <div className="empty-state">
-            <p>El draft debe estar completado para ajustar tiers.</p>
-            <Link className="btn-ghost" to={`/leagues/${leagueId}`}>
-              Volver a la liga
-            </Link>
-          </div>
-        )}
-
-        {isDraftCompleted && (
-          <>
-            {/* Tier tabs */}
-            <div className="gen-tabs" style={{ marginBottom: '1.5rem' }}>
-              {TIER_ORDER.map((t) => {
-                const c = TIER_COLORS[t];
-                const isActive = activeTab === t;
-                const count = countByTier(t);
-                return (
-                  <button
-                    key={t}
-                    className={`gen-tab${isActive ? ' active' : ''}`}
-                    onClick={() => { setActiveTab(t); setLastChanges([]); }}
-                    style={isActive ? {
-                      borderColor: c.text,
-                      background: c.bg,
-                      color: c.text,
-                    } : {}}
-                  >
-                    Tier {t} ({count})
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Last changes panel */}
-            {lastChanges.length > 0 && (
-              <div style={{
-                padding: '0.75rem 1rem',
-                borderRadius: 10,
-                background: 'var(--success-bg)',
-                border: '1px solid var(--success-border)',
-                fontSize: '0.82rem',
-                marginBottom: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.2rem',
-              }}>
-                <div style={{ fontWeight: 600, color: 'var(--success)', marginBottom: '0.25rem' }}>
-                  Tiers actualizados
+      {isDraftCompleted && (
+        <>
+          {/* Last changes panel */}
+          {lastChanges.length > 0 && (
+            <div role="status" style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 10,
+              background: 'var(--success-bg)',
+              border: '1px solid var(--success-border)',
+              fontSize: '0.82rem',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.2rem',
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--success)', marginBottom: '0.25rem' }}>
+                Tiers actualizados
+              </div>
+              {lastChanges.map((c) => (
+                <div key={c.pokemonId} style={{ color: 'var(--text-2)', textTransform: 'capitalize' }}>
+                  {c.pokemonName}: {c.oldTier} → {c.newTier}
                 </div>
-                {lastChanges.map((c) => (
-                  <div key={c.pokemonId} style={{ color: 'var(--text-2)', textTransform: 'capitalize' }}>
-                    {c.pokemonName}: {c.oldTier} → {c.newTier}
-                  </div>
-                ))}
-                <button
-                  className="btn-ghost"
-                  style={{ alignSelf: 'flex-start', marginTop: '0.35rem', fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
-                  onClick={() => setLastChanges([])}
-                >
-                  Cerrar
-                </button>
-              </div>
-            )}
+              ))}
+              <button
+                className="btn-ghost"
+                style={{ alignSelf: 'flex-start', marginTop: '0.35rem', fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
+                onClick={() => setLastChanges([])}
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
 
-            {/* Pokemon grid */}
-            {loadingList ? (
-              <SkeletonGrid count={6} />
-            ) : tabEntries.length === 0 ? (
-              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-                No hay Pokémon en tier {activeTab}.
-              </p>
-            ) : (
-              <div className="pokemon-grid">
-                {tabEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="pokemon-card"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => { setLastChanges([]); setModalEntry(entry); }}
-                    title="Cambiar tier"
-                  >
-                    <img
-                      src={spriteUrl(entry.pokemonId)}
-                      alt={entry.pokemonName}
-                      className="pokemon-sprite"
-                      loading="lazy"
-                    />
-                    <span className="pokemon-name">{entry.pokemonName}</span>
-                    <span
-                      className={`tier-badge tier-badge-${activeTab.toLowerCase()}`}
-                      style={{ position: 'static', marginTop: '0.25rem' }}
-                    >
-                      {activeTab}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </main>
-    </>
+          {loadingList ? (
+            <SkeletonGrid count={6} />
+          ) : (
+            <SetupTierBoard
+              pool={closedList}
+              moving={adjusting}
+              cascade
+              onMove={(entryIds, tier) => { setLastChanges([]); doAdjust({ entryIds, tier }); }}
+            />
+          )}
+        </>
+      )}
+    </main>
   );
 }

@@ -473,6 +473,46 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/closed-list/tiers": {
+            "put": {
+                "tags": [
+                    "closed-list-controller"
+                ],
+                "operationId": "assignTiers",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignTiersRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TierAdjustmentResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/users/push-token": {
             "post": {
                 "tags": [
@@ -2028,6 +2068,27 @@
                         ]
                     },
                     "newTier": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                        ]
+                    }
+                }
+            },
+            "AssignTiersRequest": {
+                "type": "object",
+                "properties": {
+                    "entryIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "tier": {
                         "type": "string",
                         "enum": [
                             "S",
