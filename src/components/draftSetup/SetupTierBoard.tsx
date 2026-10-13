@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ClosedListEntry, DraftConfig, Tier } from '../../api/pokemons';
-import { TIER_ORDER } from '../../utils/tiers';
+import { cascadeSize, TIER_ORDER } from '../../utils/tiers';
 import { TIER_COLORS } from '../../utils/colors';
 import { draftPrice } from '../../utils/draftBudget';
 import { coinsLabel } from '../../utils/coins';
@@ -8,17 +8,22 @@ import { spriteUrl } from '../../utils/sprites';
 
 interface SetupTierBoardProps {
   pool: ClosedListEntry[];
-  config: DraftConfig;
+  /** Con config se muestra el precio de cada tier (preparación y draft); sin ella, solo los conteos. */
+  config?: DraftConfig;
   onMove?: (entryIds: string[], tier: Tier) => void;
   moving?: boolean;
   /** Vista de los jugadores: sin selección ni barra de mover. */
   readOnly?: boolean;
+  /** Con el draft terminado el back mantiene los conteos con una cascada: se avisa en cada botón de mover. */
+  cascade?: boolean;
 }
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Pool por tiers con su precio. El admin selecciona Pokémon y los mueve de tier con la barra inferior. */
-export default function SetupTierBoard({ pool, config, onMove, moving = false, readOnly = false }: SetupTierBoardProps) {
+/** Pool por tiers (con su precio si hay config). El admin selecciona Pokémon y los mueve de tier con la barra inferior. */
+export default function SetupTierBoard({
+  pool, config, onMove, moving = false, readOnly = false, cascade = false,
+}: SetupTierBoardProps) {
   const [activeTier, setActiveTier] = useState<Tier>('S');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
@@ -44,6 +49,7 @@ export default function SetupTierBoard({ pool, config, onMove, moving = false, r
         {TIER_ORDER.map((t) => {
           const active = t === activeTier;
           const c = TIER_COLORS[t];
+          const count = pool.filter((e) => e.tier === t).length;
           return (
             <button
               key={t} type="button" role="tab" aria-selected={active}
@@ -51,7 +57,7 @@ export default function SetupTierBoard({ pool, config, onMove, moving = false, r
               style={active ? { borderColor: c.text, background: c.bg, color: c.text } : {}}
               onClick={() => { setActiveTier(t); setSelected(new Set()); }}
             >
-              {t} · {pool.filter((e) => e.tier === t).length} · {draftPrice(config, t)} 🪙
+              {t} · {count}{config && <> · {draftPrice(config, t)} 🪙</>}
             </button>
           );
         })}
@@ -67,7 +73,8 @@ export default function SetupTierBoard({ pool, config, onMove, moving = false, r
       ) : (
         <div className="pokemon-grid" role="tabpanel">
           {entries.map((e) => {
-            const label = `${capitalize(e.pokemonName)}, tier ${activeTier}, ${coinsLabel(draftPrice(config, activeTier))}`;
+            const price = config ? `, ${coinsLabel(draftPrice(config, activeTier))}` : '';
+            const label = `${capitalize(e.pokemonName)}, tier ${activeTier}${price}`;
             const isSelected = selected.has(e.id);
             const content = (
               <>
@@ -93,15 +100,25 @@ export default function SetupTierBoard({ pool, config, onMove, moving = false, r
       {!readOnly && selected.size > 0 && (
         <div className="setup-move-bar" role="region" aria-label="Mover seleccionados">
           <span>{selected.size} seleccionados · Mover a:</span>
-          {TIER_ORDER.filter((t) => t !== activeTier).map((t) => (
-            <button
-              key={t} type="button" className="btn-secondary" disabled={moving}
-              aria-label={`Mover ${selected.size} a ${t}`} onClick={() => move(t)}
-            >
-              {t}
-            </button>
-          ))}
+          {TIER_ORDER.filter((t) => t !== activeTier).map((t) => {
+            const extra = cascade ? cascadeSize(selected.size, activeTier, t) : 0;
+            const extraLabel = extra > 0 ? `; se moverán además hasta ${extra} para mantener los conteos` : '';
+            return (
+              <button
+                key={t} type="button" className="btn-secondary" disabled={moving}
+                aria-label={`Mover ${selected.size} a ${t}${extraLabel}`} onClick={() => move(t)}
+                title={extra > 0 ? `Se moverán además hasta ${extra} Pokémon para mantener los conteos` : undefined}
+              >
+                {t}{extra > 0 && <span className="setup-move-extra" aria-hidden="true"> +{extra}</span>}
+              </button>
+            );
+          })}
           <button type="button" className="btn-ghost" onClick={() => setSelected(new Set())}>Quitar selección</button>
+          {cascade && (
+            <p className="setup-move-hint">
+              +N: Pokémon que suben o bajan un tier en cascada para que cada tier siga teniendo los mismos.
+            </p>
+          )}
         </div>
       )}
     </div>
