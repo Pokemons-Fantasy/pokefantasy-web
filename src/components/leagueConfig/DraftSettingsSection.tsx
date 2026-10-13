@@ -9,10 +9,12 @@ interface DraftSettingsSectionProps extends SectionProps {
   tierSumOk: boolean;
   /** Pokémon del pool, solo antes de preparar el draft (después el reparto real está en Preparar draft). */
   poolSize?: number;
+  /** Draft completado: los tiers del pool fijan precios y cláusulas de la temporada y el backend no los recalcula. */
+  tiersFixed?: boolean;
 }
 
 /** Reparto inicial de tiers, tamaño de equipo (= rondas del draft) y tiempo por turno. */
-export default function DraftSettingsSection({ form, setField, disabled, tierSum, tierSumOk, poolSize }: DraftSettingsSectionProps) {
+export default function DraftSettingsSection({ form, setField, disabled, tierSum, tierSumOk, poolSize, tiersFixed }: DraftSettingsSectionProps) {
   const pcts = tierValues(form, PCT_KEY);
   const fixed = fixTierSum(pcts);
   const counts = poolSize ? tierCountsPreview(poolSize, pcts) : null;
@@ -25,8 +27,9 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
       <div className="config-field">
         <span className="config-label">Distribución de tiers</span>
         <span className="config-hint">
-          Porcentaje del pool (ordenado por BST) que va a cada tier. Es el punto de partida al preparar el draft;
-          después los tiers se ajustan a mano en Preparar draft.
+          {tiersFixed
+            ? 'Los tiers de esta temporada ya están fijados por el draft: estos porcentajes no se pueden cambiar hasta el próximo draft.'
+            : 'Porcentaje del pool (ordenado por BST) que va a cada tier. Es el punto de partida al preparar el draft; después los tiers se ajustan a mano en Preparar draft.'}
         </span>
         <TierNumberRow
           values={pcts}
@@ -34,7 +37,7 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
           labelFor={(tier) => `Porcentaje del tier ${tier}`}
           unit="%"
           max={100}
-          disabled={disabled}
+          disabled={disabled || tiersFixed}
         />
 
         <div className="tier-dist-bar" aria-hidden="true">
@@ -54,7 +57,7 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
           <span className={tierSumOk ? 'tier-dist-ok' : 'tier-dist-bad'}>
             {tierSumOk ? `Suma: 100 % ✓` : `Suma: ${tierSum} % (${missing > 0 ? `faltan ${missing}` : `sobran ${-missing}`})`}
           </span>
-          {fixed && !disabled && (
+          {fixed && !disabled && !tiersFixed && (
             <button
               type="button"
               className="btn-ghost tier-dist-fix"
