@@ -25,11 +25,3 @@ export function priceForTier(settings: LeagueSettings | undefined, tier: Tier | 
 export function releaseReward(settings: LeagueSettings | undefined, tier: Tier | null | undefined): number {
   return priceForTier(settings, tier);
 }
-
-/**
- * Cuántos Pokémon más puede mover como mucho la cascada al llevar `count` de `from` a `to` con el draft
- * terminado (AssignTierCommandHandler): `count` por cada tier que se cruza. Menos si algún tier se queda corto.
- */
-export function cascadeSize(count: number, from: Tier, to: Tier): number {
-  return count * Math.abs(tierRank(to) - tierRank(from));
-}

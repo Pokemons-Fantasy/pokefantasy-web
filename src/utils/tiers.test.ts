@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { tierRank, priceForTier, TIER_ORDER, releaseReward, cascadeSize } from './tiers';
+import { tierRank, priceForTier, TIER_ORDER, releaseReward } from './tiers';
 import type { LeagueSettings } from '../api/leagues';
 
 describe('TIER_ORDER', () => {
@@ -60,18 +60,5 @@ describe('releaseReward', () => {
     };
     expect(releaseReward(settings, 'S')).toBe(75);
     expect(releaseReward(settings, null)).toBe(0);
-  });
-});
-
-describe('cascadeSize', () => {
-  it('mueve tantos como elegidos por cada tier que se cruza', () => {
-    expect(cascadeSize(1, 'B', 'A')).toBe(1);
-    expect(cascadeSize(2, 'B', 'A')).toBe(2);
-    expect(cascadeSize(3, 'D', 'S')).toBe(12);
-    expect(cascadeSize(2, 'A', 'C')).toBe(4);
-  });
-
-  it('no mueve nada si el tier no cambia', () => {
-    expect(cascadeSize(2, 'B', 'B')).toBe(0);
   });
 });

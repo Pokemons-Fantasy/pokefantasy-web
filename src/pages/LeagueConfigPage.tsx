@@ -270,7 +270,7 @@ export default function LeagueConfigPage() {
                 tierSum={tierSum}
                 tierSumOk={tierSumOk}
                 poolSize={beforeDraft ? pool?.length : undefined}
-                tiersFixed={draftCompleted}
+                seasonTiers={draftCompleted ? { manageHref: isAdmin ? `/leagues/${leagueId}/tiers` : undefined } : undefined}
               />
               <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
             </form>

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import TierManagementPage from './TierManagementPage';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import * as leaguesApi from '../api/leagues';
 import * as pokemonsApi from '../api/pokemons';
 import type { ClosedListEntry, DraftStatus, Tier } from '../api/pokemons';
@@ -53,28 +54,23 @@ describe('TierManagementPage', () => {
     ]);
     api.assignTiers.mockResolvedValue({
       changes: [
-        { pokemonId: 6, pokemonName: 'charizard', oldTier: 'A', newTier: 'S' },
-        { pokemonId: 150, pokemonName: 'mewtwo', oldTier: 'S', newTier: 'A' },
-        { pokemonId: 151, pokemonName: 'mew', oldTier: 'S', newTier: 'A' },
+        { pokemonId: 150, pokemonName: 'mewtwo', oldTier: 'S', newTier: 'B' },
+        { pokemonId: 151, pokemonName: 'mew', oldTier: 'S', newTier: 'B' },
       ],
     });
+    useToastStore.setState({ toasts: [] });
   });
 
-  it('mueve varios Pokémon a la vez y enseña la cascada que devuelve el back', async () => {
+  it('mueve varios Pokémon a la vez, avisa con un toast y recarga el pool', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(await screen.findByRole('button', { name: 'Mewtwo, tier S' }));
     await user.click(screen.getByRole('button', { name: 'Mew, tier S' }));
 
-    // Dos elegidos que bajan dos tiers: hasta 4 más en cascada.
-    await user.click(screen.getByRole('button', {
-      name: 'Mover 2 a B; se moverán además hasta 4 para mantener los conteos',
-    }));
+    await user.click(screen.getByRole('button', { name: 'Mover 2 a B' }));
     await waitFor(() => expect(api.assignTiers).toHaveBeenCalledWith('l1', ['e1', 'e2'], 'B'));
 
-    const panel = await screen.findByRole('status');
-    expect(panel).toHaveTextContent('charizard: A → S');
-    expect(panel).toHaveTextContent('mewtwo: S → A');
+    await waitFor(() => expect(useToastStore.getState().toasts.map((t) => t.message)).toContain('2 Pokémon movidos a B'));
     expect(api.getClosedList).toHaveBeenCalledTimes(2);
   });
 

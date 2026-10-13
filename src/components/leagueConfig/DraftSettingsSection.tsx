@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { SectionProps } from './types';
 import NumberField from './NumberField';
 import TierNumberRow from '../TierNumberRow';
@@ -9,12 +10,15 @@ interface DraftSettingsSectionProps extends SectionProps {
   tierSumOk: boolean;
   /** Pokémon del pool, solo antes de preparar el draft (después el reparto real está en Preparar draft). */
   poolSize?: number;
-  /** Draft completado: los tiers del pool fijan precios y cláusulas de la temporada y el backend no los recalcula. */
-  tiersFixed?: boolean;
+  /**
+   * Draft completado: los porcentajes se guardan para el próximo draft (el backend no recalcula los tiers de la
+   * temporada). Con `manageHref` (solo admin) el aviso enlaza a Gestión de tiers, donde sí se mueven.
+   */
+  seasonTiers?: { manageHref?: string };
 }
 
 /** Reparto inicial de tiers, tamaño de equipo (= rondas del draft) y tiempo por turno. */
-export default function DraftSettingsSection({ form, setField, disabled, tierSum, tierSumOk, poolSize, tiersFixed }: DraftSettingsSectionProps) {
+export default function DraftSettingsSection({ form, setField, disabled, tierSum, tierSumOk, poolSize, seasonTiers }: DraftSettingsSectionProps) {
   const pcts = tierValues(form, PCT_KEY);
   const fixed = fixTierSum(pcts);
   const counts = poolSize ? tierCountsPreview(poolSize, pcts) : null;
@@ -27,9 +31,12 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
       <div className="config-field">
         <span className="config-label">Distribución de tiers</span>
         <span className="config-hint">
-          {tiersFixed
-            ? 'Los tiers de esta temporada ya están fijados por el draft: estos porcentajes no se pueden cambiar hasta el próximo draft.'
-            : 'Porcentaje del pool (ordenado por BST) que va a cada tier. Es el punto de partida al preparar el draft; después los tiers se ajustan a mano en Preparar draft.'}
+          {seasonTiers ? (
+            <>
+              Se aplican al preparar el próximo draft: los tiers de esta temporada no cambian.
+              {seasonTiers.manageHref && <> Para moverlos, usa <Link to={seasonTiers.manageHref}>Gestión de tiers</Link>.</>}
+            </>
+          ) : 'Porcentaje del pool (ordenado por BST) que va a cada tier. Es el punto de partida al preparar el draft; después los tiers se ajustan a mano en Preparar draft.'}
         </span>
         <TierNumberRow
           values={pcts}
@@ -37,7 +44,7 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
           labelFor={(tier) => `Porcentaje del tier ${tier}`}
           unit="%"
           max={100}
-          disabled={disabled || tiersFixed}
+          disabled={disabled}
         />
 
         <div className="tier-dist-bar" aria-hidden="true">
@@ -57,7 +64,7 @@ export default function DraftSettingsSection({ form, setField, disabled, tierSum
           <span className={tierSumOk ? 'tier-dist-ok' : 'tier-dist-bad'}>
             {tierSumOk ? `Suma: 100 % ✓` : `Suma: ${tierSum} % (${missing > 0 ? `faltan ${missing}` : `sobran ${-missing}`})`}
           </span>
-          {fixed && !disabled && !tiersFixed && (
+          {fixed && !disabled && (
             <button
               type="button"
               className="btn-ghost tier-dist-fix"
