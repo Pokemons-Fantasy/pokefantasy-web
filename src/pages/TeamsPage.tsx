@@ -14,7 +14,7 @@ import { getMyCoinBalance, getSchedule, getLeagueSettings } from '../api/leagues
 import { getTrades } from '../api/trades';
 import ProposeTradeModal from '../components/ProposeTradeModal';
 import TradesModal from '../components/TradesModal';
-import { priceForTier, releaseReward } from '../utils/tiers';
+import { priceForTier, releaseReward, toggleTier } from '../utils/tiers';
 import { deriveTeams } from '../utils/teams';
 import BenchActionModal from '../components/teams/BenchActionModal';
 import SwapModal from '../components/teams/SwapModal';
@@ -440,12 +440,7 @@ export default function TeamsPage() {
                 filterName={filterName}
                 onFilterNameChange={setFilterName}
                 filterTiers={filterTiers}
-                onToggleTier={(tier) => setFilterTiers((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(tier)) next.delete(tier);
-                  else next.add(tier);
-                  return next;
-                })}
+                onToggleTier={(tier) => setFilterTiers((prev) => toggleTier(prev, tier))}
                 onClear={() => { setFilterName(''); setFilterTiers(new Set()); }}
                 filterActive={filterActive}
                 filteredTeamCount={filteredRivals.length}

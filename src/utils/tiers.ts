@@ -9,6 +9,14 @@ export function tierRank(tier: Tier | null | undefined): number {
   return { S: 0, A: 1, B: 2, C: 3, D: 4 }[tier] ?? 4;
 }
 
+/** Añade o quita un tier de una selección múltiple, sin mutarla (para un setState). */
+export function toggleTier(prev: Set<Tier>, tier: Tier): Set<Tier> {
+  const next = new Set(prev);
+  if (next.has(tier)) next.delete(tier);
+  else next.add(tier);
+  return next;
+}
+
 export function priceForTier(settings: LeagueSettings | undefined, tier: Tier | null | undefined): number {
   if (!settings || !tier) return 0;
   const map: Record<Tier, number> = {

@@ -1074,6 +1074,31 @@ button.member-menu-item {
   border: 1px solid var(--success-border);
 }
 
+/* Pokémon bloqueado: tiempo hasta que se pueda robar, intercambiar o liberar */
+.lock-chip {
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+}
+
+/* Banquillo agrupado por tier */
+.bench-tier-group + .bench-tier-group { margin-top: 1.25rem; }
+.bench-tier-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.bench-tier-header .tier-badge { position: static; }
+
 .push-prompt {
   display: flex;
   flex-wrap: wrap;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deriveTeams, isPickLocked } from './teams';
+import { deriveTeams, isPickLocked, lockRemaining, lockedUntilLabel } from './teams';
 import type { DraftStatus, DraftPick } from '../api/pokemons';
 
 function pick(username: string, pokemonId: number, pokemonName = `mon-${pokemonId}`): DraftPick {
@@ -74,5 +74,41 @@ describe('isPickLocked', () => {
   it('returns false when lockedUntil is in the past', () => {
     const past = new Date(Date.now() - 60_000).toISOString();
     expect(isPickLocked({ lockedUntil: past })).toBe(false);
+  });
+});
+
+describe('lockRemaining', () => {
+  const now = new Date('2026-10-14T10:00:00Z');
+  const at = (ms: number) => new Date(now.getTime() + ms).toISOString();
+  const MIN = 60_000;
+  const HOUR = 60 * MIN;
+
+  it('sin bloqueo o ya vencido devuelve null', () => {
+    expect(lockRemaining(null, now)).toBeNull();
+    expect(lockRemaining(undefined, now)).toBeNull();
+    expect(lockRemaining(at(0), now)).toBeNull();
+    expect(lockRemaining(at(-MIN), now)).toBeNull();
+  });
+
+  it('con días muestra días y horas', () => {
+    expect(lockRemaining(at(2 * 24 * HOUR + 5 * HOUR + 30 * MIN), now)).toBe('2d 5h');
+    expect(lockRemaining(at(7 * 24 * HOUR), now)).toBe('7d');
+  });
+
+  it('con menos de un día muestra horas', () => {
+    expect(lockRemaining(at(5 * HOUR + 59 * MIN), now)).toBe('5h');
+    expect(lockRemaining(at(HOUR), now)).toBe('1h');
+  });
+
+  it('con menos de una hora muestra minutos, como mínimo 1', () => {
+    expect(lockRemaining(at(25 * MIN), now)).toBe('25 min');
+    expect(lockRemaining(at(10_000), now)).toBe('1 min');
+  });
+});
+
+describe('lockedUntilLabel', () => {
+  it('da el día y la hora local del desbloqueo', () => {
+    const until = new Date(2026, 9, 17, 21, 30);
+    expect(lockedUntilLabel(until.toISOString())).toBe('Bloqueado hasta sáb 17 oct 21:30');
   });
 });

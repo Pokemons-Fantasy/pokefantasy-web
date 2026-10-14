@@ -1,6 +1,5 @@
 import type { Tier } from '../../api/pokemons';
-import { TIER_ORDER } from '../../utils/tiers';
-
+import TierFilterChips from './TierFilterChips';
 
 interface TeamFilterBarProps {
   filterName: string;
@@ -27,29 +26,7 @@ export default function TeamFilterBar({
         onChange={(e) => onFilterNameChange(e.target.value)}
         style={{ marginBottom: '0.5rem' }}
       />
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginRight: '0.1rem' }}>
-          Tier:
-        </span>
-        {TIER_ORDER.map((tier) => (
-          <button
-            key={tier}
-            className={`gen-tab${filterTiers.has(tier) ? ' active' : ''}`}
-            onClick={() => onToggleTier(tier)}
-          >
-            {tier}
-          </button>
-        ))}
-        {filterActive && (
-          <button
-            className="gen-tab"
-            style={{ color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
-            onClick={onClear}
-          >
-            ✕ Limpiar
-          </button>
-        )}
-      </div>
+      <TierFilterChips selected={filterTiers} onToggle={onToggleTier} onClear={filterActive ? onClear : undefined} />
       {filterActive && (
         <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '0.45rem' }}>
           {filteredTeamCount}{' '}
