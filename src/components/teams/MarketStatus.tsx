@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import type { ScheduleResponse } from '../../api/leagues';
+import { useNow } from '../../hooks/useNow';
 import { windowStatus, type MarketWindow } from '../../utils/market';
 
 const WINDOWS: { kind: MarketWindow; label: string }[] = [
@@ -9,12 +9,7 @@ const WINDOWS: { kind: MarketWindow; label: string }[] = [
 
 /** Estado de las dos ventanas de mercado en una línea. Se refresca cada minuto por la cuenta atrás. */
 export default function MarketStatus({ schedule }: { schedule: ScheduleResponse }) {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useNow();
 
   return (
     <div className="market-status" role="status" aria-label="Estado del mercado">

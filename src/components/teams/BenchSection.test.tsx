@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import BenchSection from './BenchSection';
 import type { LeagueSettings } from '../../api/leagues';
 import type { BenchEntry, DraftPick, Tier } from '../../api/pokemons';
@@ -37,5 +38,27 @@ describe('BenchSection: mejoras al alcance', () => {
   it('con el mercado cerrado no marca nada', () => {
     renderBench(1000, true);
     expect(screen.queryByTitle(/^Entregando a/)).not.toBeInTheDocument();
+  });
+});
+
+describe('BenchSection: secciones por tier', () => {
+  it('pinta una sección por tier de S a D con su precio y cantidad', () => {
+    renderBench(0);
+    const sections = screen.getAllByRole('region');
+    expect(sections.map((s) => s.getAttribute('aria-label'))).toEqual(['Tier A', 'Tier D']);
+    expect(within(sections[0]).getByText('💰 300', { selector: '.bench-tier-header span' })).toBeInTheDocument();
+    expect(within(sections[1]).getByText('Gratis', { selector: '.bench-tier-header span' })).toBeInTheDocument();
+    expect(within(sections[1]).getByText('· 1 Pokémon')).toBeInTheDocument();
+  });
+
+  it('los chips filtran por tier y Limpiar vuelve a mostrarlo todo', async () => {
+    const user = userEvent.setup();
+    renderBench(0);
+    await user.click(screen.getByRole('button', { name: /^D/ }));
+    expect(screen.getAllByRole('region').map((s) => s.getAttribute('aria-label'))).toEqual(['Tier D']);
+    expect(screen.queryByText('lapras')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Limpiar/ }));
+    expect(screen.getAllByRole('region')).toHaveLength(2);
   });
 });

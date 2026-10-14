@@ -5,6 +5,8 @@ import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
 import { coinsLabel } from '../../utils/coins';
 import { isPickLocked } from '../../utils/teams';
+import { useNow } from '../../hooks/useNow';
+import LockChip from './LockChip';
 import { swapQuote } from '../../utils/benchSwap';
 
 interface SwapModalProps {
@@ -26,6 +28,7 @@ interface SwapModalProps {
 export default function SwapModal({
   benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, onConfirm, onClose, onBack,
 }: SwapModalProps) {
+  const now = useNow();
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
   const marketPrice = benchEntry.price ?? 0;
@@ -129,7 +132,6 @@ export default function SwapModal({
                       transform: isChosen ? 'translateY(-2px)' : undefined,
                       boxShadow: isChosen ? '0 0 14px var(--accent-glow)' : undefined,
                     }}
-                    title={locked ? 'Bloqueado: recién robado o intercambiado' : undefined}
                     onClick={choose}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }
@@ -143,7 +145,7 @@ export default function SwapModal({
                     />
                     <span className="pokemon-name">{pick.pokemonName}</span>
                     <TierBadge tier={giveTier} />
-                    {locked && <span style={{ fontSize: '0.68rem', color: 'var(--warning)' }}>🔒 Bloqueado</span>}
+                    {locked && <LockChip lockedUntil={pick.lockedUntil} now={now} />}
                   </div>
                 );
               })}

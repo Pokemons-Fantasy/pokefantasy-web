@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { tierRank, priceForTier, TIER_ORDER, releaseReward } from './tiers';
+import { tierRank, priceForTier, TIER_ORDER, releaseReward, toggleTier } from './tiers';
 import type { LeagueSettings } from '../api/leagues';
+import type { Tier } from '../api/pokemons';
 
 describe('TIER_ORDER', () => {
   it('va de mejor a peor y coincide con tierRank', () => {
@@ -60,5 +61,14 @@ describe('releaseReward', () => {
     };
     expect(releaseReward(settings, 'S')).toBe(75);
     expect(releaseReward(settings, null)).toBe(0);
+  });
+});
+
+describe('toggleTier', () => {
+  it('añade el tier si no estaba y lo quita si estaba, sin mutar el original', () => {
+    const prev = new Set<Tier>(['S']);
+    expect([...toggleTier(prev, 'A')]).toEqual(['S', 'A']);
+    expect([...toggleTier(prev, 'S')]).toEqual([]);
+    expect([...prev]).toEqual(['S']);
   });
 });
