@@ -33,6 +33,24 @@ describe('PokemonCard: tiempo de bloqueo', () => {
     expect(screen.queryByText('💰 300')).not.toBeInTheDocument();
   });
 
+  it('en tu equipo se ve la cláusula y se puede subir con los robos cerrados', () => {
+    render(
+      <PokemonCard pick={pick} tier="A" isMine locked now={now} isDraftCompleted stealWindowOpen={false}
+        stealPrice={300} canAffordSteal={false} onInfo={vi.fn()} onRaisePrice={vi.fn()} />,
+    );
+    expect(screen.getByText('🛡 300')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Subir precio de robo' })).toBeInTheDocument();
+  });
+
+  it('antes de acabar el draft no se ve la cláusula', () => {
+    render(
+      <PokemonCard pick={pick} tier="A" isMine locked={false} now={now} isDraftCompleted={false} stealWindowOpen={false}
+        stealPrice={300} canAffordSteal={false} onInfo={vi.fn()} onRaisePrice={vi.fn()} />,
+    );
+    expect(screen.queryByText('🛡 300')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Subir precio de robo' })).not.toBeInTheDocument();
+  });
+
   it('sin bloqueo no hay chip', () => {
     renderCard(true, false);
     expect(screen.queryByText(/Bloqueado hasta/)).not.toBeInTheDocument();

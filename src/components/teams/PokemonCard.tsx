@@ -36,7 +36,8 @@ export default function PokemonCard({
         <span className="pokemon-name">{pick.pokemonName}</span>
         <TierBadge tier={tier} />
         {locked && <LockChip lockedUntil={pick.lockedUntil} now={now} />}
-        {stealWindowOpen && (
+        {/* La cláusula se puede subir en cualquier momento tras el draft: solo robar depende de la ventana */}
+        {isDraftCompleted && (
           <>
             <span className="coin-badge" style={{
               marginTop: '0.25rem',
