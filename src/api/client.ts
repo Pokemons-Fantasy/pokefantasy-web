@@ -7,7 +7,8 @@ export const API_BASE_URL = resolveApiBaseUrl(import.meta.env.VITE_API_URL, Capa
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  // X-Requested-With: el backend rechaza las escrituras con cookie de sesión que no la traen (CSRF, ADR-018).
+  headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
   withCredentials: true,
 });
 
