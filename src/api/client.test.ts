@@ -6,6 +6,12 @@ const failWith = (status: number, code: string) => {
   return { error, adapter: () => Promise.reject(error) };
 };
 
+describe('apiClient', () => {
+  it('sends X-Requested-With on every request', () => {
+    expect(apiClient.defaults.headers['X-Requested-With']).toBe('XMLHttpRequest');
+  });
+});
+
 describe('onSessionExpired', () => {
   it('runs the handler on 401 UNAUTHENTICATED, keeps rejecting, and can be removed', async () => {
     const handler = vi.fn();
