@@ -346,7 +346,7 @@ body {
 .auth-footer { text-align: center; font-size: 0.875rem; color: var(--text-2); }
 .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
 .auth-footer a:hover { text-decoration: underline; }
-.fan-disclaimer { margin-top: 16px; text-align: center; font-size: 0.75rem; line-height: 1.4; color: var(--text-3); }
+.fan-disclaimer { margin-top: 16px; text-align: center; font-size: 0.75rem; line-height: 1.4; color: var(--text-2); }
 .fan-disclaimer a { color: inherit; text-decoration: underline; }
 .about-card h1 { font-size: 1.4rem; margin-bottom: 16px; }
 .about-card p { color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
