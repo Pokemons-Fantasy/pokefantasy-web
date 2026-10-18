@@ -58,7 +58,7 @@ describe('AdminPage', () => {
 
     await user.type(await screen.findByLabelText('Buscar usuarios'), 'tro');
     const row = (await screen.findByText('troll')).closest('li') as HTMLElement;
-    await user.click(within(row).getByRole('button', { name: 'Quitar foto' }));
+    await user.click(within(row).getByRole('button', { name: 'Quitar foto de troll' }));
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Quitar foto' }));
 
     await waitFor(() => expect(api.removeAvatar).toHaveBeenCalledWith('troll'));
@@ -71,8 +71,8 @@ describe('AdminPage', () => {
 
     await user.type(await screen.findByLabelText('Buscar usuarios'), 'tro');
     const row = (await screen.findByText('trollboss')).closest('li') as HTMLElement;
-    expect(within(row).queryByRole('button', { name: 'Borrar cuenta' })).not.toBeInTheDocument();
-    expect(within(row).queryByRole('button', { name: 'Quitar foto' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Borrar cuenta de trollboss' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Quitar foto de trollboss' })).not.toBeInTheDocument();
   });
 
   it('deletes a user after confirming', async () => {
@@ -82,7 +82,7 @@ describe('AdminPage', () => {
 
     await user.type(await screen.findByLabelText('Buscar usuarios'), 'tro');
     const row = (await screen.findByText('troll')).closest('li') as HTMLElement;
-    await user.click(within(row).getByRole('button', { name: 'Borrar cuenta' }));
+    await user.click(within(row).getByRole('button', { name: 'Borrar cuenta de troll' }));
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Borrar cuenta' }));
 
     await waitFor(() => expect(api.deleteUser).toHaveBeenCalledWith('troll'));
@@ -95,7 +95,7 @@ describe('AdminPage', () => {
 
     await user.type(await screen.findByLabelText('Buscar ligas'), 'insu');
     const row = (await screen.findByText('Insulto')).closest('li') as HTMLElement;
-    await user.click(within(row).getByRole('button', { name: 'Renombrar' }));
+    await user.click(within(row).getByRole('button', { name: 'Renombrar Insulto' }));
     const dialog = screen.getByRole('dialog', { name: 'Renombrar liga' });
     const input = within(dialog).getByLabelText('Nuevo nombre');
     await user.clear(input);
@@ -118,5 +118,28 @@ describe('AdminPage', () => {
     await new Promise((r) => setTimeout(r, 400));
 
     expect(api.searchUsers).not.toHaveBeenCalled();
+  });
+
+  it('shows an error when a search fails, without looking like an empty result', async () => {
+    const user = userEvent.setup();
+    api.searchUsers.mockRejectedValue(Object.assign(new Error('500'), {
+      isAxiosError: true, response: { status: 500, data: { code: 'INTERNAL_ERROR', message: 'Error interno del servidor' } },
+    }));
+    renderPage();
+
+    await user.type(await screen.findByLabelText('Buscar usuarios'), 'tro');
+
+    expect(await screen.findByText(/No se ha podido buscar/)).toBeInTheDocument();
+    expect(screen.queryByText('Sin resultados')).not.toBeInTheDocument();
+  });
+
+  it('says when there are no results', async () => {
+    const user = userEvent.setup();
+    api.searchLeagues.mockResolvedValue([]);
+    renderPage();
+
+    await user.type(await screen.findByLabelText('Buscar ligas'), 'zzz');
+
+    expect(await screen.findByText('Sin resultados')).toBeInTheDocument();
   });
 });

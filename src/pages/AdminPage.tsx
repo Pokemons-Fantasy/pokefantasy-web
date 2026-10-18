@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
 import { getMe } from '../api/auth';
 import { deleteUser, removeAvatar, renameLeague, searchLeagues, searchUsers, type AdminLeague, type AdminUser } from '../api/admin';
@@ -36,11 +36,13 @@ export default function AdminPage() {
     queryKey: ['admin-users', users],
     queryFn: () => searchUsers(users),
     enabled: isAdmin && users.length >= MIN_QUERY,
+    placeholderData: keepPreviousData,
   });
   const leaguesResult = useQuery({
     queryKey: ['admin-leagues', leagues],
     queryFn: () => searchLeagues(leagues),
     enabled: isAdmin && leagues.length >= MIN_QUERY,
+    placeholderData: keepPreviousData,
   });
 
   const userAction = useMutation({
@@ -75,6 +77,7 @@ export default function AdminPage() {
             value={userQuery}
             onChange={(e) => setUserQuery(e.target.value)}
           />
+          <SearchStatus query={userQuery} result={usersResult} />
           <ul className="admin-list">
             {(usersResult.data ?? []).map((user) => (
               <li key={user.username} className="admin-row">
@@ -82,12 +85,14 @@ export default function AdminPage() {
                 <span className="admin-row-name">{user.username}</span>
                 {user.admin && <span className="admin-row-meta">admin</span>}
                 {!user.admin && user.avatarVersion != null && (
-                  <button type="button" className="btn-ghost" onClick={() => setPending({ kind: 'photo', user })}>
+                  <button type="button" className="btn-ghost" aria-label={`Quitar foto de ${user.username}`}
+                    onClick={() => setPending({ kind: 'photo', user })}>
                     Quitar foto
                   </button>
                 )}
                 {!user.admin && (
-                  <button type="button" className="btn-danger" onClick={() => setPending({ kind: 'delete', user })}>
+                  <button type="button" className="btn-danger" aria-label={`Borrar cuenta de ${user.username}`}
+                    onClick={() => setPending({ kind: 'delete', user })}>
                     Borrar cuenta
                   </button>
                 )}
@@ -105,12 +110,14 @@ export default function AdminPage() {
             value={leagueQuery}
             onChange={(e) => setLeagueQuery(e.target.value)}
           />
+          <SearchStatus query={leagueQuery} result={leaguesResult} />
           <ul className="admin-list">
             {(leaguesResult.data ?? []).map((league) => (
               <li key={league.id} className="admin-row">
                 <span className="admin-row-name">{league.name}</span>
                 <span className="admin-row-meta">{league.members} miembros</span>
-                <button type="button" className="btn-ghost" onClick={() => setRenaming(league)}>Renombrar</button>
+                <button type="button" className="btn-ghost" aria-label={`Renombrar ${league.name}`}
+                  onClick={() => setRenaming(league)}>Renombrar</button>
               </li>
             ))}
           </ul>
@@ -197,4 +204,20 @@ function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose:
       </div>
     </div>
   );
+}
+
+/** Estado de una búsqueda, anunciado a lectores de pantalla: mínimo de letras, cargando, error o sin resultados. */
+function SearchStatus({ query, result }: { query: string; result: UseQueryResult<unknown[]> }) {
+  const q = query.trim();
+  let content: ReactNode = null;
+  if (q.length > 0 && q.length < MIN_QUERY) {
+    content = <p className="field-hint">Escribe al menos {MIN_QUERY} letras.</p>;
+  } else if (result.isError) {
+    content = <p className="field-hint field-hint-error">No se ha podido buscar: {extractErrorMessage(result.error)}</p>;
+  } else if (result.isFetching && !result.data) {
+    content = <SkeletonGrid count={2} cardHeight="48px" />;
+  } else if (q.length >= MIN_QUERY && result.data?.length === 0) {
+    content = <p className="field-hint">Sin resultados</p>;
+  }
+  return <div aria-live="polite">{content}</div>;
 }
