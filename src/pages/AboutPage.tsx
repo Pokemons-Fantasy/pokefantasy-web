@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { LEGAL_CONTACT_EMAIL, LEGAL_CONTROLLER } from '../legal';
 
 /** Página pública con el aviso legal del proyecto (auditoría legal L1 y L4). */
 export default function AboutPage() {
@@ -19,6 +20,10 @@ export default function AboutPage() {
           Los datos y las imágenes de los Pokémon se obtienen de{' '}
           <a href="https://pokeapi.co" target="_blank" rel="noopener noreferrer">PokeAPI</a> y no se alojan en
           este sitio.
+        </p>
+        <p>
+          Lo mantiene {LEGAL_CONTROLLER}. Contacto:{' '}
+          <a href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>
         </p>
         <p className="auth-footer"><Link to="/">Volver</Link></p>
       </article>
