@@ -22,6 +22,11 @@ export const changePassword = async (currentPassword: string, newPassword: strin
   await apiClient.put('/v1/user/password', { currentPassword, newPassword });
 };
 
+/** Borra la cuenta (pide la contraseña). El backend borra también las cookies de sesión. */
+export const deleteAccount = async (password: string): Promise<void> => {
+  await apiClient.delete('/v1/users/me', { data: { password } });
+};
+
 export interface CurrentUser {
   username: string;
   /** Versión de la foto de perfil; null o ausente = sin foto. */
