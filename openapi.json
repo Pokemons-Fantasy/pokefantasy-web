@@ -513,6 +513,39 @@
                 }
             }
         },
+        "/v1/admin/leagues/{leagueId}/name": {
+            "put": {
+                "tags": [
+                    "admin-controller"
+                ],
+                "operationId": "renameLeague",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RenameLeagueRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/users/push-token": {
             "post": {
                 "tags": [
@@ -1732,6 +1765,95 @@
                 }
             }
         },
+        "/v1/admin/users": {
+            "get": {
+                "tags": [
+                    "admin-controller"
+                ],
+                "operationId": "searchUsers_1",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminUserResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/admin/leagues": {
+            "get": {
+                "tags": [
+                    "admin-controller"
+                ],
+                "operationId": "searchLeagues",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminLeagueResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/me": {
+            "delete": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "deleteAccount",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeleteAccountRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/trades/{tradeId}": {
             "delete": {
                 "tags": [
@@ -1811,6 +1933,52 @@
                     },
                     {
                         "name": "pokemonName",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/admin/users/{username}": {
+            "delete": {
+                "tags": [
+                    "admin-controller"
+                ],
+                "operationId": "deleteUser",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1/admin/users/{username}/avatar": {
+            "delete": {
+                "tags": [
+                    "admin-controller"
+                ],
+                "operationId": "removeAvatar",
+                "parameters": [
+                    {
+                        "name": "username",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -2100,6 +2268,14 @@
                     }
                 }
             },
+            "RenameLeagueRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
             "RegisterPushTokenRequest": {
                 "type": "object",
                 "properties": {
@@ -2312,6 +2488,9 @@
                     "avatarVersion": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "admin": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -3027,6 +3206,44 @@
                             "COMPLETED",
                             "CANCELLED"
                         ]
+                    }
+                }
+            },
+            "AdminUserResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatarVersion": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "admin": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "AdminLeagueResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "members": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "DeleteAccountRequest": {
+                "type": "object",
+                "properties": {
+                    "password": {
+                        "type": "string"
                     }
                 }
             }

@@ -50,6 +50,28 @@ describe('MyProfilePage', () => {
     expect(screen.queryByText('Configuración')).not.toBeInTheDocument();
   });
 
+  it('enlaza el panel de administración solo para admins', async () => {
+    vi.mocked(authApi.getMe).mockResolvedValue({ username: 'ash', avatarVersion: null, admin: true });
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter><MyProfilePage /></MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByRole('link', { name: 'Panel de administración' })).toHaveAttribute('href', '/admin');
+  });
+
+  it('no enlaza el panel a quien no es admin', async () => {
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter><MyProfilePage /></MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText('Kanto');
+    expect(screen.queryByRole('link', { name: 'Panel de administración' })).not.toBeInTheDocument();
+  });
+
   it('abre el modal de borrar cuenta y enlaza la política de privacidad', async () => {
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>

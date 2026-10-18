@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
@@ -112,6 +113,7 @@ const router = createBrowserRouter([
         children: [
           { path: '/', handle: title('Inicio'), element: <HomePage /> },
           { path: '/profile', handle: title('Mi perfil'), element: <MyProfilePage /> },
+          { path: '/admin', handle: title('Administración'), element: <AdminPage /> },
           { path: '/leagues', handle: title('Mis ligas'), element: <LeaguesPage /> },
           {
             path: '/leagues/:leagueId',

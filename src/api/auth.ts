@@ -31,6 +31,8 @@ export interface CurrentUser {
   username: string;
   /** Versión de la foto de perfil; null o ausente = sin foto. */
   avatarVersion?: number | null;
+  /** Admin global (rol ADMIN): ve el panel de moderación. Ausente con un backend anterior a L5. */
+  admin?: boolean;
 }
 
 export interface AvatarVersionResponse {

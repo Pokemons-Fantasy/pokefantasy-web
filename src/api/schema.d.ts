@@ -180,6 +180,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/leagues/{leagueId}/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["renameLeague"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users/push-token": {
         parameters: {
             query?: never;
@@ -772,6 +788,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchUsers_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/leagues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchLeagues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteAccount"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/trades/{tradeId}": {
         parameters: {
             query?: never;
@@ -815,6 +879,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["denominate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{username}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteUser"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/users/{username}/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeAvatar"];
         options?: never;
         head?: never;
         patch?: never;
@@ -926,6 +1022,9 @@ export interface components {
             /** @enum {string} */
             tier?: "S" | "A" | "B" | "C" | "D";
         };
+        RenameLeagueRequest: {
+            name?: string;
+        };
         RegisterPushTokenRequest: {
             token?: string;
         };
@@ -1006,6 +1105,7 @@ export interface components {
             username?: string;
             /** Format: int64 */
             avatarVersion?: number;
+            admin?: boolean;
         };
         AvailablePokemonResponse: {
             /** Format: int32 */
@@ -1265,6 +1365,21 @@ export interface components {
             status?: "SETUP" | "ACTIVE";
             /** @enum {string} */
             draftStatus?: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+        };
+        AdminUserResponse: {
+            username?: string;
+            /** Format: int64 */
+            avatarVersion?: number;
+            admin?: boolean;
+        };
+        AdminLeagueResponse: {
+            id?: string;
+            name?: string;
+            /** Format: int32 */
+            members?: number;
+        };
+        DeleteAccountRequest: {
+            password?: string;
         };
     };
     responses: never;
@@ -1626,6 +1741,30 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["TierAdjustmentResponse"];
                 };
+            };
+        };
+    };
+    renameLeague: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameLeagueRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2522,6 +2661,72 @@ export interface operations {
             };
         };
     };
+    searchUsers_1: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminUserResponse"][];
+                };
+            };
+        };
+    };
+    searchLeagues: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminLeagueResponse"][];
+                };
+            };
+        };
+    };
+    deleteAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     cancel: {
         parameters: {
             query?: never;
@@ -2571,6 +2776,46 @@ export interface operations {
             path: {
                 leagueId: string;
                 pokemonName: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    removeAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
             };
             cookie?: never;
         };

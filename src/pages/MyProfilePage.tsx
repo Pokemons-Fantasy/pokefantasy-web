@@ -221,7 +221,12 @@ export default function MyProfilePage() {
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>
         <ChangePasswordForm />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-          <Link to="/privacy" style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Política de privacidad</Link>
+          <span style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <Link to="/privacy" style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Política de privacidad</Link>
+            {me?.admin && (
+              <Link to="/admin" style={{ fontSize: '0.875rem', color: 'var(--accent)' }}>Panel de administración</Link>
+            )}
+          </span>
           <button type="button" className="btn-danger" onClick={() => setDeletingAccount(true)}>Borrar cuenta</button>
         </div>
         {deletingAccount && <DeleteAccountModal onClose={() => setDeletingAccount(false)} />}
