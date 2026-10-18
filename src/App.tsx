@@ -8,6 +8,7 @@ import { useAuthStore } from './store/authStore';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
+import PrivacyPage from './pages/PrivacyPage';
 import HomePage from './pages/HomePage';
 import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
@@ -103,6 +104,7 @@ const router = createBrowserRouter([
       { path: '/login', handle: title('Entrar'), element: <LoginPage /> },
       { path: '/register', handle: title('Crear cuenta'), element: <RegisterPage /> },
       { path: '/about', handle: title('Acerca de'), element: <AboutPage /> },
+      { path: '/privacy', handle: title('Privacidad'), element: <PrivacyPage /> },
       {
         element: <ProtectedRoute />,
         children: [

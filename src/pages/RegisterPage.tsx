@@ -18,7 +18,8 @@ export default function RegisterPage() {
 
   const userError = usernameError(username);
   const passError = passwordError(password);
-  const canSubmit = !!username && !!password && !userError && !passError;
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const canSubmit = !!username && !!password && !userError && !passError && acceptedPrivacy;
 
   const mutation = useMutation({
     mutationFn: () => register(username, password),
@@ -66,6 +67,16 @@ export default function RegisterPage() {
           <p id="register-password-hint" className={passError ? 'field-hint field-hint-error' : 'field-hint'}>
             {passError ?? `Mínimo ${PASSWORD_MIN_LENGTH} caracteres.`}
           </p>
+          <label className="checkbox-row" htmlFor="register-privacy">
+            <input
+              id="register-privacy"
+              type="checkbox"
+              checked={acceptedPrivacy}
+              onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+              required
+            />
+            <span>Tengo 14 años o más y he leído la <Link to="/privacy">política de privacidad</Link></span>
+          </label>
           <button className="btn-submit" type="submit" disabled={!canSubmit || mutation.isPending}>
             {mutation.isPending ? 'Creando cuenta...' : 'Registrarse'}
           </button>

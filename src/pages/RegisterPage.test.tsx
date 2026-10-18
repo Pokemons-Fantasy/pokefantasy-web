@@ -41,6 +41,23 @@ describe('RegisterPage', () => {
     expect(mockedRegister).not.toHaveBeenCalled();
   });
 
+  it('does not register until the age and privacy box is checked', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText('Usuario'), 'ash_k');
+    await user.type(screen.getByPlaceholderText('Contraseña'), 'pikachu123');
+    const submit = screen.getByRole('button', { name: 'Registrarse' });
+    expect(submit).toBeDisabled();
+    await user.click(submit);
+    expect(mockedRegister).not.toHaveBeenCalled();
+
+    const box = screen.getByRole('checkbox', { name: /Tengo 14 años o más y he leído la política de privacidad/ });
+    expect(screen.getByRole('link', { name: 'política de privacidad' })).toHaveAttribute('href', '/privacy');
+    await user.click(box);
+    expect(submit).toBeEnabled();
+  });
+
   it('submits when username and password are valid', async () => {
     mockedRegister.mockResolvedValue(undefined as never);
     const user = userEvent.setup();
@@ -48,6 +65,7 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByPlaceholderText('Usuario'), 'ash_k');
     await user.type(screen.getByPlaceholderText('Contraseña'), 'pikachu123');
+    await user.click(screen.getByRole('checkbox', { name: /14 años/ }));
     await user.click(screen.getByRole('button', { name: 'Registrarse' }));
 
     await waitFor(() => expect(mockedRegister).toHaveBeenCalledWith('ash_k', 'pikachu123'));
@@ -69,6 +87,7 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByPlaceholderText('Usuario'), 'ash_k');
     await user.type(screen.getByPlaceholderText('Contraseña'), 'pikachu123');
+    await user.click(screen.getByRole('checkbox', { name: /14 años/ }));
     await user.click(screen.getByRole('button', { name: 'Registrarse' }));
 
     expect(await screen.findByText('login from /invite/tok')).toBeInTheDocument();

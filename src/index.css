@@ -351,6 +351,11 @@ body {
 .about-card h1 { font-size: 1.4rem; margin-bottom: 16px; }
 .about-card p { color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
 .about-card a { color: var(--accent); }
+.about-card h2 { font-size: 1rem; margin: 20px 0 8px; }
+.about-card ul { color: var(--text-2); line-height: 1.6; margin: 0 0 12px 1.2rem; }
+.checkbox-row { display: flex; gap: 8px; align-items: flex-start; font-size: 0.85rem; color: var(--text-2); margin: 4px 0 12px; cursor: pointer; }
+.checkbox-row input { width: auto; margin-top: 2px; }
+.checkbox-row a { color: var(--accent); }
 
 /* ─── LAYOUT ─── */
 

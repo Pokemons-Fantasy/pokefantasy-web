@@ -56,7 +56,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
       <div className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <h2 id={titleId}>Borrar cuenta</h2>
         <p className="confirm-dialog-message">
-          Se borrará tu cuenta y no se puede deshacer. Saldrás de todas tus ligas, tus Pokémon volverán a la banca
+          Se borrará tu cuenta y no se puede deshacer. Saldrás de todas tus ligas, tus Pokémon volverán al banquillo
           y en el historial aparecerás como «Usuario eliminado». Si eres el único admin de una liga, pasará a serlo
           el miembro más antiguo; si estás solo, la liga se borra.
         </p>
