@@ -75,7 +75,10 @@ export default function RegisterPage() {
               onChange={(e) => setAcceptedPrivacy(e.target.checked)}
               required
             />
-            <span>Tengo 14 años o más y he leído la <Link to="/privacy">política de privacidad</Link></span>
+            <span>
+              Tengo 14 años o más y he leído la <Link to="/privacy">política de privacidad</Link> y las{' '}
+              <Link to="/terms">normas de uso</Link>
+            </span>
           </label>
           <button className="btn-submit" type="submit" disabled={!canSubmit || mutation.isPending}>
             {mutation.isPending ? 'Creando cuenta...' : 'Registrarse'}

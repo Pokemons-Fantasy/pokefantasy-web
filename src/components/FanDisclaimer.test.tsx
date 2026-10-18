@@ -12,5 +12,6 @@ describe('FanDisclaimer', () => {
     expect(text).toContain('no afiliado a Nintendo, Game Freak, Creatures ni The Pokémon Company');
     expect(screen.getByRole('link', { name: 'Acerca de' })).toHaveAttribute('href', '/about');
     expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '/privacy');
+    expect(screen.getByRole('link', { name: 'Normas' })).toHaveAttribute('href', '/terms');
   });
 });

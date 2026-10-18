@@ -26,7 +26,7 @@ export default function AboutPage() {
           <a href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>
         </p>
         <p>
-          Qué datos se tratan y cómo borrar tu cuenta: <Link to="/privacy">política de privacidad</Link>.
+          Qué datos se tratan y cómo borrar tu cuenta: <Link to="/privacy">política de privacidad</Link>. Qué está permitido: <Link to="/terms">normas de uso</Link>.
         </p>
         <p className="auth-footer"><Link to="/">Volver</Link></p>
       </article>

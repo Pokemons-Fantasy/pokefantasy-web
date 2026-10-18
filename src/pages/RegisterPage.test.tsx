@@ -52,8 +52,9 @@ describe('RegisterPage', () => {
     await user.click(submit);
     expect(mockedRegister).not.toHaveBeenCalled();
 
-    const box = screen.getByRole('checkbox', { name: /Tengo 14 años o más y he leído la política de privacidad/ });
+    const box = screen.getByRole('checkbox', { name: /Tengo 14 años o más y he leído la política de privacidad y las normas de uso/ });
     expect(screen.getByRole('link', { name: 'política de privacidad' })).toHaveAttribute('href', '/privacy');
+    expect(screen.getByRole('link', { name: 'normas de uso' })).toHaveAttribute('href', '/terms');
     await user.click(box);
     expect(submit).toBeEnabled();
   });
