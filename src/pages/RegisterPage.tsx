@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useLocation, Link, type Location } from 'react-router-dom';
 import { register } from '../api/auth';
+import FanDisclaimer from '../components/FanDisclaimer';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { passwordError, usernameError, PASSWORD_MIN_LENGTH } from '../utils/registration';
@@ -71,6 +72,7 @@ export default function RegisterPage() {
         </form>
         {mutation.isSuccess && <p className="success">¡Cuenta creada! Redirigiendo...</p>}
         <p className="auth-footer">¿Ya tienes cuenta? <Link to="/login" state={{ from }}>Inicia sesión</Link></p>
+        <FanDisclaimer />
       </div>
     </div>
   );

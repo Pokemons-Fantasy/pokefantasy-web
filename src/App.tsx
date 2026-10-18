@@ -7,6 +7,7 @@ import { App as CapApp } from '@capacitor/app';
 import { useAuthStore } from './store/authStore';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AboutPage from './pages/AboutPage';
 import HomePage from './pages/HomePage';
 import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
@@ -101,6 +102,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/login', handle: title('Entrar'), element: <LoginPage /> },
       { path: '/register', handle: title('Crear cuenta'), element: <RegisterPage /> },
+      { path: '/about', handle: title('Acerca de'), element: <AboutPage /> },
       {
         element: <ProtectedRoute />,
         children: [

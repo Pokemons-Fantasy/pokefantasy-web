@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
   --bg: #0a0a0f;
@@ -131,7 +130,7 @@
 button, input, select, textarea { font-family: inherit; }
 
 body {
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: 'Outfit Variable', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -347,6 +346,11 @@ body {
 .auth-footer { text-align: center; font-size: 0.875rem; color: var(--text-2); }
 .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
 .auth-footer a:hover { text-decoration: underline; }
+.fan-disclaimer { margin-top: 16px; text-align: center; font-size: 0.75rem; line-height: 1.4; color: var(--text-3); }
+.fan-disclaimer a { color: inherit; text-decoration: underline; }
+.about-card h1 { font-size: 1.4rem; margin-bottom: 16px; }
+.about-card p { color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
+.about-card a { color: var(--accent); }
 
 /* ─── LAYOUT ─── */
 

@@ -21,11 +21,10 @@
     <meta property="og:image" content="https://pokefantasy.netlify.app/icons/icon-512.png" />
     <meta property="og:locale" content="es_ES" />
     <meta name="twitter:card" content="summary" />
-    <script>
-      if (localStorage.getItem('pf-theme') === 'light') {
-        document.documentElement.classList.add('theme-light');
-      }
-    </script>
+    <!-- Proyecto fan: fuera de los buscadores (auditoría legal L1). También X-Robots-Tag y robots.txt -->
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- Tema antes de pintar. En un fichero aparte para que la CSP no tenga que admitir scripts inline -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

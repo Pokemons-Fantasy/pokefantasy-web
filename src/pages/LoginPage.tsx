@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AppVersion from '../components/AppVersion';
+import FanDisclaimer from '../components/FanDisclaimer';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation, Link, type Location } from 'react-router-dom';
 import { login } from '../api/auth';
@@ -81,6 +82,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="auth-footer">¿No tienes cuenta? <Link to="/register" state={{ from }}>Regístrate</Link></p>
+        <FanDisclaimer />
         <AppVersion />
       </div>
     </div>
