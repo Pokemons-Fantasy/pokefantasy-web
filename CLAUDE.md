@@ -21,9 +21,9 @@ Toda la documentación y el conocimiento del proyecto (back y front) vive en el 
 
 ## Git workflow (mandatory)
 
-1. **Revisar PRs abiertos** en ambos repos antes de crear ramas o tocar código (snippet en el `CLAUDE.md` del backend). Si hay PRs abiertos, mencionarlos al usuario.
+1. **Revisar PRs abiertos** en ambos repos antes de crear ramas o tocar código. Si hay PRs abiertos, mencionarlos al usuario.
 2. **Siempre invocar el skill `brainstorming`** antes de implementar cualquier feature nueva.
-3. Never push directly to `main`: `feature/...` or `fix/...` → commit → push → PR contra `main`. No hay `gh` CLI: PRs con la API de GitHub (`$env:GITHUB_TOKEN`, cargar con `. $PROFILE` si está vacío) hacia `Pokemons-Fantasy/pokefantasy-web`.
+3. Never push directly to `main`: `feature/...` or `fix/...` → commit → push → PR contra `main`. PRs (y cualquier consulta a GitHub) solo con la integración de GitHub, hacia `Pokemons-Fantasy/pokefantasy-web`; nada de token, API REST desde PowerShell ni `gh` CLI.
 4. Si un cambio toca back y front, el front debe tolerar el back viejo (campos opcionales) y el back no romper el front viejo: así da igual el orden de los merges.
 
 ## Comandos
