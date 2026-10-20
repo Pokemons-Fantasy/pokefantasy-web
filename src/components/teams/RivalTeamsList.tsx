@@ -36,7 +36,7 @@ export default function RivalTeamsList({
 }: RivalTeamsListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const idPrefix = useId();
-  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
+  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
   const allExpanded = teams.length > 0 && teams.every((t) => expanded.has(t.username));
 
   const toggle = (username: string) => setExpanded((prev) => {
@@ -117,7 +117,7 @@ export default function RivalTeamsList({
                           pick={pick}
                           tier={tierByName.get(pick.pokemonName)}
                           isMine={false}
-                          locked={locked}
+                          locked={locked}
                           isDraftCompleted={isDraftCompleted}
                           stealWindowOpen={stealWindowOpen}
                           swapWindowOpen={swapWindowOpen}

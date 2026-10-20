@@ -26,7 +26,7 @@ interface SwapModalProps {
  */
 export default function SwapModal({
   benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, onConfirm, onClose, onBack,
-}: SwapModalProps) {
+}: SwapModalProps) {
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
   const marketPrice = benchEntry.price ?? 0;
