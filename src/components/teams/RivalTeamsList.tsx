@@ -2,7 +2,6 @@ import { useId, useState } from 'react';
 import type { DraftPick, Tier } from '../../api/pokemons';
 import type { Team } from '../../utils/teams';
 import { isPickLocked } from '../../utils/teams';
-import { useNow } from '../../hooks/useNow';
 import { TIER_ORDER } from '../../utils/tiers';
 import PokemonCard from './PokemonCard';
 import UserAvatar from '../avatar/UserAvatar';
@@ -37,8 +36,7 @@ export default function RivalTeamsList({
 }: RivalTeamsListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const idPrefix = useId();
-  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
-  const now = useNow();
+  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
   const allExpanded = teams.length > 0 && teams.every((t) => expanded.has(t.username));
 
   const toggle = (username: string) => setExpanded((prev) => {
@@ -119,8 +117,7 @@ export default function RivalTeamsList({
                           pick={pick}
                           tier={tierByName.get(pick.pokemonName)}
                           isMine={false}
-                          locked={locked}
-                          now={now}
+                          locked={locked}
                           isDraftCompleted={isDraftCompleted}
                           stealWindowOpen={stealWindowOpen}
                           swapWindowOpen={swapWindowOpen}

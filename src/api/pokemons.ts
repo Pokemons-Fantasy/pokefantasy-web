@@ -52,8 +52,12 @@ export interface DraftPick {
   pickedAt: string;
   /** Custom steal price set by owner. null/undefined = use priceTierX default. */
   customStealPrice?: number | null;
-  /** ISO timestamp hasta el que este pokémon está bloqueado. null/undefined = libre. */
+  /** Back viejo: ISO timestamp hasta el que está bloqueado. El back actual ya no lo manda (usa locked). */
   lockedUntil?: string | null;
+  /** Jornada en la que entró al equipo: bloqueado hasta que tenga todos sus resultados. */
+  lockedThroughJornada?: number | null;
+  /** Calculado en el back con el calendario. Ausente en el back viejo. */
+  locked?: boolean;
   /** Monedas pagadas en el draft. Ausente en drafts sin presupuesto. */
   price?: number | null;
 }

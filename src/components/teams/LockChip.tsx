@@ -1,13 +1,10 @@
-import { lockRemaining, lockedUntilLabel } from '../../utils/teams';
-
-/** "🔒 2d 5h": cuánto le queda a un Pokémon bloqueado (recién robado, intercambiado o comprado). */
-export default function LockChip({ lockedUntil, now }: { lockedUntil: string | null | undefined; now: Date }) {
-  const remaining = lockRemaining(lockedUntil, now);
-  if (!remaining || !lockedUntil) return null;
-  const label = lockedUntilLabel(lockedUntil);
+/** "🔒 J3": un Pokémon recién robado, intercambiado o fichado sigue bloqueado hasta que termine esa jornada. */
+export default function LockChip({ jornada }: { jornada: number | null | undefined }) {
+  if (jornada == null) return null;
+  const label = `Bloqueado hasta que termine la jornada ${jornada}`;
   return (
     <span className="lock-chip" title={label}>
-      <span aria-hidden="true">🔒 </span>{remaining}
+      <span aria-hidden="true">🔒 </span>J{jornada}
       <span className="sr-only">{label}</span>
     </span>
   );

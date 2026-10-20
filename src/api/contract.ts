@@ -60,7 +60,8 @@ export type Contract = [
   Assert<FieldsMatch<RedeemInviteResponse, S['RedeemInviteResponse']>>,
   Assert<FieldsMatch<AvailablePokemon, S['AvailablePokemonResponse']>>,
   Assert<FieldsMatch<BenchEntry, S['BenchEntryResponse']>>,
-  Assert<FieldsMatch<DraftPick, S['DraftPickResponse']>>,
+  // lockedUntil solo lo manda el back anterior al bloqueo por jornada; quitarlo del tipo tras ese release.
+  Assert<FieldsMatch<Omit<DraftPick, 'lockedUntil'>, S['DraftPickResponse']>>,
   Assert<FieldsMatch<DraftStatus, S['DraftStatusResponse']>>,
   Assert<FieldsMatch<DraftConfig, S['DraftConfig']>>,
   Assert<FieldsMatch<DraftConfigPayload, S['UpdateDraftConfigRequest']>>,

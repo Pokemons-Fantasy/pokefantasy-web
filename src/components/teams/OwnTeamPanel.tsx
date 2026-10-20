@@ -1,7 +1,6 @@
 import type { DraftPick, Tier } from '../../api/pokemons';
 import type { Team } from '../../utils/teams';
 import { isPickLocked } from '../../utils/teams';
-import { useNow } from '../../hooks/useNow';
 import PokemonCard from './PokemonCard';
 import CoinBadge from './CoinBadge';
 import UserAvatar from '../avatar/UserAvatar';
@@ -28,8 +27,7 @@ export default function OwnTeamPanel({
   team, maxTeamSize, myCoins, isDraftCompleted, collapsed, onToggleCollapse, copied, onExportShowdown,
   tierByName, stealWindowOpen, swapWindowClosed, effectiveStealPrice, onRaisePrice, onRelease, onInfo,
 }: OwnTeamPanelProps) {
-  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
-  const now = useNow();
+  // Cada minuto: baja el tiempo de bloqueo y se desbloquea sin recargar
   return (
     <div className="own-team-panel">
       <div className="own-team-panel-header">
@@ -75,8 +73,7 @@ export default function OwnTeamPanel({
                   pick={pick}
                   tier={tierByName.get(pick.pokemonName)}
                   isMine
-                  locked={isPickLocked(pick)}
-                  now={now}
+                  locked={isPickLocked(pick)}
                   isDraftCompleted={isDraftCompleted}
                   stealWindowOpen={stealWindowOpen}
                   stealPrice={effectiveStealPrice(pick)}
