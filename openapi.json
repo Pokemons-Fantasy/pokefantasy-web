@@ -2700,9 +2700,12 @@
                         "type": "integer",
                         "format": "int32"
                     },
-                    "lockedUntil": {
-                        "type": "string",
-                        "format": "date-time"
+                    "lockedThroughJornada": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "locked": {
+                        "type": "boolean"
                     },
                     "price": {
                         "type": "integer",

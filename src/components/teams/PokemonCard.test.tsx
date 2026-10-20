@@ -3,39 +3,37 @@ import { render, screen } from '@testing-library/react';
 import PokemonCard from './PokemonCard';
 import type { DraftPick } from '../../api/pokemons';
 
-const now = new Date('2026-10-14T10:00:00Z');
-const lockedUntil = new Date(now.getTime() + (2 * 24 + 5) * 60 * 60_000).toISOString();
-const pick = { username: 'ash', pokemonName: 'lapras', pokemonId: 131, round: 1, lockedUntil } as DraftPick;
+const pick = { username: 'ash', pokemonName: 'lapras', pokemonId: 131, round: 1, locked: true, lockedThroughJornada: 3 } as DraftPick;
+const LOCK_TITLE = 'Bloqueado hasta que termine la jornada 3';
 
 function renderCard(isMine: boolean, locked: boolean, stealWindowOpen = false) {
   render(
-    <PokemonCard pick={pick} tier="A" isMine={isMine} locked={locked} now={now} isDraftCompleted
+    <PokemonCard pick={pick} tier="A" isMine={isMine} locked={locked} isDraftCompleted
       stealWindowOpen={stealWindowOpen} stealPrice={300} canAffordSteal onInfo={vi.fn()} />,
   );
 }
 
-describe('PokemonCard: tiempo de bloqueo', () => {
-  it('en tu equipo muestra cuánto le queda al bloqueo', () => {
+describe('PokemonCard: bloqueo hasta fin de jornada', () => {
+  it('en tu equipo muestra la jornada hasta la que dura el bloqueo', () => {
     renderCard(true, true);
-    expect(screen.getByText('2d 5h')).toBeInTheDocument();
-    expect(screen.getByText(/^Bloqueado hasta/)).toBeInTheDocument();
+    expect(screen.getByTitle(LOCK_TITLE)).toHaveTextContent('🔒 J3');
   });
 
   it('en un rival lo muestra también con los robos cerrados', () => {
     renderCard(false, true);
-    expect(screen.getByText('2d 5h')).toBeInTheDocument();
+    expect(screen.getByTitle(LOCK_TITLE)).toBeInTheDocument();
     expect(screen.queryByText('⇄ proponer')).not.toBeInTheDocument();
   });
 
   it('en un rival bloqueado con los robos abiertos no muestra el precio de robo', () => {
     renderCard(false, true, true);
-    expect(screen.getByText('2d 5h')).toBeInTheDocument();
+    expect(screen.getByTitle(LOCK_TITLE)).toBeInTheDocument();
     expect(screen.queryByText('💰 300')).not.toBeInTheDocument();
   });
 
   it('en tu equipo se ve la cláusula y se puede subir con los robos cerrados', () => {
     render(
-      <PokemonCard pick={pick} tier="A" isMine locked now={now} isDraftCompleted stealWindowOpen={false}
+      <PokemonCard pick={pick} tier="A" isMine locked isDraftCompleted stealWindowOpen={false}
         stealPrice={300} canAffordSteal={false} onInfo={vi.fn()} onRaisePrice={vi.fn()} />,
     );
     expect(screen.getByText('🛡 300')).toBeInTheDocument();
@@ -44,7 +42,7 @@ describe('PokemonCard: tiempo de bloqueo', () => {
 
   it('antes de acabar el draft no se ve la cláusula', () => {
     render(
-      <PokemonCard pick={pick} tier="A" isMine locked={false} now={now} isDraftCompleted={false} stealWindowOpen={false}
+      <PokemonCard pick={pick} tier="A" isMine locked={false} isDraftCompleted={false} stealWindowOpen={false}
         stealPrice={300} canAffordSteal={false} onInfo={vi.fn()} onRaisePrice={vi.fn()} />,
     );
     expect(screen.queryByText('🛡 300')).not.toBeInTheDocument();
@@ -53,6 +51,6 @@ describe('PokemonCard: tiempo de bloqueo', () => {
 
   it('sin bloqueo no hay chip', () => {
     renderCard(true, false);
-    expect(screen.queryByText(/Bloqueado hasta/)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(LOCK_TITLE)).not.toBeInTheDocument();
   });
 });

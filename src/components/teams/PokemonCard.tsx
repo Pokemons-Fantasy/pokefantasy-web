@@ -8,8 +8,6 @@ interface PokemonCardProps {
   tier: Tier | null | undefined;
   isMine: boolean;
   locked: boolean;
-  /** Para el tiempo de bloqueo restante; lo refresca la página. */
-  now: Date;
   isDraftCompleted: boolean;
   stealWindowOpen: boolean;
   /** Rival: con el mercado cerrado un trade se puede proponer, pero solo se acepta cuando abra. */
@@ -26,7 +24,7 @@ interface PokemonCardProps {
 }
 
 export default function PokemonCard({
-  pick, tier, isMine, locked, now, isDraftCompleted, stealWindowOpen, swapWindowOpen, stealPrice, canAffordSteal,
+  pick, tier, isMine, locked, isDraftCompleted, stealWindowOpen, swapWindowOpen, stealPrice, canAffordSteal,
   onInfo, onCardClick, onRaisePrice, onRelease,
 }: PokemonCardProps) {
   if (isMine) {
@@ -35,7 +33,7 @@ export default function PokemonCard({
         <img src={spriteUrl(pick.pokemonId)} alt={pick.pokemonName} className="pokemon-sprite" loading="lazy" />
         <span className="pokemon-name">{pick.pokemonName}</span>
         <TierBadge tier={tier} />
-        {locked && <LockChip lockedUntil={pick.lockedUntil} now={now} />}
+        {locked && <LockChip jornada={pick.lockedThroughJornada} />}
         {/* La cláusula se puede subir en cualquier momento tras el draft: solo robar depende de la ventana */}
         {isDraftCompleted && (
           <>
@@ -114,7 +112,7 @@ export default function PokemonCard({
       <img src={spriteUrl(pick.pokemonId)} alt={pick.pokemonName} className="pokemon-sprite" loading="lazy" />
       <span className="pokemon-name">{pick.pokemonName}</span>
       <TierBadge tier={tier} />
-      {locked && <LockChip lockedUntil={pick.lockedUntil} now={now} />}
+      {locked && <LockChip jornada={pick.lockedThroughJornada} />}
       {stealWindowOpen && !locked && (
         <>
           <span className="coin-badge" style={{

@@ -5,7 +5,6 @@ import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
 import { coinsLabel } from '../../utils/coins';
 import { isPickLocked } from '../../utils/teams';
-import { useNow } from '../../hooks/useNow';
 import LockChip from './LockChip';
 import { swapQuote } from '../../utils/benchSwap';
 
@@ -28,7 +27,6 @@ interface SwapModalProps {
 export default function SwapModal({
   benchEntry, myPicks, myBalance, tierByName, leagueSettings, swapping, onConfirm, onClose, onBack,
 }: SwapModalProps) {
-  const now = useNow();
   const [giveTarget, setGiveTarget] = useState<string | null>(null);
   const takeTier = (benchEntry.tier as Tier | undefined) ?? tierByName.get(benchEntry.pokemonName);
   const marketPrice = benchEntry.price ?? 0;
@@ -145,7 +143,7 @@ export default function SwapModal({
                     />
                     <span className="pokemon-name">{pick.pokemonName}</span>
                     <TierBadge tier={giveTier} />
-                    {locked && <LockChip lockedUntil={pick.lockedUntil} now={now} />}
+                    {locked && <LockChip jornada={pick.lockedThroughJornada} />}
                   </div>
                 );
               })}

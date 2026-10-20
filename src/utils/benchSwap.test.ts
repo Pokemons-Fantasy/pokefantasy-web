@@ -5,8 +5,8 @@ import { swapQuote, upgradeOffer } from './benchSwap';
 
 const settings = { priceTierS: 500, priceTierA: 300, priceTierB: 150, priceTierC: 50, priceTierD: 0 } as LeagueSettings;
 
-const pick = (pokemonName: string, lockedUntil: string | null = null) =>
-  ({ username: 'ash', pokemonName, pokemonId: 1, round: 1, lockedUntil }) as DraftPick;
+const pick = (pokemonName: string, locked = false) =>
+  ({ username: 'ash', pokemonName, pokemonId: 1, round: 1, locked, lockedThroughJornada: locked ? 3 : null }) as DraftPick;
 
 describe('swapQuote', () => {
   it('bajar de tier da la diferencia', () => {
@@ -33,8 +33,7 @@ describe('upgradeOffer', () => {
   });
 
   it('salta los bloqueados', () => {
-    const future = new Date(Date.now() + 3_600_000).toISOString();
-    expect(upgradeOffer('A', [pick('onix'), pick('rattata', future), pick('pidgey')], tiers, settings, 300))
+    expect(upgradeOffer('A', [pick('onix'), pick('rattata', true), pick('pidgey')], tiers, settings, 300))
       .toEqual({ give: 'pidgey', cost: 250 });
   });
 

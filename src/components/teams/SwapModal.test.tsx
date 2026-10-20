@@ -7,8 +7,8 @@ import type { BenchEntry, DraftPick, Tier } from '../../api/pokemons';
 
 const settings = { priceTierS: 500, priceTierA: 300, priceTierB: 150, priceTierC: 50, priceTierD: 0 } as LeagueSettings;
 const lapras = { pokemonName: 'lapras', pokemonId: 131, tier: 'A', price: 300 } as BenchEntry;
-const pick = (pokemonName: string, lockedUntil: string | null = null) =>
-  ({ username: 'ash', pokemonName, pokemonId: 1, round: 1, lockedUntil }) as DraftPick;
+const pick = (pokemonName: string, locked = false) =>
+  ({ username: 'ash', pokemonName, pokemonId: 1, round: 1, locked, lockedThroughJornada: locked ? 3 : null }) as DraftPick;
 const tiers = new Map<string, Tier>([['rattata', 'D'], ['mew', 'S'], ['onix', 'B']]);
 
 function renderModal(myPicks: DraftPick[], myBalance: number, onConfirm = vi.fn()) {
@@ -51,8 +51,8 @@ describe('SwapModal', () => {
   });
 
   it('un Pokémon bloqueado no se puede entregar', async () => {
-    const future = new Date(Date.now() + 3_600_000).toISOString();
-    renderModal([pick('onix', future)], 1000);
+    renderModal([pick('onix', true)], 1000);
+    expect(screen.getByTitle('Bloqueado hasta que termine la jornada 3')).toBeInTheDocument();
 
     const onix = screen.getByRole('button', { name: /onix/i });
     expect(onix).toHaveAttribute('aria-disabled', 'true');

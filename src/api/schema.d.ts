@@ -1161,8 +1161,9 @@ export interface components {
             pickedAt?: string;
             /** Format: int32 */
             customStealPrice?: number;
-            /** Format: date-time */
-            lockedUntil?: string;
+            /** Format: int32 */
+            lockedThroughJornada?: number;
+            locked?: boolean;
             /** Format: int32 */
             price?: number;
         };
