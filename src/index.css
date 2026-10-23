@@ -840,6 +840,37 @@ button.member-menu-item {
 
 .confirm-dialog { max-width: 420px; }
 .confirm-dialog-message { color: var(--text-2); font-size: 0.9rem; }
+/* Diálogos con un campo (borrar cuenta, renombrar liga) */
+.confirm-dialog form label { display: block; font-size: 0.8rem; color: var(--text-2); margin: 1rem 0 0.35rem; }
+.confirm-dialog form .search-input { margin-bottom: 0.4rem; }
+.confirm-dialog form .search-input[aria-invalid="true"] { border-color: var(--danger); }
+.confirm-dialog form .field-hint { margin: 0 0 0.25rem 0.25rem; }
+
+/* Ayuda bajo un campo fuera de los formularios que la colocan a su manera */
+.field-hint { margin: 0 0 0.75rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
+.field-hint-error { color: var(--danger); }
+
+/* ─── PANEL DE ADMINISTRACIÓN ─── */
+
+.admin-section { margin-bottom: 2rem; }
+.admin-section .search-input { margin-bottom: 0.75rem; }
+.admin-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.admin-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+}
+.admin-row-name { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.admin-row-meta { font-size: 0.75rem; color: var(--text-3); }
+.admin-row-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+@media (max-width: 480px) {
+  .admin-row-actions { width: 100%; justify-content: flex-end; }
+}
 
 /* ─── BADGES ─── */
 
