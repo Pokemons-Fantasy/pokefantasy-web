@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiClient } from './client';
-import { avatarUrl, uploadAvatar } from './auth';
+import { avatarUrl, deleteAccount, uploadAvatar } from './auth';
 
 vi.mock('./client', () => ({
   API_BASE_URL: '/api',
@@ -30,5 +30,16 @@ describe('avatar api', () => {
     expect(body).toBeInstanceOf(FormData);
     expect((body as FormData).get('file')).toBeInstanceOf(Blob);
     expect(config?.headers).toEqual({ 'Content-Type': 'multipart/form-data' });
+  });
+});
+
+describe('deleteAccount', () => {
+  it('sends DELETE /v1/users/me with the password in the body', async () => {
+    const mockedDelete = vi.mocked(apiClient.delete);
+    mockedDelete.mockResolvedValue({});
+
+    await deleteAccount('pikachu123');
+
+    expect(mockedDelete).toHaveBeenCalledWith('/v1/users/me', { data: { password: 'pikachu123' } });
   });
 });

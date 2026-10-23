@@ -1,3 +1,14 @@
+# Cabeceras de seguridad de toda la web (auditoría S10). La API va por el proxy /api (netlify.toml) y lleva
+# las suyas. connect-src: la API (mismo origen) y Firebase para los avisos push web (ADR-016). style-src admite
+# inline por los atributos style de React y Motion. img-src: sprites de la CDN de PokeAPI y previsualizaciones.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://raw.githubusercontent.com data: blob:; font-src 'self'; connect-src 'self' https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  X-Robots-Tag: noindex, nofollow
+
 /firebase-messaging-sw.js
   Cache-Control: no-cache
 /manifest.webmanifest

@@ -1,6 +1,7 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 import { useAuthStore } from '../store/authStore';
 import { getMyLeagues, getSeasonStats, setMyMvp, type PlayerSeasonStats } from '../api/leagues';
 import { getDraftStatus } from '../api/pokemons';
@@ -38,6 +39,7 @@ export default function MyProfilePage() {
 
   // leagueId de la liga cuyo MVP picker está abierto (null = cerrado)
   const [mvpPickerLeagueId, setMvpPickerLeagueId] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [selectedMvp, setSelectedMvp] = useState<string>('');
 
   const { data: leagues = [], isLoading } = useQuery({
@@ -218,6 +220,16 @@ export default function MyProfilePage() {
         {/* ── Cuenta ── */}
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Cuenta</p>
         <ChangePasswordForm />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+          <span style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <Link to="/privacy" style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>Política de privacidad</Link>
+            {me?.admin && (
+              <Link to="/admin" style={{ fontSize: '0.875rem', color: 'var(--accent)' }}>Panel de administración</Link>
+            )}
+          </span>
+          <button type="button" className="btn-danger" onClick={() => setDeletingAccount(true)}>Borrar cuenta</button>
+        </div>
+        {deletingAccount && <DeleteAccountModal onClose={() => setDeletingAccount(false)} />}
 
         <AppVersion />
       </main>

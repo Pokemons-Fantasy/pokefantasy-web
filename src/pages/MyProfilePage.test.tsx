@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import MyProfilePage from './MyProfilePage';
@@ -48,5 +48,39 @@ describe('MyProfilePage', () => {
     expect(within(kanto).getByText('Temporada')).toBeInTheDocument();
     expect(within(johto).getByText('En preparación')).toBeInTheDocument();
     expect(screen.queryByText('Configuración')).not.toBeInTheDocument();
+  });
+
+  it('enlaza el panel de administración solo para admins', async () => {
+    vi.mocked(authApi.getMe).mockResolvedValue({ username: 'ash', avatarVersion: null, admin: true });
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter><MyProfilePage /></MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByRole('link', { name: 'Panel de administración' })).toHaveAttribute('href', '/admin');
+  });
+
+  it('no enlaza el panel a quien no es admin', async () => {
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter><MyProfilePage /></MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText('Kanto');
+    expect(screen.queryByRole('link', { name: 'Panel de administración' })).not.toBeInTheDocument();
+  });
+
+  it('abre el modal de borrar cuenta y enlaza la política de privacidad', async () => {
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter><MyProfilePage /></MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByRole('link', { name: 'Política de privacidad' })).toHaveAttribute('href', '/privacy');
+    fireEvent.click(screen.getByRole('button', { name: 'Borrar cuenta' }));
+    expect(await screen.findByRole('dialog', { name: 'Borrar cuenta' })).toBeInTheDocument();
   });
 });

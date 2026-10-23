@@ -7,6 +7,10 @@ import { App as CapApp } from '@capacitor/app';
 import { useAuthStore } from './store/authStore';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AboutPage from './pages/AboutPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import PoolPage from './pages/PoolPage';
 import LeaguesPage from './pages/LeaguesPage';
@@ -101,11 +105,15 @@ const router = createBrowserRouter([
     children: [
       { path: '/login', handle: title('Entrar'), element: <LoginPage /> },
       { path: '/register', handle: title('Crear cuenta'), element: <RegisterPage /> },
+      { path: '/about', handle: title('Acerca de'), element: <AboutPage /> },
+      { path: '/privacy', handle: title('Privacidad'), element: <PrivacyPage /> },
+      { path: '/terms', handle: title('Normas'), element: <TermsPage /> },
       {
         element: <ProtectedRoute />,
         children: [
           { path: '/', handle: title('Inicio'), element: <HomePage /> },
           { path: '/profile', handle: title('Mi perfil'), element: <MyProfilePage /> },
+          { path: '/admin', handle: title('Administración'), element: <AdminPage /> },
           { path: '/leagues', handle: title('Mis ligas'), element: <LeaguesPage /> },
           {
             path: '/leagues/:leagueId',

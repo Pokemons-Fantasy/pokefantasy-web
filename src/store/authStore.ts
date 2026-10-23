@@ -13,6 +13,8 @@ interface AuthState {
   logout: () => void;
   /** El backend dice que no hay sesión: se olvida el usuario y `ProtectedRoute` lleva al login. */
   expireSession: () => void;
+  /** La cuenta se borró: se olvida todo sin llamar al servidor (ya no hay sesión) ni recordar la página. */
+  accountDeleted: () => void;
   isAuthenticated: () => boolean;
 }
 
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthState>()(
         set({ username: null, lastSession: { user, path: currentPath() } });
         useToastStore.getState().addToast('info', 'Tu sesión ha caducado. Vuelve a entrar.');
       },
+      accountDeleted: () => set({ username: null, lastSession: null }),
       isAuthenticated: () => !!get().username,
     }),
     { name: 'auth-storage' }
