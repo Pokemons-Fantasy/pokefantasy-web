@@ -128,6 +128,22 @@ export interface MatchDto {
   /** Marcador desde el punto de vista del ganador; ausente si no se indicó. */
   winnerScore?: number | null;
   loserScore?: number | null;
+  // Alineación del partido; ausentes con un backend anterior.
+  player1LineupSubmitted?: boolean;
+  player2LineupSubmitted?: boolean;
+  /** La propia siempre; la del rival solo cuando están las dos (reveladas). */
+  player1Lineup?: Lineup | null;
+  player2Lineup?: Lineup | null;
+  /** El usuario en sesión puede declarar (o cambiar) su alineación ahora (lo decide el backend). */
+  lineupOpen?: boolean;
+}
+
+export interface Lineup {
+  pokemonNames: string[];
+  /** Enlace al equipo completo (lista abierta). */
+  pasteUrl?: string | null;
+  /** Diferencias entre el paste y la alineación (no bloquean). */
+  pasteWarnings?: string[];
 }
 
 export interface JornadaDto {
@@ -136,7 +152,18 @@ export interface JornadaDto {
   startDate?: string;       // "YYYY-MM-DD"
   stealDeadline?: string;   // ISO datetime "YYYY-MM-DDTHH:mm:ss"
   swapDeadline?: string;    // ISO datetime "YYYY-MM-DDTHH:mm:ss"
+  /** Desde cuándo se puede declarar la alineación (cierre del mercado); null sin fecha. */
+  lineupOpensAt?: string | null;
 }
+
+export const declareLineup = async (
+  leagueId: string,
+  matchId: string,
+  pokemonNames: string[],
+  pasteUrl?: string
+): Promise<void> => {
+  await apiClient.put(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/lineup`, { pokemonNames, pasteUrl });
+};
 
 export interface ScheduleResponse {
   leagueId: string;

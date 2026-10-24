@@ -329,6 +329,47 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/schedule/matches/{matchId}/lineup": {
+            "put": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "declareLineup",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeclareLineupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/my-mvp": {
             "put": {
                 "tags": [
@@ -2186,6 +2227,20 @@
                     }
                 }
             },
+            "DeclareLineupRequest": {
+                "type": "object",
+                "properties": {
+                    "pokemonNames": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "pasteUrl": {
+                        "type": "string"
+                    }
+                }
+            },
             "SetLeagueMvpRequest": {
                 "type": "object",
                 "properties": {
@@ -2850,6 +2905,29 @@
                     },
                     "swapDeadline": {
                         "type": "string"
+                    },
+                    "lineupOpensAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LineupResponse": {
+                "type": "object",
+                "properties": {
+                    "pokemonNames": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "pasteUrl": {
+                        "type": "string"
+                    },
+                    "pasteWarnings": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -2882,6 +2960,21 @@
                     "loserScore": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "player1LineupSubmitted": {
+                        "type": "boolean"
+                    },
+                    "player2LineupSubmitted": {
+                        "type": "boolean"
+                    },
+                    "player1Lineup": {
+                        "$ref": "#/components/schemas/LineupResponse"
+                    },
+                    "player2Lineup": {
+                        "$ref": "#/components/schemas/LineupResponse"
+                    },
+                    "lineupOpen": {
+                        "type": "boolean"
                     }
                 }
             },
