@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import PlayShowdownModal from './PlayShowdownModal';
 import { challengeCommand, SHOWDOWN_PLAY_URL, showdownTeamText } from '../../utils/showdown';
 import type { LeagueSettings } from '../../api/leagues';
+import { useToastStore } from '../../store/toastStore';
 
 vi.mock('@capacitor/clipboard', () => ({ Clipboard: { write: vi.fn().mockResolvedValue(undefined) } }));
 
@@ -15,6 +16,7 @@ function renderModal(props: {
   myShowdownName?: string | null;
   rivalShowdownName?: string | null;
   settings?: Partial<LeagueSettings>;
+  status?: 'loading' | 'error' | 'ready';
 }) {
   const onClose = vi.fn();
   render(
@@ -24,6 +26,7 @@ function renderModal(props: {
         myShowdownName={'myShowdownName' in props ? props.myShowdownName : 'Ash Ketchum'}
         rivalShowdownName={'rivalShowdownName' in props ? props.rivalShowdownName : 'Misty Cerulean'}
         settings={props.settings ?? {}}
+        status={props.status ?? 'ready'}
         myPokemonNames={MY_TEAM}
         onClose={onClose}
       />
@@ -95,6 +98,35 @@ describe('PlayShowdownModal', () => {
     expect(screen.getByRole('link', { name: 'Vincula tu cuenta de Showdown en tu perfil.' }))
       .toHaveAttribute('href', '/profile');
     expect(screen.queryByRole('button', { name: 'Copiar reto' })).not.toBeInTheDocument();
+  });
+
+  it('mientras cargan los ajustes y el equipo no deja copiar nada', () => {
+    renderModal({ status: 'loading' });
+
+    expect(screen.queryByText(/^\/challenge /)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copiar reto' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copiar mi equipo' })).toBeDisabled();
+  });
+
+  it('si no se pudieron cargar los ajustes, lo dice y no deja copiar', () => {
+    renderModal({ status: 'error' });
+
+    expect(screen.getByText('No se pudieron cargar los ajustes de la liga. Cierra y vuelve a intentarlo.'))
+      .toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copiar reto' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copiar mi equipo' })).toBeDisabled();
+  });
+
+  it('si no se puede copiar, avisa', async () => {
+    vi.mocked(Clipboard.write).mockRejectedValueOnce(new Error('denied'));
+    useToastStore.setState({ toasts: [] });
+    renderModal({});
+
+    await userEvent.click(screen.getByRole('button', { name: 'Copiar reto' }));
+
+    await waitFor(() => expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      type: 'error', message: 'No se pudo copiar. Cópialo a mano.',
+    }));
   });
 
   it('Cerrar llama a onClose', async () => {

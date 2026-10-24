@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import type { LeagueSettings } from '../../api/leagues';
+import { useToastStore } from '../../store/toastStore';
 import {
   BATTLE_DEFAULTS, challengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
 } from '../../utils/showdown';
@@ -14,6 +15,8 @@ interface PlayShowdownModalProps {
   settings: Partial<LeagueSettings>;
   /** Mis Pokémon, para pegarlos en el Teambuilder. */
   myPokemonNames: string[];
+  /** Ajustes de la liga y equipo: hasta tenerlos no se puede copiar nada (saldría otro formato). */
+  status: 'loading' | 'error' | 'ready';
   onClose: () => void;
 }
 
@@ -22,11 +25,18 @@ interface PlayShowdownModalProps {
  * pasos. Desde fuera no se puede crear el combate: lo lanza un jugador y lo acepta el otro.
  */
 export default function PlayShowdownModal({
-  rival, myShowdownName, rivalShowdownName, settings, myPokemonNames, onClose,
+  rival, myShowdownName, rivalShowdownName, settings, myPokemonNames, status, onClose,
 }: PlayShowdownModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<'challenge' | 'team' | null>(null);
+  const addToast = useToastStore((s) => s.addToast);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(null), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -40,16 +50,16 @@ export default function PlayShowdownModal({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  const canChallenge = !!myShowdownName && !!rivalShowdownName;
-  const command = rivalShowdownName ? challengeCommand(rivalShowdownName, settings) : '';
+  const ready = status === 'ready';
+  const canChallenge = !!myShowdownName && !!rivalShowdownName && status !== 'error';
+  const command = rivalShowdownName && ready ? challengeCommand(rivalShowdownName, settings) : '';
   const gameType = settings.battleGameType ?? BATTLE_DEFAULTS.battleGameType;
   const picked = settings.pickedTeamSize ?? BATTLE_DEFAULTS.pickedTeamSize;
 
   function copy(text: string, what: 'challenge' | 'team') {
-    Clipboard.write({ string: text }).then(() => {
-      setCopied(what);
-      setTimeout(() => setCopied(null), 2000);
-    });
+    Clipboard.write({ string: text })
+      .then(() => setCopied(what))
+      .catch(() => addToast('error', 'No se pudo copiar. Cópialo a mano.'));
   }
 
   return (
@@ -73,10 +83,21 @@ export default function PlayShowdownModal({
           <p className="field-hint field-hint-error">{rival} no ha vinculado su cuenta de Showdown.</p>
         )}
 
+        {status === 'error' && (
+          <p className="field-hint field-hint-error" role="alert">
+            No se pudieron cargar los ajustes de la liga. Cierra y vuelve a intentarlo.
+          </p>
+        )}
+
         {canChallenge && (
-          <div className="play-showdown-command">
+          <div className="play-showdown-command" aria-busy={!ready}>
             <code>{command}</code>
-            <button type="button" className="btn-primary" onClick={() => copy(command, 'challenge')}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => copy(command, 'challenge')}
+              disabled={!ready}
+            >
               {copied === 'challenge' ? '✓ Copiado' : 'Copiar reto'}
             </button>
           </div>
@@ -98,7 +119,12 @@ export default function PlayShowdownModal({
 
         <div className="modal-actions">
           <button type="button" className="btn-ghost" onClick={onClose}>Cerrar</button>
-          <button type="button" className="btn-ghost" onClick={() => copy(showdownTeamText(myPokemonNames), 'team')}>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => copy(showdownTeamText(myPokemonNames), 'team')}
+            disabled={!ready}
+          >
             {copied === 'team' ? '✓ Copiado' : 'Copiar mi equipo'}
           </button>
           <a className="btn-primary" href={SHOWDOWN_PLAY_URL} target="_blank" rel="noopener noreferrer">

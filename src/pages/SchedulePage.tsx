@@ -77,17 +77,19 @@ export default function SchedulePage() {
 
   // "Jugar en Showdown": ajustes y equipo solo se piden al abrir el modal.
   const [playingMatch, setPlayingMatch] = useState<MatchDto | null>(null);
-  const { data: leagueSettings } = useQuery({
+  const { data: leagueSettings, status: settingsStatus } = useQuery({
     queryKey: ['league-settings', leagueId],
     queryFn: () => getLeagueSettings(leagueId!),
     enabled: !!leagueId && !!playingMatch,
     staleTime: 5 * 60_000,
   });
-  const { data: draft } = useQuery({
+  const { data: draft, status: draftStatus } = useQuery({
     queryKey: ['draft-status', leagueId],
     queryFn: () => getDraftStatus(leagueId!),
     enabled: !!leagueId && !!playingMatch,
   });
+  const playStatus = settingsStatus === 'error' || draftStatus === 'error' ? 'error'
+    : settingsStatus === 'success' && draftStatus === 'success' ? 'ready' : 'loading';
   const showdownNameOf = (player: string) => league?.members.find((m) => m.username === player)?.showdownName;
   const myPokemonNames = deriveTeams(draft).find((t) => t.username === username)?.picks.map((p) => p.pokemonName) ?? [];
 
@@ -244,6 +246,7 @@ export default function SchedulePage() {
             rivalShowdownName={showdownNameOf(rival)}
             settings={leagueSettings ?? {}}
             myPokemonNames={myPokemonNames}
+            status={playStatus}
             onClose={() => setPlayingMatch(null)}
           />
         );
