@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/v1/user/showdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["linkShowdown"];
+        post?: never;
+        delete: operations["unlinkShowdown"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/user/password": {
         parameters: {
             query?: never;
@@ -920,6 +936,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        LinkShowdownRequest: {
+            name?: string;
+        };
         ChangePasswordRequest: {
             currentPassword?: string;
             newPassword?: string;
@@ -969,6 +988,14 @@ export interface components {
             /** Format: int32 */
             swapWindowCloseDay?: number;
             swapWindowCloseTime?: string;
+            /** @enum {string} */
+            battleGameType?: "SINGLES" | "DOUBLES";
+            /** Format: int32 */
+            pickedTeamSize?: number;
+            /** @enum {string} */
+            teamSheet?: "OPEN" | "CLOSED";
+            /** Format: int32 */
+            bestOf?: number;
         };
         RecordMatchResultRequest: {
             winnerUsername?: string;
@@ -1106,6 +1133,7 @@ export interface components {
             /** Format: int64 */
             avatarVersion?: number;
             admin?: boolean;
+            showdownName?: string;
         };
         AvailablePokemonResponse: {
             /** Format: int32 */
@@ -1130,6 +1158,7 @@ export interface components {
             leagueRole?: "ADMIN" | "USER";
             /** Format: int64 */
             avatarVersion?: number;
+            showdownName?: string;
         };
         PlayerStandingResponse: {
             username?: string;
@@ -1187,6 +1216,14 @@ export interface components {
             /** Format: int32 */
             swapWindowCloseDay?: number;
             swapWindowCloseTime?: string;
+            /** @enum {string} */
+            battleGameType?: "SINGLES" | "DOUBLES";
+            /** Format: int32 */
+            pickedTeamSize?: number;
+            /** @enum {string} */
+            teamSheet?: "OPEN" | "CLOSED";
+            /** Format: int32 */
+            bestOf?: number;
         };
         PlayerSeasonStats: {
             username?: string;
@@ -1390,6 +1427,46 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    linkShowdown: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkShowdownRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unlinkShowdown: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     changePassword: {
         parameters: {
             query?: never;
