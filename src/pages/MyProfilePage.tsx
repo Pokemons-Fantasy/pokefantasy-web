@@ -10,6 +10,7 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import PageHeader from '../components/PageHeader';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import ChangePasswordForm from '../components/ChangePasswordForm';
+import ShowdownAccountSection from '../components/ShowdownAccountSection';
 import { getMe } from '../api/auth';
 import UserAvatar from '../components/avatar/UserAvatar';
 import ProfilePhotoSection from '../components/avatar/ProfilePhotoSection';
@@ -209,6 +210,10 @@ export default function MyProfilePage() {
             })}
           </div>
         )}
+
+        {/* ── Showdown ── */}
+        <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Showdown</p>
+        <ShowdownAccountSection showdownName={me?.showdownName} />
 
         {/* ── Foto de perfil ── */}
         <p className="section-label" style={{ margin: '2rem 0 0.75rem' }}>Foto de perfil</p>
