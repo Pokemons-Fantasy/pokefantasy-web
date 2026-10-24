@@ -66,6 +66,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
             ref={passwordRef}
             id={passwordId}
             type="password"
+            className="search-input"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

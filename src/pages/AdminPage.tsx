@@ -68,12 +68,14 @@ export default function AdminPage() {
       <main className="page-content">
         <h1 style={{ marginBottom: '1.5rem' }}>Administración</h1>
 
-        <section aria-labelledby="admin-users-title" style={{ marginBottom: '2rem' }}>
+        <section aria-labelledby="admin-users-title" className="admin-section">
           <h2 id="admin-users-title" className="section-label">Usuarios</h2>
           <label htmlFor="admin-user-search" className="sr-only">Buscar usuarios</label>
           <input
             id="admin-user-search"
-            placeholder="Nombre de usuario (mín. 2 letras)"
+            type="search"
+            className="search-input"
+            placeholder="Buscar usuario…"
             value={userQuery}
             onChange={(e) => setUserQuery(e.target.value)}
           />
@@ -84,29 +86,33 @@ export default function AdminPage() {
                 <UserAvatar username={user.username} avatarVersion={user.avatarVersion ?? null} size={32} />
                 <span className="admin-row-name">{user.username}</span>
                 {user.admin && <span className="admin-row-meta">admin</span>}
-                {!user.admin && user.avatarVersion != null && (
-                  <button type="button" className="btn-ghost" aria-label={`Quitar foto de ${user.username}`}
-                    onClick={() => setPending({ kind: 'photo', user })}>
-                    Quitar foto
-                  </button>
-                )}
                 {!user.admin && (
-                  <button type="button" className="btn-danger" aria-label={`Borrar cuenta de ${user.username}`}
-                    onClick={() => setPending({ kind: 'delete', user })}>
-                    Borrar cuenta
-                  </button>
+                  <div className="admin-row-actions">
+                    {user.avatarVersion != null && (
+                      <button type="button" className="btn-ghost" aria-label={`Quitar foto de ${user.username}`}
+                        onClick={() => setPending({ kind: 'photo', user })}>
+                        Quitar foto
+                      </button>
+                    )}
+                    <button type="button" className="btn-danger" aria-label={`Borrar cuenta de ${user.username}`}
+                      onClick={() => setPending({ kind: 'delete', user })}>
+                      Borrar cuenta
+                    </button>
+                  </div>
                 )}
               </li>
             ))}
           </ul>
         </section>
 
-        <section aria-labelledby="admin-leagues-title">
+        <section aria-labelledby="admin-leagues-title" className="admin-section">
           <h2 id="admin-leagues-title" className="section-label">Ligas</h2>
           <label htmlFor="admin-league-search" className="sr-only">Buscar ligas</label>
           <input
             id="admin-league-search"
-            placeholder="Nombre de la liga (mín. 2 letras)"
+            type="search"
+            className="search-input"
+            placeholder="Buscar liga…"
             value={leagueQuery}
             onChange={(e) => setLeagueQuery(e.target.value)}
           />
@@ -116,8 +122,10 @@ export default function AdminPage() {
               <li key={league.id} className="admin-row">
                 <span className="admin-row-name">{league.name}</span>
                 <span className="admin-row-meta">{league.members} miembros</span>
-                <button type="button" className="btn-ghost" aria-label={`Renombrar ${league.name}`}
-                  onClick={() => setRenaming(league)}>Renombrar</button>
+                <div className="admin-row-actions">
+                  <button type="button" className="btn-ghost" aria-label={`Renombrar ${league.name}`}
+                    onClick={() => setRenaming(league)}>Renombrar</button>
+                </div>
               </li>
             ))}
           </ul>
@@ -185,6 +193,7 @@ function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose:
           <input
             ref={inputRef}
             id={inputId}
+            className="search-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             aria-invalid={!!error}
