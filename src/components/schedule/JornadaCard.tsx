@@ -16,6 +16,7 @@ interface JornadaCardProps {
   onToggle: () => void;
   onRecord: (match: MatchDto) => void;
   onEdit: (match: MatchDto) => void;
+  onPlay: (match: MatchDto) => void;
   ref?: Ref<HTMLElement>;
 }
 
@@ -24,7 +25,7 @@ interface JornadaCardProps {
  * las próximas se muestran desplegadas.
  */
 export default function JornadaCard({
-  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, ref,
+  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, ref,
 }: JornadaCardProps) {
   const n = jornada.roundNumber;
   const titleId = `jornada-${n}-title`;
@@ -42,6 +43,7 @@ export default function JornadaCard({
           isAdmin={isAdmin}
           onRecord={() => onRecord(match)}
           onEdit={() => onEdit(match)}
+          onPlay={() => onPlay(match)}
         />
       ))}
     </div>

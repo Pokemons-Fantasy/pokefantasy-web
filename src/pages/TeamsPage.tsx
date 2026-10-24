@@ -16,6 +16,7 @@ import ProposeTradeModal from '../components/ProposeTradeModal';
 import TradesModal from '../components/TradesModal';
 import { priceForTier, releaseReward, toggleTier } from '../utils/tiers';
 import { deriveTeams } from '../utils/teams';
+import { showdownTeamText } from '../utils/showdown';
 import BenchActionModal from '../components/teams/BenchActionModal';
 import SwapModal from '../components/teams/SwapModal';
 import RivalActionModal from '../components/teams/RivalActionModal';
@@ -140,9 +141,7 @@ export default function TeamsPage() {
   }
 
   function exportTeamToShowdown(picks: DraftPick[], teamUsername: string) {
-    const text = picks
-      .map((p) => p.pokemonName.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join('-'))
-      .join('\n\n');
+    const text = showdownTeamText(picks.map((p) => p.pokemonName));
     Clipboard.write({ string: text }).then(() => {
       setCopiedTeam(teamUsername);
       setTimeout(() => setCopiedTeam(null), 2000);

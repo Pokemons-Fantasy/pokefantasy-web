@@ -33,6 +33,8 @@ export interface CurrentUser {
   avatarVersion?: number | null;
   /** Admin global (rol ADMIN): ve el panel de moderación. Ausente con un backend anterior a L5. */
   admin?: boolean;
+  /** Nombre de su cuenta de Pokémon Showdown; null o ausente = sin vincular. */
+  showdownName?: string | null;
 }
 
 export interface AvatarVersionResponse {
@@ -54,6 +56,15 @@ export const uploadAvatar = async (image: Blob): Promise<number> => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data.avatarVersion;
+};
+
+/** Vincula la cuenta de Showdown (tiene que estar registrada). El backend guarda el nombre canónico. */
+export const linkShowdown = async (name: string): Promise<void> => {
+  await apiClient.put('/v1/user/showdown', { name });
+};
+
+export const unlinkShowdown = async (): Promise<void> => {
+  await apiClient.delete('/v1/user/showdown');
 };
 
 export const deleteAvatar = async (): Promise<void> => {

@@ -20,6 +20,8 @@ export interface LeagueMember {
   leagueRole: 'ADMIN' | 'USER';
   /** Versión de su foto de perfil; null o ausente = sin foto. */
   avatarVersion?: number | null;
+  /** Nombre de su cuenta de Pokémon Showdown; null o ausente = sin vincular. */
+  showdownName?: string | null;
 }
 
 export interface LeagueDetail {
@@ -82,7 +84,15 @@ export interface LeagueSettings {
   stealWindowCloseTime?: string;  // "HH:mm", default "23:59"
   swapWindowCloseDay?: number;    // ISO 1-7, default 5 (Fri)
   swapWindowCloseTime?: string;   // "HH:mm", default "16:00"
+  // Combates en Showdown; ausentes con un backend anterior (ver BATTLE_DEFAULTS en utils/showdown).
+  battleGameType?: BattleGameType;
+  pickedTeamSize?: number;  // 1-6; 6 = se juega con todos
+  teamSheet?: TeamSheet;
+  bestOf?: number;          // 1 o 3
 }
+
+export type BattleGameType = 'SINGLES' | 'DOUBLES';
+export type TeamSheet = 'OPEN' | 'CLOSED';
 
 export const getLeagueSettings = async (leagueId: string): Promise<LeagueSettings> => {
   const { data } = await apiClient.get<LeagueSettings>(`/v1/leagues/${leagueId}/settings`);

@@ -8,9 +8,11 @@ interface MatchRowProps {
   isAdmin: boolean;
   onRecord: () => void;
   onEdit: () => void;
+  /** Abrir "Jugar en Showdown" (solo en mis partidos pendientes). */
+  onPlay: () => void;
 }
 
-export default function MatchRow({ match, username, isAdmin, onRecord, onEdit }: MatchRowProps) {
+export default function MatchRow({ match, username, isAdmin, onRecord, onEdit, onPlay }: MatchRowProps) {
   const completed = match.status === 'COMPLETED';
   const mine = !!username && (match.player1 === username || match.player2 === username);
 
@@ -37,6 +39,11 @@ export default function MatchRow({ match, username, isAdmin, onRecord, onEdit }:
       </span>
       <span className={playerClass(match.player2, 'right')}>{playerName(match.player2)}</span>
 
+      {mine && !completed && (
+        <button type="button" className="match-action" onClick={onPlay}>
+          <span aria-hidden="true">⚔</span> Jugar en Showdown
+        </button>
+      )}
       {isAdmin && !completed && (
         <button type="button" className="match-action" onClick={onRecord}>▶ Resultado</button>
       )}

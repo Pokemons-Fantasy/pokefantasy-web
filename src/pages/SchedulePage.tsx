@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getLeagueDetail } from '../api/leagues';
+import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
+import { getDraftStatus } from '../api/pokemons';
+import { deriveTeams } from '../utils/teams';
+import PlayShowdownModal from '../components/schedule/PlayShowdownModal';
 import {
   getSchedule,
   recordMatchResult,
@@ -71,6 +74,24 @@ export default function SchedulePage() {
   const isAdmin = league?.members.some(
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
+
+  // "Jugar en Showdown": ajustes y equipo solo se piden al abrir el modal.
+  const [playingMatch, setPlayingMatch] = useState<MatchDto | null>(null);
+  const { data: leagueSettings, status: settingsStatus } = useQuery({
+    queryKey: ['league-settings', leagueId],
+    queryFn: () => getLeagueSettings(leagueId!),
+    enabled: !!leagueId && !!playingMatch,
+    staleTime: 5 * 60_000,
+  });
+  const { data: draft, status: draftStatus } = useQuery({
+    queryKey: ['draft-status', leagueId],
+    queryFn: () => getDraftStatus(leagueId!),
+    enabled: !!leagueId && !!playingMatch,
+  });
+  const playStatus = settingsStatus === 'error' || draftStatus === 'error' ? 'error'
+    : settingsStatus === 'success' && draftStatus === 'success' ? 'ready' : 'loading';
+  const showdownNameOf = (player: string) => league?.members.find((m) => m.username === player)?.showdownName;
+  const myPokemonNames = deriveTeams(draft).find((t) => t.username === username)?.picks.map((p) => p.pokemonName) ?? [];
 
   const { mutate: recordResult, isPending: recording } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
@@ -209,11 +230,27 @@ export default function SchedulePage() {
                 onToggle={() => toggleJornada(jornada.roundNumber)}
                 onRecord={openRecord}
                 onEdit={openEdit}
+                onPlay={setPlayingMatch}
               />
             ))}
           </div>
         )}
       </main>
+
+      {playingMatch && (() => {
+        const rival = playingMatch.player1 === username ? playingMatch.player2 : playingMatch.player1;
+        return (
+          <PlayShowdownModal
+            rival={rival}
+            myShowdownName={username ? showdownNameOf(username) : null}
+            rivalShowdownName={showdownNameOf(rival)}
+            settings={leagueSettings ?? {}}
+            myPokemonNames={myPokemonNames}
+            status={playStatus}
+            onClose={() => setPlayingMatch(null)}
+          />
+        );
+      })()}
 
       {/* Record result modal */}
       {pendingMatch && (
