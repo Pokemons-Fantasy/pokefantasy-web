@@ -6,8 +6,11 @@ import {
   getLeagueDetail,
   getLeagueSettings,
   updateLeagueSettings,
+  type BattleGameType,
   type LeagueSettings,
 } from '../api/leagues';
+import BattleSection from '../components/leagueConfig/BattleSection';
+import { BATTLE_DEFAULTS, BEST_OF_LABELS, GAME_TYPE_LABELS, pickedTeamSizeLabel } from '../utils/showdown';
 import { getClosedList, getDraftStatus } from '../api/pokemons';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
@@ -39,6 +42,7 @@ const DEFAULT_SETTINGS: LeagueSettings = {
   stealWindowCloseTime: '23:59',
   swapWindowCloseDay: 5,
   swapWindowCloseTime: '16:00',
+  ...BATTLE_DEFAULTS,
 };
 
 /** Fusiona lo que devuelve el backend con los defaults de UI, campo a campo. */
@@ -63,6 +67,10 @@ function withDefaults(settings: LeagueSettings | undefined): LeagueSettings {
     stealWindowCloseTime: settings?.stealWindowCloseTime ?? DEFAULT_SETTINGS.stealWindowCloseTime,
     swapWindowCloseDay: settings?.swapWindowCloseDay ?? DEFAULT_SETTINGS.swapWindowCloseDay,
     swapWindowCloseTime: settings?.swapWindowCloseTime ?? DEFAULT_SETTINGS.swapWindowCloseTime,
+    battleGameType: settings?.battleGameType ?? DEFAULT_SETTINGS.battleGameType,
+    pickedTeamSize: settings?.pickedTeamSize ?? DEFAULT_SETTINGS.pickedTeamSize,
+    teamSheet: settings?.teamSheet ?? DEFAULT_SETTINGS.teamSheet,
+    bestOf: settings?.bestOf ?? DEFAULT_SETTINGS.bestOf,
   };
 }
 
@@ -86,6 +94,10 @@ const FIELD_LABELS: Record<keyof LeagueSettings, string> = {
   stealWindowCloseTime: 'Hora de cierre de robos',
   swapWindowCloseDay: 'Día de cierre de intercambios',
   swapWindowCloseTime: 'Hora de cierre de intercambios',
+  battleGameType: 'Modo de combate',
+  pickedTeamSize: 'Pokémon por combate',
+  teamSheet: 'Lista',
+  bestOf: 'Serie',
 };
 
 const FIELD_KEYS = Object.keys(FIELD_LABELS) as (keyof LeagueSettings)[];
@@ -96,6 +108,10 @@ const DAY_NAMES = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 's�
 function displayValue(key: keyof LeagueSettings, value: LeagueSettings[keyof LeagueSettings]): string | number {
   if (key === 'seasonStartDate') return (value as string | undefined) || '—';
   if (key === 'stealWindowCloseDay' || key === 'swapWindowCloseDay') return DAY_NAMES[Number(value)] ?? String(value);
+  if (key === 'battleGameType') return GAME_TYPE_LABELS[value as BattleGameType];
+  if (key === 'pickedTeamSize') return pickedTeamSizeLabel(Number(value));
+  if (key === 'teamSheet') return value === 'OPEN' ? 'Abierta' : 'Cerrada';
+  if (key === 'bestOf') return BEST_OF_LABELS[Number(value)] ?? String(value);
   return (value as number | string | undefined) ?? 0;
 }
 
@@ -273,6 +289,7 @@ export default function LeagueConfigPage() {
                 seasonTiers={draftCompleted ? { manageHref: isAdmin ? `/leagues/${leagueId}/tiers` : undefined } : undefined}
               />
               <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+              <BattleSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
             </form>
 
             {canEdit && hasChanges && (

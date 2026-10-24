@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { challengeCommand, showdownFormat, showdownTeamText } from './showdown';
+import { challengeCommand, pickedTeamSizeLabel, showdownFormat, showdownTeamText } from './showdown';
+
+describe('pickedTeamSizeLabel', () => {
+  it('6 es jugar con todos; el resto, el número', () => {
+    expect(pickedTeamSizeLabel(6)).toBe('Todos (6)');
+    expect(pickedTeamSizeLabel(4)).toBe('4');
+  });
+});
 
 describe('showdownFormat', () => {
   it('sin ajustes usa los de por defecto: dobles, elegir 4 y al mejor de 3', () => {

@@ -1,4 +1,29 @@
-import type { LeagueSettings } from '../api/leagues';
+import type { BattleGameType, LeagueSettings, TeamSheet } from '../api/leagues';
+
+export const GAME_TYPE_LABELS: Record<BattleGameType, string> = {
+  DOUBLES: 'Dobles',
+  SINGLES: 'Individual',
+};
+
+/** Nombre del formato en el selector del Teambuilder de Showdown. */
+export const SHOWDOWN_FORMAT_NAMES: Record<BattleGameType, string> = {
+  DOUBLES: 'Doubles Custom Game',
+  SINGLES: 'Custom Game',
+};
+
+export const TEAM_SHEET_LABELS: Record<TeamSheet, string> = {
+  CLOSED: 'Cerrada (el rival solo ve los Pokémon)',
+  OPEN: 'Abierta (el rival ve el equipo completo)',
+};
+
+export const BEST_OF_LABELS: Record<number, string> = {
+  3: 'Al mejor de 3',
+  1: 'Una partida',
+};
+
+export function pickedTeamSizeLabel(size: number): string {
+  return size >= 6 ? 'Todos (6)' : String(size);
+}
 
 /** Ajustes de combate por defecto: los mismos que aplica el backend cuando la liga no los tiene. */
 export const BATTLE_DEFAULTS = {
