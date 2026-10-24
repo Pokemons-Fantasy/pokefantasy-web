@@ -20,6 +20,40 @@
         }
     ],
     "paths": {
+        "/v1/user/showdown": {
+            "put": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "linkShowdown",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LinkShowdownRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user-controller"
+                ],
+                "operationId": "unlinkShowdown",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/user/password": {
             "put": {
                 "tags": [
@@ -1996,6 +2030,14 @@
     },
     "components": {
         "schemas": {
+            "LinkShowdownRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
             "ChangePasswordRequest": {
                 "type": "object",
                 "properties": {
@@ -2103,6 +2145,28 @@
                     },
                     "swapWindowCloseTime": {
                         "type": "string"
+                    },
+                    "battleGameType": {
+                        "type": "string",
+                        "enum": [
+                            "SINGLES",
+                            "DOUBLES"
+                        ]
+                    },
+                    "pickedTeamSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "teamSheet": {
+                        "type": "string",
+                        "enum": [
+                            "OPEN",
+                            "CLOSED"
+                        ]
+                    },
+                    "bestOf": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },
@@ -2491,6 +2555,9 @@
                     },
                     "admin": {
                         "type": "boolean"
+                    },
+                    "showdownName": {
+                        "type": "string"
                     }
                 }
             },
@@ -2567,6 +2634,9 @@
                     "avatarVersion": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "showdownName": {
+                        "type": "string"
                     }
                 }
             },
@@ -2692,6 +2762,28 @@
                     },
                     "swapWindowCloseTime": {
                         "type": "string"
+                    },
+                    "battleGameType": {
+                        "type": "string",
+                        "enum": [
+                            "SINGLES",
+                            "DOUBLES"
+                        ]
+                    },
+                    "pickedTeamSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "teamSheet": {
+                        "type": "string",
+                        "enum": [
+                            "OPEN",
+                            "CLOSED"
+                        ]
+                    },
+                    "bestOf": {
+                        "type": "integer",
+                        "format": "int32"
                     }
                 }
             },

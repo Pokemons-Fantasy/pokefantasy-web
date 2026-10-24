@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getDraftStatus, getClosedList } from '../api/pokemons';
 import type { DraftPick, Tier } from '../api/pokemons';
-import { getStandings } from '../api/leagues';
+import { getLeagueDetail, getStandings } from '../api/leagues';
 import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
 import TierBadge from '../components/TierBadge';
@@ -110,6 +110,14 @@ export default function PlayerProfilePage() {
   });
 
 
+  // Ya cargado por LeagueLayout: sale de la caché.
+  const { data: league } = useQuery({
+    queryKey: ['league-detail', leagueId],
+    queryFn: () => getLeagueDetail(leagueId!),
+    enabled: !!leagueId,
+  });
+  const showdownName = league?.members.find((m) => m.username === username)?.showdownName;
+
   const isLoading = draftLoading || closedListLoading;
 
   const [coinPage, setCoinPage] = useState(0);
@@ -147,6 +155,9 @@ export default function PlayerProfilePage() {
           <UserAvatar username={username ?? ''} size={64} className="member-avatar-hero" />
           <div>
             <h1 className="page-title" style={{ marginBottom: '0.15rem' }}>{username}</h1>
+            {showdownName && (
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>Showdown: {showdownName}</p>
+            )}
           </div>
         </div>
 

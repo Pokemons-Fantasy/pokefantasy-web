@@ -237,4 +237,28 @@ describe('LeagueConfigPage', () => {
     expect(screen.getByLabelText('Porcentaje del tier S')).toBeEnabled();
     expect(screen.getByRole('link', { name: 'Gestión de tiers' })).toHaveAttribute('href', '/leagues/league-1/tiers');
   });
+
+  it('sin ajustes de combate del backend muestra los de por defecto', async () => {
+    renderPage();
+
+    expect(await screen.findByLabelText('Modo de combate')).toHaveValue('DOUBLES');
+    expect(screen.getByLabelText('Pokémon por combate')).toHaveValue('4');
+    expect(screen.getByLabelText('Lista')).toHaveValue('CLOSED');
+    expect(screen.getByLabelText('Serie')).toHaveValue('3');
+  });
+
+  it('guarda los ajustes de combate elegidos', async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.selectOptions(await screen.findByLabelText('Modo de combate'), 'SINGLES');
+    await user.selectOptions(screen.getByLabelText('Pokémon por combate'), '6');
+    await user.selectOptions(screen.getByLabelText('Lista'), 'OPEN');
+    await user.selectOptions(screen.getByLabelText('Serie'), '1');
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    await waitFor(() => expect(mockedUpdateSettings).toHaveBeenCalledWith('league-1', expect.objectContaining({
+      battleGameType: 'SINGLES', pickedTeamSize: 6, teamSheet: 'OPEN', bestOf: 1,
+    })));
+  });
 });

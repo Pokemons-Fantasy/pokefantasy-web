@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import SchedulePage from './SchedulePage';
 import { useAuthStore } from '../store/authStore';
 import * as leaguesApi from '../api/leagues';
+import * as pokemonsApi from '../api/pokemons';
 import type { LeagueDetail, ScheduleResponse } from '../api/leagues';
 
 vi.mock('../api/leagues', async (importOriginal) => ({
@@ -16,7 +17,13 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   correctMatchResult: vi.fn(),
   revertMatchResult: vi.fn(),
   recordMatchResult: vi.fn(),
+  getLeagueSettings: vi.fn().mockResolvedValue({}),
 }));
+vi.mock('../api/pokemons', async (importOriginal) => ({
+  ...(await importOriginal<typeof pokemonsApi>()),
+  getDraftStatus: vi.fn().mockResolvedValue(null),
+}));
+vi.mock('@capacitor/clipboard', () => ({ Clipboard: { write: vi.fn().mockResolvedValue(undefined) } }));
 const api = vi.mocked(leaguesApi);
 
 const LEAGUE: LeagueDetail = {
@@ -240,5 +247,56 @@ describe('SchedulePage — jornadas', () => {
     const mine = await screen.findByTestId('match-j2b');
     expect(mine).toHaveClass('mine');
     expect(screen.getByTestId('match-j2a')).not.toHaveClass('mine');
+  });
+});
+
+describe('SchedulePage — jugar en Showdown', () => {
+  const PLAYABLE: ScheduleResponse = {
+    leagueId: 'league-1',
+    stealWindowOpen: false,
+    swapWindowOpen: false,
+    jornadas: [{
+      roundNumber: 1,
+      matches: [
+        { id: 'p1', player1: 'ash', player2: 'misty', status: 'PENDING' },
+        { id: 'p2', player1: 'brock', player2: 'gary', status: 'PENDING' },
+        { id: 'p3', player1: 'misty', player2: 'brock', winnerUsername: 'misty', status: 'COMPLETED' },
+      ],
+    }],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'misty' });
+    api.getLeagueDetail.mockResolvedValue({
+      ...LEAGUE,
+      members: [
+        { username: 'ash', leagueRole: 'ADMIN', showdownName: 'Ash Ketchum' },
+        { username: 'misty', leagueRole: 'USER', showdownName: 'Misty Cerulean' },
+      ],
+    });
+    api.getSchedule.mockResolvedValue(PLAYABLE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('solo en mis partidos pendientes, aunque no sea admin', async () => {
+    renderPage();
+
+    const mine = await screen.findByTestId('match-p1');
+    expect(within(mine).getByRole('button', { name: 'Jugar en Showdown' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('match-p2')).queryByRole('button', { name: 'Jugar en Showdown' }))
+      .not.toBeInTheDocument();
+    expect(within(screen.getByTestId('match-p3')).queryByRole('button', { name: 'Jugar en Showdown' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('abre el modal con el reto al nombre de Showdown del rival', async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(within(await screen.findByTestId('match-p1')).getByRole('button', { name: 'Jugar en Showdown' }));
+
+    expect(screen.getByRole('dialog', { name: 'Jugar en Showdown' })).toBeInTheDocument();
+    expect(screen.getByText(/^\/challenge Ash Ketchum, /)).toBeInTheDocument();
   });
 });

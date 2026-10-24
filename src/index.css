@@ -841,6 +841,29 @@ button.member-menu-item {
 .confirm-dialog { max-width: 420px; }
 .confirm-dialog-message { color: var(--text-2); font-size: 0.9rem; }
 
+/* Jugar en Showdown (calendario) */
+.play-showdown { max-width: 520px; }
+.play-showdown-command { display: flex; gap: 0.5rem; align-items: center; margin: 0.75rem 0; }
+.play-showdown-command code {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+}
+.play-showdown-steps { margin: 0.75rem 0; padding-left: 1.25rem; color: var(--text-2); font-size: 0.9rem; }
+.play-showdown-steps li { margin-bottom: 0.35rem; }
+.play-showdown .field-hint { font-size: 0.8rem; color: var(--text-3); }
+.play-showdown .field-hint-error { color: var(--danger); }
+
+/* Cuenta de Showdown (perfil) */
+.showdown-account { display: flex; flex-direction: column; gap: 0.4rem; max-width: 420px; padding: 1.25rem; }
+.showdown-account label { font-size: 0.8rem; color: var(--text-2); }
+.showdown-account .field-hint { margin: 0 0 0.5rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
+
 /* ─── BADGES ─── */
 
 .badge {
