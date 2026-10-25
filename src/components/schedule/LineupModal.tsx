@@ -52,7 +52,7 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
   });
 
   const urlOk = !open || pasteUrl.trim().startsWith('https://');
-  const canSubmit = selected.length === size && urlOk && !mutation.isPending;
+  const canSubmit = size > 0 && selected.length === size && urlOk && !mutation.isPending;
 
   function toggle(name: string) {
     setSelected((s) => (s.includes(name) ? s.filter((n) => n !== name) : [...s, name]));
@@ -72,7 +72,9 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
         <p className="field-hint">
           Tu rival no la verá hasta que los dos la hayáis enviado. Después no se puede cambiar.
         </p>
-        <p className="lineup-count" aria-live="polite">{selected.length} de {size}</p>
+        {size === 0
+          ? <p className="field-hint field-hint-error">No tienes Pokémon para declarar.</p>
+          : <p className="lineup-count" aria-live="polite">{selected.length} de {size}</p>}
 
         <div className="lineup-grid">
           {myPicks.map((p) => {

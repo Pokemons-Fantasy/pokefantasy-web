@@ -43,3 +43,13 @@ describe('MatchLineups', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe('MatchLineups — enlaces', () => {
+  it('solo enlaza pastes https', () => {
+    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+      player1LineupSubmitted: true, player1Lineup: { pokemonNames: ['pikachu'], pasteUrl: 'javascript:alert(1)' },
+    })} />);
+
+    expect(screen.queryByRole('link', { name: 'Ver equipo' })).not.toBeInTheDocument();
+  });
+});

@@ -136,6 +136,8 @@ export interface MatchDto {
   player2Lineup?: Lineup | null;
   /** El usuario en sesión puede declarar (o cambiar) su alineación ahora (lo decide el backend). */
   lineupOpen?: boolean;
+  /** Podrá declararla cuando cierre el mercado de la jornada (lo decide el backend con la hora de Madrid). */
+  lineupPending?: boolean;
 }
 
 export interface Lineup {

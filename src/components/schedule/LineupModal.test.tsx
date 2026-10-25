@@ -126,3 +126,12 @@ describe('LineupModal', () => {
     }));
   });
 });
+
+describe('LineupModal — sin equipo', () => {
+  it('sin Pokémon no deja enviar y lo explica', () => {
+    renderModal({ picks: [] });
+
+    expect(screen.getByText('No tienes Pokémon para declarar.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enviar alineación' })).toBeDisabled();
+  });
+});

@@ -100,6 +100,14 @@ export default function SchedulePage() {
   const myPicks = deriveTeams(draft).find((t) => t.username === username)?.picks ?? [];
   const spriteIds = new Map((draft?.picks ?? []).map((p) => [p.pokemonName, p.pokemonId]));
 
+  // Sin ajustes o sin equipo el modal de alineación no puede abrirse: se avisa en vez de no hacer nada.
+  useEffect(() => {
+    if (lineupMatch && (settingsStatus === 'error' || draftStatus === 'error')) {
+      addToast('error', 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.');
+      setLineupMatch(null);
+    }
+  }, [lineupMatch, settingsStatus, draftStatus, addToast]);
+
   const { mutate: recordResult, isPending: recording } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
       recordMatchResult(leagueId!, matchId, winner, score),
@@ -261,7 +269,7 @@ export default function SchedulePage() {
         );
       })()}
 
-      {lineupMatch && leagueSettings && (
+      {lineupMatch && leagueSettings && draftStatus === 'success' && (
         <LineupModal
           leagueId={leagueId!}
           matchId={lineupMatch.id}

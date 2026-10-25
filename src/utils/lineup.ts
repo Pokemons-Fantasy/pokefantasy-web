@@ -5,6 +5,16 @@ export function lineupSize(teamSize: number): number {
   return Math.min(6, teamSize);
 }
 
+/** Solo se enlazan URLs https (el enlace lo escribe otro jugador; nunca `javascript:` ni similares). */
+export function isHttpsUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    return new URL(url).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export function myLineup(match: MatchDto, username: string | null): Lineup | null {
   if (username === match.player1) return match.player1Lineup ?? null;
   if (username === match.player2) return match.player2Lineup ?? null;

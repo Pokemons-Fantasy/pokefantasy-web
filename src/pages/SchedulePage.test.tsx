@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import SchedulePage from './SchedulePage';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import * as leaguesApi from '../api/leagues';
 import * as pokemonsApi from '../api/pokemons';
 import { Clipboard } from '@capacitor/clipboard';
@@ -354,7 +355,7 @@ describe('SchedulePage — alineación', () => {
   });
 
   it('antes del cierre del mercado dice desde cuándo', async () => {
-    api.getSchedule.mockResolvedValue(scheduleWith({}, '2099-06-05T16:00:00'));
+    api.getSchedule.mockResolvedValue(scheduleWith({ lineupPending: true }, '2099-06-05T16:00:00'));
     renderPage();
 
     expect(await screen.findByText('Podrás declarar tu alineación desde vie 5 jun, 16:00')).toBeInTheDocument();
@@ -381,5 +382,47 @@ describe('SchedulePage — alineación', () => {
     await user.click(copy);
 
     expect(Clipboard.write).toHaveBeenCalledWith({ string: 'Starmie\n\nLapras' });
+  });
+});
+
+describe('SchedulePage — alineación (errores y jornadas futuras)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'misty' });
+    useToastStore.setState({ toasts: [] });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(null);
+  });
+
+  function schedule(match: Partial<ScheduleResponse['jornadas'][0]['matches'][0]>) {
+    return {
+      leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false,
+      jornadas: [{ roundNumber: 1, lineupOpensAt: '2099-06-05T16:00:00', matches: [
+        { id: 'p1', player1: 'ash', player2: 'misty', status: 'PENDING' as const, ...match },
+      ] }],
+    } satisfies ScheduleResponse;
+  }
+
+  it('sin lineupPending del backend no promete una fecha', async () => {
+    api.getSchedule.mockResolvedValue(schedule({}));
+    renderPage();
+
+    await screen.findByTestId('match-p1');
+    expect(screen.queryByText(/Podrás declarar tu alineación/)).not.toBeInTheDocument();
+  });
+
+  it('si no se pueden cargar los ajustes al abrir la alineación, avisa', async () => {
+    api.getSchedule.mockResolvedValue(schedule({ lineupOpen: true }));
+    api.getLeagueSettings.mockRejectedValueOnce(new Error('caído'));
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Declarar alineación' }));
+
+    await waitFor(() => expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      type: 'error', message: 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.',
+    }));
+    expect(screen.queryByRole('dialog', { name: 'Declarar alineación' })).not.toBeInTheDocument();
   });
 });

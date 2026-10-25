@@ -1,5 +1,6 @@
 import type { Lineup, MatchDto } from '../../api/leagues';
 import { spriteUrl } from '../../utils/sprites';
+import { isHttpsUrl } from '../../utils/lineup';
 
 interface MatchLineupsProps {
   match: MatchDto;
@@ -34,8 +35,8 @@ export default function MatchLineups({ match, username, spriteIds }: MatchLineup
                 : <span key={name} className="match-lineup-name">{name}</span>;
             })}
           </div>
-          {lineup.pasteUrl && (
-            <a href={lineup.pasteUrl} target="_blank" rel="noopener noreferrer" className="match-lineup-link">
+          {isHttpsUrl(lineup.pasteUrl) && (
+            <a href={lineup.pasteUrl!} target="_blank" rel="noopener noreferrer" className="match-lineup-link">
               Ver equipo
             </a>
           )}

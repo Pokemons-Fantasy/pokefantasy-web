@@ -31,9 +31,8 @@ export default function MatchRow({
   const mine = !!username && (match.player1 === username || match.player2 === username);
   const rival = match.player1 === username ? match.player2 : match.player1;
   const lineup = lineupState(match, username);
-  // Solo informativo: si se puede declarar lo dice el backend con lineupOpen.
-  const opensLater = mine && !completed && !match.lineupOpen && lineup !== 'revealed' && !!lineupOpensAt
-    && new Date(lineupOpensAt) > new Date();
+  // El backend decide (hora de Madrid, solo la jornada activa); aquí solo se pinta la fecha.
+  const opensLater = !!match.lineupPending && !!lineupOpensAt;
 
   function playerClass(player: string, side: 'left' | 'right') {
     const result = !completed ? '' : match.winnerUsername === player ? ' winner' : ' loser';

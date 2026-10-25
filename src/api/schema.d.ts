@@ -1292,6 +1292,7 @@ export interface components {
             player1Lineup?: components["schemas"]["LineupResponse"];
             player2Lineup?: components["schemas"]["LineupResponse"];
             lineupOpen?: boolean;
+            lineupPending?: boolean;
         };
         ScheduleResponse: {
             leagueId?: string;
