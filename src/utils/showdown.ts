@@ -48,7 +48,8 @@ export function showdownFormat(settings: BattleSettings): string {
   const rules: string[] = [];
   if (picked < 6) rules.push(`Picked Team Size = ${picked}`);
   if (bestOf === 3) rules.push('Best Of = 3');
-  const format = gameType === 'SINGLES' ? 'gen9customgame' : 'gen9doublescustomgame';
+  // Sin la generación delante: Showdown la completa con la actual (gen9).
+  const format = gameType === 'SINGLES' ? 'customgame' : 'doublescustomgame';
   return rules.length ? `${format}@@@${rules.join(', ')}` : format;
 }
 
