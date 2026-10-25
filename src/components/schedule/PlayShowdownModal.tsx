@@ -5,8 +5,10 @@ import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../Modal';
 import {
-  BATTLE_DEFAULTS, challengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
+  BATTLE_DEFAULTS, challengeCommand, dmChallengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
 } from '../../utils/showdown';
+
+type Copyable = 'dm' | 'room' | 'team';
 
 interface PlayShowdownModalProps {
   /** Username del rival en la liga. */
@@ -29,7 +31,7 @@ export default function PlayShowdownModal({
   rival, myShowdownName, rivalShowdownName, settings, myPokemonNames, status, onClose,
 }: PlayShowdownModalProps) {
   const titleId = useId();
-  const [copied, setCopied] = useState<'challenge' | 'team' | null>(null);
+  const [copied, setCopied] = useState<Copyable | null>(null);
   const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
@@ -40,11 +42,12 @@ export default function PlayShowdownModal({
 
   const ready = status === 'ready';
   const canChallenge = !!myShowdownName && !!rivalShowdownName && status !== 'error';
-  const command = rivalShowdownName && ready ? challengeCommand(rivalShowdownName, settings) : '';
+  const dmCommand = rivalShowdownName && ready ? dmChallengeCommand(settings) : '';
+  const roomCommand = rivalShowdownName && ready ? challengeCommand(rivalShowdownName, settings) : '';
   const gameType = settings.battleGameType ?? BATTLE_DEFAULTS.battleGameType;
   const picked = settings.pickedTeamSize ?? BATTLE_DEFAULTS.pickedTeamSize;
 
-  function copy(text: string, what: 'challenge' | 'team') {
+  function copy(text: string, what: Copyable) {
     Clipboard.write({ string: text })
       .then(() => setCopied(what))
       .catch(() => addToast('error', 'No se pudo copiar. Cópialo a mano.'));
@@ -70,17 +73,33 @@ export default function PlayShowdownModal({
       )}
 
       {canChallenge && (
-        <div className="play-showdown-command" aria-busy={!ready}>
-          <code>{command}</code>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => copy(command, 'challenge')}
-            disabled={!ready}
-          >
-            {copied === 'challenge' ? '✓ Copiado' : 'Copiar reto'}
-          </button>
-        </div>
+        <>
+          <p className="play-showdown-where">En el chat privado con {rivalShowdownName}:</p>
+          <div className="play-showdown-command" aria-busy={!ready}>
+            <code>{dmCommand}</code>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => copy(dmCommand, 'dm')}
+              disabled={!ready}
+            >
+              {copied === 'dm' ? '✓ Copiado' : 'Copiar reto'}
+            </button>
+          </div>
+          <p className="play-showdown-where">En una sala, como el Lobby:</p>
+          <div className="play-showdown-command" aria-busy={!ready}>
+            <code>{roomCommand}</code>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => copy(roomCommand, 'room')}
+              disabled={!ready}
+              aria-label="Copiar reto para una sala"
+            >
+              {copied === 'room' ? '✓ Copiado' : 'Copiar'}
+            </button>
+          </div>
+        </>
       )}
 
       <ol className="play-showdown-steps">
@@ -88,7 +107,10 @@ export default function PlayShowdownModal({
         <li>
           Completa movimientos, objetos, habilidades y estadísticas, y elige el formato {SHOWDOWN_FORMAT_NAMES[gameType]}.
         </li>
-        <li>Quien reta pega el reto en el chat de Showdown y elige su equipo; el rival elige el suyo al aceptar.</li>
+        <li>
+          Quien reta abre un chat privado con el rival en Showdown («Find a user»), pega el reto y elige su equipo; el
+          rival elige el suyo al aceptar.
+        </li>
         {picked < 6 && <li>En el Team Preview, cada uno elige sus {picked} Pokémon.</li>}
       </ol>
 

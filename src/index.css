@@ -874,7 +874,8 @@ button.member-menu-item {
 
 /* Jugar en Showdown (calendario) */
 .play-showdown { max-width: 520px; }
-.play-showdown-command { display: flex; gap: 0.5rem; align-items: center; margin: 0.75rem 0; }
+.play-showdown-where { margin: 0.75rem 0 0; font-size: 0.85rem; color: var(--text-2); }
+.play-showdown-command { display: flex; gap: 0.5rem; align-items: center; margin: 0.35rem 0 0.75rem; }
 .play-showdown-command code {
   flex: 1;
   min-width: 0;

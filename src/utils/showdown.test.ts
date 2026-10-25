@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { challengeCommand, pickedTeamSizeLabel, showdownFormat, showdownTeamText } from './showdown';
+import { challengeCommand, dmChallengeCommand, pickedTeamSizeLabel, showdownFormat, showdownTeamText } from './showdown';
 
 describe('pickedTeamSizeLabel', () => {
   it('6 es jugar con todos; el resto, el número', () => {
@@ -28,9 +28,16 @@ describe('showdownFormat', () => {
 });
 
 describe('challengeCommand', () => {
-  it('reta al nombre de Showdown del rival con el formato de la liga', () => {
+  it('reta al nombre de Showdown del rival con el formato de la liga (para una sala)', () => {
     expect(challengeCommand('Ash Ketchum', {}))
       .toBe('/challenge Ash Ketchum, gen9doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
+  });
+});
+
+describe('dmChallengeCommand', () => {
+  it('en el privado no lleva usuario: Showdown reta a quien tienes en el privado', () => {
+    expect(dmChallengeCommand({})).toBe('/challenge gen9doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
+    expect(dmChallengeCommand({ battleGameType: 'SINGLES', pickedTeamSize: 6, bestOf: 1 })).toBe('/challenge gen9customgame');
   });
 });
 
