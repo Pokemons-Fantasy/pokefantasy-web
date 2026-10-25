@@ -49,7 +49,7 @@ describe('ImportSeriesModal', () => {
     renderModal();
     const user = userEvent.setup();
 
-    const serie = await screen.findByRole('group', { name: 'Serie' });
+    const serie = await screen.findByRole('group', { name: /^Serie del / });
     expect(within(serie).getAllByRole('checkbox')).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Registrar resultado' })).toBeDisabled();
 
@@ -83,7 +83,7 @@ describe('ImportSeriesModal', () => {
     const { invalidate, onClose } = renderModal();
     const user = userEvent.setup();
 
-    await user.click(within(await screen.findByRole('group', { name: 'Serie' }))
+    await user.click(within(await screen.findByRole('group', { name: /^Serie del / }))
       .getByRole('button', { name: 'Marcar la serie' }));
     await user.click(screen.getByRole('button', { name: 'Registrar resultado' }));
 
@@ -134,12 +134,43 @@ describe('ImportSeriesModal', () => {
     renderModal();
     const user = userEvent.setup();
 
-    await user.click(within(await screen.findByRole('group', { name: 'Serie' }))
+    await user.click(within(await screen.findByRole('group', { name: /^Serie del / }))
       .getByRole('button', { name: 'Marcar la serie' }));
     await user.click(screen.getByRole('button', { name: 'Registrar resultado' }));
 
     await waitFor(() => expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
       type: 'error', message: 'El resultado de este partido ya se ha registrado.',
     }));
+  });
+});
+
+describe('ImportSeriesModal — accesibilidad', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getReplayCandidates.mockResolvedValue([cand('g1', 'ash', 1), cand('g2', 'ash', 2)]);
+  });
+
+  it('cada enlace a un replay tiene nombre propio', async () => {
+    renderModal();
+
+    expect(await screen.findByRole('link', { name: 'Ver replay de la partida 1: ash gana' }))
+      .toHaveAttribute('href', 'https://replay.pokemonshowdown.com/g1');
+  });
+
+  it('el resumen vive en una región que se anuncia desde el principio', async () => {
+    renderModal();
+    await screen.findByRole('group', { name: /^Serie del / });
+
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    await userEvent.click(screen.getByRole('button', { name: 'Marcar la serie' }));
+    expect(status).toHaveTextContent('Resultado: ash gana 2-0');
+  });
+
+  it('mientras busca, la lista está marcada como ocupada', () => {
+    api.getReplayCandidates.mockReturnValue(new Promise(() => {}));
+    renderModal();
+
+    expect(screen.getByLabelText('Buscando replays')).toHaveAttribute('aria-busy', 'true');
   });
 });

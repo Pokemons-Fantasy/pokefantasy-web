@@ -4,6 +4,7 @@ import { getReplayCandidates, importSeries, type MatchDto, type ReplayCandidate 
 import { useToastStore } from '../../store/toastStore';
 import { extractErrorMessage } from '../../utils/errorMessage';
 import { groupBySeries, seriesSummary } from '../../utils/replays';
+import { formatDate } from '../../utils/dates';
 import { SkeletonTable } from '../SkeletonTable';
 import Modal from '../Modal';
 
@@ -83,7 +84,17 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
           />
           {gameLabel(c)}
         </label>
-        <a href={c.url} target="_blank" rel="noopener noreferrer" className="import-game-link">Ver replay</a>
+        <a
+          href={c.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="import-game-link"
+          aria-label={c.gameNumber
+            ? `Ver replay de la partida ${c.gameNumber}: ${c.winnerUsername ?? '?'} gana`
+            : `Ver replay: ${c.winnerUsername ?? '?'} gana`}
+        >
+          Ver replay
+        </a>
         {!c.selectable && <span id={reasonId} className="field-hint">{c.reason}</span>}
       </li>
     );
@@ -96,7 +107,11 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
         {match.player1} vs {match.player2} · {bestOf === 1 ? 'una partida' : 'al mejor de 3'}
       </p>
 
-      {isLoading && <SkeletonTable rows={3} />}
+      {isLoading && (
+        <div aria-busy="true" aria-label="Buscando replays">
+          <SkeletonTable rows={3} />
+        </div>
+      )}
       {error && (
         <div className="field-hint field-hint-error" role="alert">
           {extractErrorMessage(error, 'No se pudieron buscar los replays')}{' '}
@@ -112,7 +127,7 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
 
       {groups.map((g) => g.seriesId ? (
         <fieldset key={g.seriesId} className="import-series-group">
-          <legend>Serie</legend>
+          <legend>Serie del {formatDate(new Date(g.games[0].uploadtime * 1000))}</legend>
           <ul>{g.games.map(gameRow)}</ul>
           <button type="button" className="btn-ghost" onClick={() => markSeries(g.games)} disabled={submit.isPending}>
             Marcar la serie
@@ -140,11 +155,14 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
         </div>
       </form>
 
-      {chosen.length > 0 && (
-        <p className={'error' in summary ? 'field-hint field-hint-error' : 'import-series-summary'} aria-live="polite">
-          {'error' in summary ? summary.error : `Resultado: ${summary.winner} gana${summary.score ? ` ${summary.score}` : ''}`}
-        </p>
-      )}
+      {/* Siempre presente (vacía al principio): una región que aparece ya con texto no se anuncia. */}
+      <p
+        role="status"
+        className={chosen.length > 0 && 'error' in summary ? 'field-hint field-hint-error' : 'import-series-summary'}
+      >
+        {chosen.length === 0 ? '' : 'error' in summary ? summary.error
+          : `Resultado: ${summary.winner} gana${summary.score ? ` ${summary.score}` : ''}`}
+      </p>
       {warnings.length > 0 && (
         <ul className="match-lineup-warnings">{warnings.map((w) => <li key={w}>{w}</li>)}</ul>
       )}
