@@ -100,13 +100,21 @@ export default function SchedulePage() {
   const myPicks = deriveTeams(draft).find((t) => t.username === username)?.picks ?? [];
   const spriteIds = new Map((draft?.picks ?? []).map((p) => [p.pokemonName, p.pokemonId]));
 
-  // Sin ajustes o sin equipo el modal de alineación no puede abrirse: se avisa en vez de no hacer nada.
-  useEffect(() => {
-    if (lineupMatch && (settingsStatus === 'error' || draftStatus === 'error')) {
+  // El modal de alineación necesita los ajustes (lista abierta o cerrada) y mi equipo: se cargan al pulsar,
+  // y si fallan se avisa en vez de no hacer nada.
+  async function openLineup(match: MatchDto) {
+    try {
+      await Promise.all([
+        queryClient.fetchQuery({ queryKey: ['league-settings', leagueId], queryFn: () => getLeagueSettings(leagueId!),
+          staleTime: 5 * 60_000 }),
+        queryClient.fetchQuery({ queryKey: ['draft-status', leagueId], queryFn: () => getDraftStatus(leagueId!),
+          staleTime: 60_000 }),
+      ]);
+      setLineupMatch(match);
+    } catch {
       addToast('error', 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.');
-      setLineupMatch(null);
     }
-  }, [lineupMatch, settingsStatus, draftStatus, addToast]);
+  }
 
   const { mutate: recordResult, isPending: recording } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
@@ -246,7 +254,7 @@ export default function SchedulePage() {
                 onRecord={openRecord}
                 onEdit={openEdit}
                 onPlay={setPlayingMatch}
-                onLineup={setLineupMatch}
+                onLineup={openLineup}
                 spriteIds={spriteIds}
               />
             ))}
@@ -269,7 +277,7 @@ export default function SchedulePage() {
         );
       })()}
 
-      {lineupMatch && leagueSettings && draftStatus === 'success' && (
+      {lineupMatch && leagueSettings && (
         <LineupModal
           leagueId={leagueId!}
           matchId={lineupMatch.id}
