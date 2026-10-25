@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
@@ -18,6 +18,12 @@ function Dialog({ name, children, initial = false }: { name: string; children?: 
       {children}
     </div>
   );
+}
+
+function EscDialog({ name, onEscape }: { name: string; onEscape?: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useFocusTrap(ref, { onEscape });
+  return <div ref={ref} role="dialog" aria-label={name} tabIndex={-1}><button type="button">{name}</button></div>;
 }
 
 function EmptyDialog() {
@@ -81,6 +87,26 @@ describe('useFocusTrap', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
     expect(opener).toHaveFocus();
+  });
+
+  it('Escape llama a onEscape solo en el modal de arriba', async () => {
+    const outer = vi.fn();
+    const inner = vi.fn();
+    const { rerender } = render(<><EscDialog name="A" onEscape={outer} /><EscDialog name="B" onEscape={inner} /></>);
+
+    await userEvent.keyboard('{Escape}');
+    expect(inner).toHaveBeenCalledTimes(1);
+    expect(outer).not.toHaveBeenCalled();
+
+    rerender(<EscDialog name="A" onEscape={outer} />);
+    await userEvent.keyboard('{Escape}');
+    expect(outer).toHaveBeenCalledTimes(1);
+  });
+
+  it('sin onEscape, Escape no hace nada', async () => {
+    render(<EscDialog name="A" />);
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'A' })).toBeInTheDocument();
   });
 
   it('con un modal encima solo cicla el de arriba', async () => {

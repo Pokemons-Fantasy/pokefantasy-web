@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { declareLineup, type Lineup, type TeamSheet } from '../../api/leagues';
 import type { DraftPick } from '../../api/pokemons';
@@ -6,7 +6,7 @@ import { useToastStore } from '../../store/toastStore';
 import { extractErrorMessage } from '../../utils/errorMessage';
 import { lineupSize } from '../../utils/lineup';
 import { spriteUrl } from '../../utils/sprites';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
+import Modal from '../Modal';
 
 interface LineupModalProps {
   leagueId: string;
@@ -22,21 +22,12 @@ interface LineupModalProps {
 /** Elegir los Pokémon del partido. El backend valida periodo, propiedad y tamaño; aquí solo se guía. */
 export default function LineupModal({ leagueId, matchId, myPicks, current, teamSheet, onClose }: LineupModalProps) {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const size = lineupSize(myPicks.length);
   const open = teamSheet === 'OPEN';
   const [selected, setSelected] = useState<string[]>(current?.pokemonNames ?? []);
   const [pasteUrl, setPasteUrl] = useState(current?.pasteUrl ?? '');
-
-  useFocusTrap(dialogRef);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   const mutation = useMutation({
     mutationFn: () => declareLineup(leagueId, matchId, selected, open ? pasteUrl.trim() : undefined),
@@ -58,68 +49,59 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
   }
 
   return (
-    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div
-        ref={dialogRef}
-        className="modal animate-in-fast lineup-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <h2 id={titleId}>Declarar alineación</h2>
-        <p className="field-hint">
-          Tu rival no la verá hasta que los dos la hayáis enviado. Después no se puede cambiar.
-        </p>
-        {size === 0
-          ? <p className="field-hint field-hint-error">No tienes Pokémon para declarar.</p>
-          : <p className="lineup-count" aria-live="polite">{selected.length} de {size}</p>}
-        {full && size > 0 && (
-          <p id={fullHintId} className="field-hint">Ya tienes los {size}. Quita uno para elegir otro.</p>
-        )}
+    <Modal labelledBy={titleId} onClose={onClose} canClose={!mutation.isPending} className="lineup-modal">
+      <h2 id={titleId}>Declarar alineación</h2>
+      <p className="field-hint">
+        Tu rival no la verá hasta que los dos la hayáis enviado. Después no se puede cambiar.
+      </p>
+      {size === 0
+        ? <p className="field-hint field-hint-error">No tienes Pokémon para declarar.</p>
+        : <p className="lineup-count" aria-live="polite">{selected.length} de {size}</p>}
+      {full && size > 0 && (
+        <p id={fullHintId} className="field-hint">Ya tienes los {size}. Quita uno para elegir otro.</p>
+      )}
 
-        <div className="lineup-grid">
-          {myPicks.map((p) => {
-            const checked = selected.includes(p.pokemonName);
-            const id = `lineup-${p.pokemonName}`;
-            return (
-              <label key={p.pokemonName} htmlFor={id} className={`lineup-option${checked ? ' selected' : ''}`}>
-                <input
-                  id={id}
-                  type="checkbox"
-                  checked={checked}
-                  disabled={!checked && full}
-                  aria-describedby={!checked && full ? fullHintId : undefined}
-                  onChange={() => toggle(p.pokemonName)}
-                />
-                <img src={spriteUrl(p.pokemonId)} alt={p.pokemonName} width={56} height={56} loading="lazy" />
-              </label>
-            );
-          })}
-        </div>
-
-        {open && (
-          <div className="lineup-paste">
-            <label htmlFor="lineup-paste-url">Enlace a tu equipo</label>
-            <input
-              id="lineup-paste-url"
-              type="url"
-              className="search-input"
-              value={pasteUrl}
-              onChange={(e) => setPasteUrl(e.target.value)}
-              placeholder="https://pokepast.es/..."
-              aria-invalid={!!pasteUrl && !urlOk}
-            />
-          </div>
-        )}
-
-        <div className="modal-actions">
-          <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>
-          <button type="button" className="btn-primary" disabled={!canSubmit} onClick={() => mutation.mutate()}>
-            Enviar alineación
-          </button>
-        </div>
+      <div className="lineup-grid">
+        {myPicks.map((p) => {
+          const checked = selected.includes(p.pokemonName);
+          const id = `lineup-${p.pokemonName}`;
+          return (
+            <label key={p.pokemonName} htmlFor={id} className={`lineup-option${checked ? ' selected' : ''}`}>
+              <input
+                id={id}
+                type="checkbox"
+                checked={checked}
+                disabled={!checked && full}
+                aria-describedby={!checked && full ? fullHintId : undefined}
+                onChange={() => toggle(p.pokemonName)}
+              />
+              <img src={spriteUrl(p.pokemonId)} alt={p.pokemonName} width={56} height={56} loading="lazy" />
+            </label>
+          );
+        })}
       </div>
-    </div>
+
+      {open && (
+        <div className="lineup-paste">
+          <label htmlFor="lineup-paste-url">Enlace a tu equipo</label>
+          <input
+            id="lineup-paste-url"
+            type="url"
+            className="search-input"
+            value={pasteUrl}
+            onChange={(e) => setPasteUrl(e.target.value)}
+            placeholder="https://pokepast.es/..."
+            aria-invalid={!!pasteUrl && !urlOk}
+          />
+        </div>
+      )}
+
+      <div className="modal-actions">
+        <button type="button" className="btn-ghost" onClick={onClose} disabled={mutation.isPending}>Cancelar</button>
+        <button type="button" className="btn-primary" disabled={!canSubmit} onClick={() => mutation.mutate()}>
+          Enviar alineación
+        </button>
+      </div>
+    </Modal>
   );
 }

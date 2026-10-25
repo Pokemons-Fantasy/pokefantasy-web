@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTrades, respondToTrade, cancelTrade } from '../api/trades';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -8,6 +8,7 @@ import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonTable } from './SkeletonTable';
 import UserAvatar from './avatar/UserAvatar';
+import Modal from './Modal';
 
 interface Props {
   leagueId: string;
@@ -105,6 +106,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function TradesModal({ leagueId, currentUsername, onClose }: Props) {
+  const titleId = useId();
   const queryClient = useQueryClient();
   const [historyOpen, setHistoryOpen] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
@@ -158,137 +160,100 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
   const isMutating = accepting || rejecting || cancelling;
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+    <Modal
+      labelledBy={titleId}
+      onClose={onClose}
+      canClose={!isMutating}
+      style={{ maxWidth: 560, padding: 0, overflow: 'hidden' }}
     >
+      {/* Header */}
       <div
-        className="modal animate-in-fast"
-        style={{ maxWidth: 560, padding: 0, overflow: 'hidden' }}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 1.25rem 0.75rem',
+          borderBottom: '1px solid var(--border)',
+        }}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem 1.25rem 0.75rem',
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>
-              Intercambios
-            </h2>
-            {incoming.length > 0 && (
-              <span
-                style={{
-                  background: 'var(--accent-fill)',
-                  color: '#0a0a0f',
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  borderRadius: '50%',
-                  width: 20,
-                  height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                {incoming.length}
-              </span>
-            )}
-          </div>
-          <button
-            className="btn-ghost"
-            style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body */}
-        <div
-          style={{
-            padding: '1rem 1.25rem',
-            overflowY: 'auto',
-            maxHeight: '70vh',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-          }}
-        >
-          {isLoading && <SkeletonTable rows={3} />}
-
-          {/* ── Incoming ── */}
-          {!isLoading && (
-            <div>
-              <SectionLabel>Propuestas recibidas</SectionLabel>
-              {incoming.length === 0 ? (
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
-                  Sin propuestas pendientes.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {incoming.map((trade) => (
-                    <TradeRow
-                      key={trade.id}
-                      trade={trade}
-                      label={<><UserAvatar username={trade.proposer} size={20} className="avatar-inline" /><strong>{trade.proposer}</strong> te propone:</>}
-                      actions={
-                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-                          <button
-                            className="btn-primary"
-                            style={{
-                              fontSize: '0.75rem',
-                              padding: '0.3rem 0.65rem',
-                              background: 'rgba(52,211,153,0.85)',
-                            }}
-                            disabled={isMutating}
-                            onClick={() => doAccept(trade.id)}
-                          >
-                            Aceptar
-                          </button>
-                          <button
-                            className="btn-ghost"
-                            style={{
-                              fontSize: '0.75rem',
-                              padding: '0.3rem 0.65rem',
-                              color: 'var(--danger)',
-                              borderColor: 'var(--danger-border)',
-                            }}
-                            disabled={isMutating}
-                            onClick={() => doReject(trade.id)}
-                          >
-                            Rechazar
-                          </button>
-                        </div>
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 id={titleId} style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>
+            Intercambios
+          </h2>
+          {incoming.length > 0 && (
+            <span
+              style={{
+                background: 'var(--accent-fill)',
+                color: '#0a0a0f',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                borderRadius: '50%',
+                width: 20,
+                height: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              {incoming.length}
+            </span>
           )}
+        </div>
+        <button
+          type="button"
+          className="btn-ghost"
+          style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
+          onClick={onClose}
+          disabled={isMutating}
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </div>
 
-          {/* ── Outgoing ── */}
-          {!isLoading && (
-            <div>
-              <SectionLabel>Propuestas enviadas</SectionLabel>
-              {outgoing.length === 0 ? (
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
-                  Sin propuestas activas.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {outgoing.map((trade) => (
-                    <TradeRow
-                      key={trade.id}
-                      trade={trade}
-                      label={<>Propuesta a <UserAvatar username={trade.responder} size={20} className="avatar-inline" /><strong>{trade.responder}</strong>:</>}
-                      actions={
+      {/* Body */}
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          overflowY: 'auto',
+          maxHeight: '70vh',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem',
+        }}
+      >
+        {isLoading && <SkeletonTable rows={3} />}
+
+        {/* ── Incoming ── */}
+        {!isLoading && (
+          <div>
+            <SectionLabel>Propuestas recibidas</SectionLabel>
+            {incoming.length === 0 ? (
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
+                Sin propuestas pendientes.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {incoming.map((trade) => (
+                  <TradeRow
+                    key={trade.id}
+                    trade={trade}
+                    label={<><UserAvatar username={trade.proposer} size={20} className="avatar-inline" /><strong>{trade.proposer}</strong> te propone:</>}
+                    actions={
+                      <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                        <button
+                          className="btn-primary"
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.3rem 0.65rem',
+                            background: 'rgba(52,211,153,0.85)',
+                          }}
+                          disabled={isMutating}
+                          onClick={() => doAccept(trade.id)}
+                        >
+                          Aceptar
+                        </button>
                         <button
                           className="btn-ghost"
                           style={{
@@ -296,47 +261,84 @@ export default function TradesModal({ leagueId, currentUsername, onClose }: Prop
                             padding: '0.3rem 0.65rem',
                             color: 'var(--danger)',
                             borderColor: 'var(--danger-border)',
-                            flexShrink: 0,
                           }}
                           disabled={isMutating}
-                          onClick={() => doCancel(trade.id)}
+                          onClick={() => doReject(trade.id)}
                         >
-                          Cancelar
+                          Rechazar
                         </button>
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── History ── */}
-          {!isLoading && history.length > 0 && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: historyOpen ? '0.5rem' : 0 }}>
-                <button
-                  className="btn-ghost"
-                  style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
-                  onClick={() => setHistoryOpen((o) => !o)}
-                >
-                  {historyOpen ? '▲ Ocultar historial' : `▼ Ver historial (${history.length})`}
-                </button>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                      </div>
+                    }
+                  />
+                ))}
               </div>
+            )}
+          </div>
+        )}
 
-              {historyOpen && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {history.map((trade) => (
-                    <HistoryRow key={trade.id} trade={trade} currentUsername={currentUsername} />
-                  ))}
-                </div>
-              )}
+        {/* ── Outgoing ── */}
+        {!isLoading && (
+          <div>
+            <SectionLabel>Propuestas enviadas</SectionLabel>
+            {outgoing.length === 0 ? (
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-3)', padding: '0.5rem 0' }}>
+                Sin propuestas activas.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {outgoing.map((trade) => (
+                  <TradeRow
+                    key={trade.id}
+                    trade={trade}
+                    label={<>Propuesta a <UserAvatar username={trade.responder} size={20} className="avatar-inline" /><strong>{trade.responder}</strong>:</>}
+                    actions={
+                      <button
+                        className="btn-ghost"
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.3rem 0.65rem',
+                          color: 'var(--danger)',
+                          borderColor: 'var(--danger-border)',
+                          flexShrink: 0,
+                        }}
+                        disabled={isMutating}
+                        onClick={() => doCancel(trade.id)}
+                      >
+                        Cancelar
+                      </button>
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── History ── */}
+        {!isLoading && history.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: historyOpen ? '0.5rem' : 0 }}>
+              <button
+                className="btn-ghost"
+                style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+                onClick={() => setHistoryOpen((o) => !o)}
+              >
+                {historyOpen ? '▲ Ocultar historial' : `▼ Ver historial (${history.length})`}
+              </button>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
-          )}
-        </div>
+
+            {historyOpen && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {history.map((trade) => (
+                  <HistoryRow key={trade.id} trade={trade} currentUsername={currentUsername} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }
 

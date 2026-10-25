@@ -100,6 +100,37 @@ describe('SchedulePage — corregir resultados', () => {
     await waitFor(() => expect(api.revertMatchResult).toHaveBeenCalledWith('league-1', 'm1'));
   });
 
+  it('el modal de corregir es un diálogo: Escape lo cierra y devuelve el foco al botón', async () => {
+    useAuthStore.setState({ username: 'ash' });
+    const user = userEvent.setup();
+    renderPage();
+
+    const opener = await screen.findByRole('button', { name: 'Corregir resultado ash vs misty' });
+    await user.click(opener);
+    const dialog = screen.getByRole('dialog', { name: 'Corregir resultado' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(opener).toHaveFocus();
+  });
+
+  it('mientras se deshace el resultado, Escape no cierra el modal', async () => {
+    useAuthStore.setState({ username: 'ash' });
+    api.revertMatchResult.mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Corregir resultado ash vs misty' }));
+    await user.click(screen.getByRole('button', { name: '↩ Deshacer resultado' }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.getByRole('dialog', { name: 'Corregir resultado' })).toBeInTheDocument();
+  });
+
   it('only completed matches can be corrected, and only by admins', async () => {
     useAuthStore.setState({ username: 'ash' });
     const { unmount } = renderPage();

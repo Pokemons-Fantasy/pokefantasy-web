@@ -1,11 +1,11 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { deleteAccount } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
-import { useFocusTrap } from '../hooks/useFocusTrap';
+import Modal from './Modal';
 
 interface DeleteAccountModalProps {
   onClose: () => void;
@@ -18,7 +18,6 @@ interface DeleteAccountModalProps {
 export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
   const titleId = useId();
   const passwordId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -36,50 +35,41 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
     onError: (error) => addToast('error', extractErrorMessage(error)),
   });
 
-  useFocusTrap(dialogRef, { initialFocusRef: passwordRef });
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !mutation.isPending) onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [mutation.isPending, onClose]);
-
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget && !mutation.isPending) onClose(); }}
+    <Modal
+      labelledBy={titleId}
+      onClose={onClose}
+      canClose={!mutation.isPending}
+      initialFocusRef={passwordRef}
+      className="confirm-dialog"
     >
-      <div ref={dialogRef} className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <h2 id={titleId}>Borrar cuenta</h2>
-        <p className="confirm-dialog-message">
-          Se borrará tu cuenta y no se puede deshacer. Saldrás de todas tus ligas, tus Pokémon volverán al banquillo
-          y en el historial aparecerás como «Usuario eliminado». Si eres el único admin de una liga, pasará a serlo
-          el miembro más antiguo; si estás solo, la liga se borra.
-        </p>
-        <form onSubmit={(e) => { e.preventDefault(); if (password) mutation.mutate(); }}>
-          <label htmlFor={passwordId}>Contraseña</label>
-          <input
-            ref={passwordRef}
-            id={passwordId}
-            type="password"
-            className="search-input"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={mutation.isPending}
-          />
-          <div className="modal-actions">
-            <button type="button" className="btn-ghost" onClick={onClose} disabled={mutation.isPending}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-danger" disabled={!password || mutation.isPending}>
-              {mutation.isPending ? 'Borrando…' : 'Borrar mi cuenta'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      <h2 id={titleId}>Borrar cuenta</h2>
+      <p className="confirm-dialog-message">
+        Se borrará tu cuenta y no se puede deshacer. Saldrás de todas tus ligas, tus Pokémon volverán al banquillo
+        y en el historial aparecerás como «Usuario eliminado». Si eres el único admin de una liga, pasará a serlo
+        el miembro más antiguo; si estás solo, la liga se borra.
+      </p>
+      <form onSubmit={(e) => { e.preventDefault(); if (password) mutation.mutate(); }}>
+        <label htmlFor={passwordId}>Contraseña</label>
+        <input
+          ref={passwordRef}
+          id={passwordId}
+          type="password"
+          className="search-input"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={mutation.isPending}
+        />
+        <div className="modal-actions">
+          <button type="button" className="btn-ghost" onClick={onClose} disabled={mutation.isPending}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn-danger" disabled={!password || mutation.isPending}>
+            {mutation.isPending ? 'Borrando…' : 'Borrar mi cuenta'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

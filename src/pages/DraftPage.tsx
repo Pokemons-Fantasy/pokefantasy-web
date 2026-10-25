@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -15,6 +15,7 @@ import { useDraftFavorites } from '../hooks/useDraftFavorites';
 import SetupTierBoard from '../components/draftSetup/SetupTierBoard';
 import Notice from '../components/Notice';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Modal from '../components/Modal';
 import { buildDraftBoard } from '../utils/draftBoard';
 import { canAfford, draftPrice, remainingBudget, spendingByPlayer } from '../utils/draftBudget';
 import { coinsLabel } from '../utils/coins';
@@ -33,6 +34,8 @@ export default function DraftPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [detailEntry, setDetailEntry] = useState<ClosedListEntry | null>(null);
   const [pendingPick, setPendingPick] = useState<ClosedListEntry | null>(null);
+  const pickTitleId = useId();
+  const pickMessageId = useId();
   const { favorites, toggle: toggleFavorite } = useDraftFavorites(username, leagueId);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -383,32 +386,30 @@ export default function DraftPage() {
         />
       )}
       {pendingPick && (
-        <div className="modal-overlay" onClick={() => setPendingPick(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>¿Confirmar pick?</h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
-              Vas a elegir a <strong>{pendingPick.pokemonName}</strong>
-              {config && myRemaining !== null && (
-                <> por {coinsLabel(priceOf(pendingPick))}: te quedarán {coinsLabel(myRemaining - priceOf(pendingPick))}</>
-              )}. Esta acción no se puede deshacer.
-            </p>
-            <div className="modal-actions">
-              <button className="btn-ghost" onClick={() => setPendingPick(null)}>
-                Cancelar
-              </button>
-              <button
-                className="btn-primary"
-                disabled={picking}
-                onClick={() => {
-                  pick(pendingPick.pokemonName);
-                  setPendingPick(null);
-                }}
-              >
-                {picking ? 'Eligiendo...' : 'Confirmar'}
-              </button>
-            </div>
+        <Modal labelledBy={pickTitleId} describedBy={pickMessageId} role="alertdialog" onClose={() => setPendingPick(null)}>
+          <h2 id={pickTitleId}>¿Confirmar pick?</h2>
+          <p id={pickMessageId} style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
+            Vas a elegir a <strong>{pendingPick.pokemonName}</strong>
+            {config && myRemaining !== null && (
+              <> por {coinsLabel(priceOf(pendingPick))}: te quedarán {coinsLabel(myRemaining - priceOf(pendingPick))}</>
+            )}. Esta acción no se puede deshacer.
+          </p>
+          <div className="modal-actions">
+            <button className="btn-ghost" onClick={() => setPendingPick(null)}>
+              Cancelar
+            </button>
+            <button
+              className="btn-primary"
+              disabled={picking}
+              onClick={() => {
+                pick(pendingPick.pokemonName);
+                setPendingPick(null);
+              }}
+            >
+              {picking ? 'Eligiendo...' : 'Confirmar'}
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
       {detailEntry && (
         <PokemonDetailModal

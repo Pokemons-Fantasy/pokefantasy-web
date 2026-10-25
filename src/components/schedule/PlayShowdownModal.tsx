@@ -1,9 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
+import Modal from '../Modal';
 import {
   BATTLE_DEFAULTS, challengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
 } from '../../utils/showdown';
@@ -29,7 +29,6 @@ export default function PlayShowdownModal({
   rival, myShowdownName, rivalShowdownName, settings, myPokemonNames, status, onClose,
 }: PlayShowdownModalProps) {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<'challenge' | 'team' | null>(null);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -38,14 +37,6 @@ export default function PlayShowdownModal({
     const timer = setTimeout(() => setCopied(null), 2000);
     return () => clearTimeout(timer);
   }, [copied]);
-
-  useFocusTrap(dialogRef);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   const ready = status === 'ready';
   const canChallenge = !!myShowdownName && !!rivalShowdownName && status !== 'error';
@@ -60,75 +51,66 @@ export default function PlayShowdownModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div
-        ref={dialogRef}
-        className="modal animate-in-fast play-showdown"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <h2 id={titleId}>Jugar en Showdown</h2>
+    <Modal labelledBy={titleId} onClose={onClose} className="play-showdown">
+      <h2 id={titleId}>Jugar en Showdown</h2>
 
-        {!myShowdownName && (
-          <p className="field-hint field-hint-error">
-            <Link to="/profile">Vincula tu cuenta de Showdown en tu perfil.</Link>
-          </p>
-        )}
-        {!rivalShowdownName && (
-          <p className="field-hint field-hint-error">{rival} no ha vinculado su cuenta de Showdown.</p>
-        )}
-
-        {status === 'error' && (
-          <p className="field-hint field-hint-error" role="alert">
-            No se pudieron cargar los ajustes de la liga. Cierra y vuelve a intentarlo.
-          </p>
-        )}
-
-        {canChallenge && (
-          <div className="play-showdown-command" aria-busy={!ready}>
-            <code>{command}</code>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => copy(command, 'challenge')}
-              disabled={!ready}
-            >
-              {copied === 'challenge' ? '✓ Copiado' : 'Copiar reto'}
-            </button>
-          </div>
-        )}
-
-        <ol className="play-showdown-steps">
-          <li>En Showdown, abre el Teambuilder, crea un equipo nuevo y pega tu equipo con «Import from text».</li>
-          <li>
-            Completa movimientos, objetos, habilidades y estadísticas, y elige el formato {SHOWDOWN_FORMAT_NAMES[gameType]}.
-          </li>
-          <li>Quien reta pega el reto en el chat de Showdown y elige su equipo; el rival elige el suyo al aceptar.</li>
-          {picked < 6 && <li>En el Team Preview, cada uno elige sus {picked} Pokémon.</li>}
-        </ol>
-
-        <p className="field-hint">
-          Al terminar cada partida, pulsa «Upload and share replay» en Showdown: sin replay no se podrá importar el
-          resultado.
+      {!myShowdownName && (
+        <p className="field-hint field-hint-error">
+          <Link to="/profile">Vincula tu cuenta de Showdown en tu perfil.</Link>
         </p>
+      )}
+      {!rivalShowdownName && (
+        <p className="field-hint field-hint-error">{rival} no ha vinculado su cuenta de Showdown.</p>
+      )}
 
-        <div className="modal-actions">
-          <button type="button" className="btn-ghost" onClick={onClose}>Cerrar</button>
+      {status === 'error' && (
+        <p className="field-hint field-hint-error" role="alert">
+          No se pudieron cargar los ajustes de la liga. Cierra y vuelve a intentarlo.
+        </p>
+      )}
+
+      {canChallenge && (
+        <div className="play-showdown-command" aria-busy={!ready}>
+          <code>{command}</code>
           <button
             type="button"
-            className="btn-ghost"
-            onClick={() => copy(showdownTeamText(myPokemonNames), 'team')}
+            className="btn-primary"
+            onClick={() => copy(command, 'challenge')}
             disabled={!ready}
           >
-            {copied === 'team' ? '✓ Copiado' : 'Copiar mi equipo'}
+            {copied === 'challenge' ? '✓ Copiado' : 'Copiar reto'}
           </button>
-          <a className="btn-primary" href={SHOWDOWN_PLAY_URL} target="_blank" rel="noopener noreferrer">
-            Abrir Showdown
-          </a>
         </div>
+      )}
+
+      <ol className="play-showdown-steps">
+        <li>En Showdown, abre el Teambuilder, crea un equipo nuevo y pega tu equipo con «Import from text».</li>
+        <li>
+          Completa movimientos, objetos, habilidades y estadísticas, y elige el formato {SHOWDOWN_FORMAT_NAMES[gameType]}.
+        </li>
+        <li>Quien reta pega el reto en el chat de Showdown y elige su equipo; el rival elige el suyo al aceptar.</li>
+        {picked < 6 && <li>En el Team Preview, cada uno elige sus {picked} Pokémon.</li>}
+      </ol>
+
+      <p className="field-hint">
+        Al terminar cada partida, pulsa «Upload and share replay» en Showdown: sin replay no se podrá importar el
+        resultado.
+      </p>
+
+      <div className="modal-actions">
+        <button type="button" className="btn-ghost" onClick={onClose}>Cerrar</button>
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => copy(showdownTeamText(myPokemonNames), 'team')}
+          disabled={!ready}
+        >
+          {copied === 'team' ? '✓ Copiado' : 'Copiar mi equipo'}
+        </button>
+        <a className="btn-primary" href={SHOWDOWN_PLAY_URL} target="_blank" rel="noopener noreferrer">
+          Abrir Showdown
+        </a>
       </div>
-    </div>
+    </Modal>
   );
 }

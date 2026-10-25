@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { DraftPick, Tier } from '../../api/pokemons';
 import TierBadge from '../TierBadge';
 import { spriteUrl } from '../../utils/sprites';
 import { coinsLabel } from '../../utils/coins';
 import { CLAUSE_RAISE_MULTIPLIER, raisedClause } from '../../utils/clause';
+import Modal from '../Modal';
 
 interface SetPriceModalProps {
   pick: DraftPick;
@@ -18,6 +19,7 @@ interface SetPriceModalProps {
 export default function SetPriceModal({
   pick, currentPrice, myBalance, tierByName, saving, onConfirm, onClose,
 }: SetPriceModalProps) {
+  const titleId = useId();
   const [inputVal, setInputVal] = useState('');
   const tier = tierByName.get(pick.pokemonName);
   const parsed = parseInt(inputVal, 10);
@@ -27,125 +29,122 @@ export default function SetPriceModal({
   const canAfford = myBalance >= investment;
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal animate-in-fast" style={{ maxWidth: 400 }}>
+    <Modal labelledBy={titleId} onClose={onClose} canClose={!saving} style={{ maxWidth: 400 }}>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem' }}>Subir precio de robo</h2>
-          <button
-            className="btn-ghost"
-            style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Pokemon info */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '0.75rem 1rem',
-          background: 'var(--surface-2)',
-          borderRadius: 10,
-          border: '1px solid var(--border)',
-        }}>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <img
-              src={spriteUrl(pick.pokemonId)}
-              alt={pick.pokemonName}
-              style={{ width: 56, height: 56, imageRendering: 'pixelated', display: 'block' }}
-            />
-            <TierBadge tier={tier} />
-          </div>
-          <div>
-            <div style={{ fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.25rem' }}>
-              {pick.pokemonName}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
-              Precio actual: <span className="coin-badge" style={{ fontSize: '0.72rem', marginLeft: '0.3rem' }}>💰 {currentPrice}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Input */}
-        <div>
-          <label style={{ fontSize: '0.82rem', color: 'var(--text-2)', display: 'block', marginBottom: '0.4rem' }}>
-            Monedas a invertir (cada una sube la cláusula {CLAUSE_RAISE_MULTIPLIER})
-          </label>
-          <input
-            type="number"
-            min={1}
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
-            placeholder="Ej. 10"
-            style={{
-              width: '100%',
-              padding: '0.5rem 0.75rem',
-              background: 'var(--surface-2)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              color: 'var(--text-1)',
-              fontSize: '0.9rem',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        {/* Investment summary */}
-        {isValid && (
-          <div style={{
-            padding: '0.6rem 0.9rem',
-            borderRadius: 8,
-            background: canAfford ? 'var(--success-bg)' : 'var(--danger-bg)',
-            border: `1px solid ${canAfford ? 'var(--success-border)' : 'var(--danger-border)'}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.35rem',
-            fontSize: '0.82rem',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-2)' }}>Inversión</span>
-              <span style={{ color: canAfford ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>💰 {investment}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-2)' }}>Tu saldo</span>
-              <span>💰 {myBalance}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-2)' }}>Cláusula</span>
-              <span>💰 {currentPrice} → <strong>{newPrice}</strong></span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-3)' }}>Si te roban, recibirías</span>
-              <span style={{ color: 'var(--success)', fontWeight: 600 }}>💰 {newPrice}</span>
-            </div>
-            {!canAfford && (
-              <span style={{ color: 'var(--danger)', fontWeight: 600 }}>
-                Saldo insuficiente — te faltan {coinsLabel(investment - myBalance)}
-              </span>
-            )}
-          </div>
-        )}
-
-        <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose} disabled={saving}>
-            Cancelar
-          </button>
-          <button
-            className="btn-primary"
-            disabled={!isValid || !canAfford || saving}
-            onClick={() => isValid && canAfford && onConfirm(newPrice)}
-          >
-            {saving ? 'Guardando…' : `Invertir 💰 ${investment}`}
-          </button>
-        </div>
-
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 id={titleId} style={{ fontSize: '1.15rem' }}>Subir precio de robo</h2>
+        <button
+          type="button"
+          className="btn-ghost"
+          style={{ padding: '0.2rem 0.55rem', fontSize: '1rem', lineHeight: 1 }}
+          onClick={onClose}
+          disabled={saving}
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
       </div>
-    </div>
+
+      {/* Pokemon info */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        padding: '0.75rem 1rem',
+        background: 'var(--surface-2)',
+        borderRadius: 10,
+        border: '1px solid var(--border)',
+      }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <img
+            src={spriteUrl(pick.pokemonId)}
+            alt={pick.pokemonName}
+            style={{ width: 56, height: 56, imageRendering: 'pixelated', display: 'block' }}
+          />
+          <TierBadge tier={tier} />
+        </div>
+        <div>
+          <div style={{ fontWeight: 600, textTransform: 'capitalize', marginBottom: '0.25rem' }}>
+            {pick.pokemonName}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>
+            Precio actual: <span className="coin-badge" style={{ fontSize: '0.72rem', marginLeft: '0.3rem' }}>💰 {currentPrice}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Input */}
+      <div>
+        <label style={{ fontSize: '0.82rem', color: 'var(--text-2)', display: 'block', marginBottom: '0.4rem' }}>
+          Monedas a invertir (cada una sube la cláusula {CLAUSE_RAISE_MULTIPLIER})
+        </label>
+        <input
+          type="number"
+          min={1}
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          placeholder="Ej. 10"
+          style={{
+            width: '100%',
+            padding: '0.5rem 0.75rem',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            color: 'var(--text-1)',
+            fontSize: '0.9rem',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      {/* Investment summary */}
+      {isValid && (
+        <div style={{
+          padding: '0.6rem 0.9rem',
+          borderRadius: 8,
+          background: canAfford ? 'var(--success-bg)' : 'var(--danger-bg)',
+          border: `1px solid ${canAfford ? 'var(--success-border)' : 'var(--danger-border)'}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.35rem',
+          fontSize: '0.82rem',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'var(--text-2)' }}>Inversión</span>
+            <span style={{ color: canAfford ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>💰 {investment}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'var(--text-2)' }}>Tu saldo</span>
+            <span>💰 {myBalance}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'var(--text-2)' }}>Cláusula</span>
+            <span>💰 {currentPrice} → <strong>{newPrice}</strong></span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'var(--text-3)' }}>Si te roban, recibirías</span>
+            <span style={{ color: 'var(--success)', fontWeight: 600 }}>💰 {newPrice}</span>
+          </div>
+          {!canAfford && (
+            <span style={{ color: 'var(--danger)', fontWeight: 600 }}>
+              Saldo insuficiente — te faltan {coinsLabel(investment - myBalance)}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="modal-actions">
+        <button className="btn-ghost" onClick={onClose} disabled={saving}>
+          Cancelar
+        </button>
+        <button
+          className="btn-primary"
+          disabled={!isValid || !canAfford || saving}
+          onClick={() => isValid && canAfford && onConfirm(newPrice)}
+        >
+          {saving ? 'Guardando…' : `Invertir 💰 ${investment}`}
+        </button>
+      </div>
+    </Modal>
   );
 }
