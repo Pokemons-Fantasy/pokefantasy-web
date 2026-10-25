@@ -1,14 +1,14 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
 import { getMe } from '../api/auth';
 import { deleteUser, removeAvatar, renameLeague, searchLeagues, searchUsers, type AdminLeague, type AdminUser } from '../api/admin';
 import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Modal from '../components/Modal';
 import UserAvatar from '../components/avatar/UserAvatar';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { useDebounce } from '../hooks/useDebounce';
-import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { leagueNameError } from '../utils/leagueName';
@@ -155,7 +155,6 @@ export default function AdminPage() {
 function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose: () => void }) {
   const titleId = useId();
   const inputId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(league.name);
   const error = leagueNameError(name);
@@ -172,44 +171,38 @@ function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose:
     onError: (e) => addToast('error', extractErrorMessage(e)),
   });
 
-  useFocusTrap(dialogRef, { initialFocusRef: inputRef });
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !mutation.isPending) onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [mutation.isPending, onClose]);
-
   return (
-    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget && !mutation.isPending) onClose(); }}>
-      <div ref={dialogRef} className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <h2 id={titleId}>Renombrar liga</h2>
-        <form onSubmit={(e) => { e.preventDefault(); if (!error) mutation.mutate(); }}>
-          <label htmlFor={inputId}>Nuevo nombre</label>
-          <input
-            ref={inputRef}
-            id={inputId}
-            className="search-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-invalid={!!error}
-            aria-describedby={`${inputId}-hint`}
-            disabled={mutation.isPending}
-          />
-          <p id={`${inputId}-hint`} className={error ? 'field-hint field-hint-error' : 'field-hint'}>
-            {error ?? 'Entre 1 y 40 caracteres.'}
-          </p>
-          <div className="modal-actions">
-            <button type="button" className="btn-ghost" onClick={onClose} disabled={mutation.isPending}>Cancelar</button>
-            <button type="submit" className="btn-primary" disabled={!!error || mutation.isPending}>
-              {mutation.isPending ? 'Guardando…' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal
+      labelledBy={titleId}
+      onClose={onClose}
+      canClose={!mutation.isPending}
+      initialFocusRef={inputRef}
+      className="confirm-dialog"
+    >
+      <h2 id={titleId}>Renombrar liga</h2>
+      <form onSubmit={(e) => { e.preventDefault(); if (!error) mutation.mutate(); }}>
+        <label htmlFor={inputId}>Nuevo nombre</label>
+        <input
+          ref={inputRef}
+          id={inputId}
+          className="search-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          aria-invalid={!!error}
+          aria-describedby={`${inputId}-hint`}
+          disabled={mutation.isPending}
+        />
+        <p id={`${inputId}-hint`} className={error ? 'field-hint field-hint-error' : 'field-hint'}>
+          {error ?? 'Entre 1 y 40 caracteres.'}
+        </p>
+        <div className="modal-actions">
+          <button type="button" className="btn-ghost" onClick={onClose} disabled={mutation.isPending}>Cancelar</button>
+          <button type="submit" className="btn-primary" disabled={!!error || mutation.isPending}>
+            {mutation.isPending ? 'Guardando…' : 'Guardar'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

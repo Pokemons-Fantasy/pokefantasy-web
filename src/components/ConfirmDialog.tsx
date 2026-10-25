@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef } from 'react';
-import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useId, useRef } from 'react';
+import Modal from './Modal';
 
 interface ConfirmDialogProps {
   title: string;
@@ -24,47 +24,33 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const titleId = useId();
   const messageId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  useFocusTrap(dialogRef, { initialFocusRef: cancelRef });
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !pending) onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [pending, onClose]);
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget && !pending) onClose(); }}
+    <Modal
+      role="alertdialog"
+      labelledBy={titleId}
+      describedBy={messageId}
+      onClose={onClose}
+      canClose={!pending}
+      initialFocusRef={cancelRef}
+      className="confirm-dialog"
     >
-      <div
-        ref={dialogRef}
-        className="modal animate-in-fast confirm-dialog"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={messageId}
-      >
-        <h2 id={titleId}>{title}</h2>
-        <p id={messageId} className="confirm-dialog-message">{message}</p>
-        <div className="modal-actions">
-          <button ref={cancelRef} type="button" className="btn-ghost" onClick={onClose} disabled={pending}>
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className={danger ? 'btn-danger' : 'btn-primary'}
-            onClick={onConfirm}
-            disabled={pending}
-          >
-            {pending ? pendingLabel : confirmLabel}
-          </button>
-        </div>
+      <h2 id={titleId}>{title}</h2>
+      <p id={messageId} className="confirm-dialog-message">{message}</p>
+      <div className="modal-actions">
+        <button ref={cancelRef} type="button" className="btn-ghost" onClick={onClose} disabled={pending}>
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          className={danger ? 'btn-danger' : 'btn-primary'}
+          onClick={onConfirm}
+          disabled={pending}
+        >
+          {pending ? pendingLabel : confirmLabel}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }

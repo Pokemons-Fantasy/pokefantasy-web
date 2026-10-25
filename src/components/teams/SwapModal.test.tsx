@@ -59,4 +59,33 @@ describe('SwapModal', () => {
     await userEvent.click(onix);
     expect(screen.getByRole('button', { name: 'Confirmar intercambio' })).toBeDisabled();
   });
+
+  it('es un diálogo con nombre que atrapa el foco y se cierra con Escape', async () => {
+    const onClose = vi.fn();
+    render(
+      <SwapModal benchEntry={lapras} myPicks={[pick('rattata')]} myBalance={400} tierByName={tiers}
+        leagueSettings={settings} swapping={false} onConfirm={vi.fn()} onClose={onClose} />,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Intercambio con el banquillo' });
+    expect(dialog).toHaveFocus();
+
+    for (let i = 0; i < 8; i++) {
+      await userEvent.tab();
+      expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    }
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('mientras se hace el intercambio no se puede cerrar', async () => {
+    const onClose = vi.fn();
+    render(
+      <SwapModal benchEntry={lapras} myPicks={[pick('rattata')]} myBalance={400} tierByName={tiers}
+        leagueSettings={settings} swapping onConfirm={vi.fn()} onClose={onClose} />,
+    );
+
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeDisabled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
 });

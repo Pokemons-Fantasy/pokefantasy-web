@@ -1304,6 +1304,11 @@ button.member-menu-item {
   gap: 1rem;
   box-shadow: var(--shadow-lg);
 }
+/* El diálogo recibe el foco al abrir (`Modal`); el anillo va en sus controles, no en todo el panel. */
+.modal:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) {
+  .modal.animate-in-fast { animation: none; }
+}
 
 .modal h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.2px; }
 

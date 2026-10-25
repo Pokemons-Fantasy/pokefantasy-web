@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -6,6 +6,7 @@ import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
 import { getDraftStatus } from '../api/pokemons';
 import { deriveTeams } from '../utils/teams';
 import PlayShowdownModal from '../components/schedule/PlayShowdownModal';
+import Modal from '../components/Modal';
 import {
   getSchedule,
   recordMatchResult,
@@ -33,6 +34,8 @@ export default function SchedulePage() {
   const addToast = useToastStore((s) => s.addToast);
   const [pendingMatch, setPendingMatch] = useState<MatchDto | null>(null);
   const [editingMatch, setEditingMatch] = useState<MatchDto | null>(null);
+  const recordTitleId = useId();
+  const editTitleId = useId();
   // Jornadas jugadas desplegadas (van plegadas por defecto)
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   // Marcador del modal abierto (texto de los inputs): ganador – perdedor.
@@ -254,44 +257,42 @@ export default function SchedulePage() {
 
       {/* Record result modal */}
       {pendingMatch && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>¿Quién ganó?</h2>
-            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              {pendingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {pendingMatch.player2}
-            </p>
-            <ScoreFields
-              winner={winnerScore}
-              loser={loserScore}
-              error={scoreError}
-              onWinner={setWinnerScore}
-              onLoser={setLoserScore}
-            />
-            <div className="modal-actions">
-              <button
-                className="btn-ghost"
-                onClick={() => setPendingMatch(null)}
-                disabled={recording}
-              >
-                Cancelar
-              </button>
-              <button
-                className="btn-primary"
-                disabled={recording || !!scoreError}
-                onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player1 })}
-              >
-                {recording ? '...' : `✓ ${pendingMatch.player1}`}
-              </button>
-              <button
-                className="btn-primary"
-                disabled={recording || !!scoreError}
-                onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player2 })}
-              >
-                {recording ? '...' : `✓ ${pendingMatch.player2}`}
-              </button>
-            </div>
+        <Modal labelledBy={recordTitleId} onClose={() => setPendingMatch(null)} canClose={!recording}>
+          <h2 id={recordTitleId}>¿Quién ganó?</h2>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            {pendingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {pendingMatch.player2}
+          </p>
+          <ScoreFields
+            winner={winnerScore}
+            loser={loserScore}
+            error={scoreError}
+            onWinner={setWinnerScore}
+            onLoser={setLoserScore}
+          />
+          <div className="modal-actions">
+            <button
+              className="btn-ghost"
+              onClick={() => setPendingMatch(null)}
+              disabled={recording}
+            >
+              Cancelar
+            </button>
+            <button
+              className="btn-primary"
+              disabled={recording || !!scoreError}
+              onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player1 })}
+            >
+              {recording ? '...' : `✓ ${pendingMatch.player1}`}
+            </button>
+            <button
+              className="btn-primary"
+              disabled={recording || !!scoreError}
+              onClick={() => recordResult({ matchId: pendingMatch.id, winner: pendingMatch.player2 })}
+            >
+              {recording ? '...' : `✓ ${pendingMatch.player2}`}
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Correct / undo result modal (admin) */}
@@ -302,53 +303,51 @@ export default function SchedulePage() {
         const scoreChanged = !!score && (score.winnerScore !== editingMatch.winnerScore
           || score.loserScore !== editingMatch.loserScore);
         return (
-          <div className="modal-overlay">
-            <div className="modal" role="dialog" aria-label="Corregir resultado">
-              <h2>Corregir resultado</h2>
-              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                {editingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {editingMatch.player2}
-                {' · '}ganó <strong>{winner}</strong>{currentLabel && <> ({currentLabel})</>}
-              </p>
-              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '1rem' }}>
-                Cambiar el ganador o deshacer devuelve las monedas que dio este resultado (el saldo puede quedar en
-                negativo si ya se gastaron). Cambiar solo el marcador no mueve monedas.
-              </p>
-              <ScoreFields
-                winner={winnerScore}
-                loser={loserScore}
-                error={scoreError}
-                onWinner={setWinnerScore}
-                onLoser={setLoserScore}
-              />
-              <div className="modal-actions">
-                <button className="btn-ghost" onClick={() => setEditingMatch(null)} disabled={editing}>
-                  Cancelar
-                </button>
-                <button
-                  className="btn-danger"
-                  disabled={editing}
-                  onClick={() => revertResult(editingMatch.id)}
-                >
-                  {reverting ? '...' : '↩ Deshacer resultado'}
-                </button>
-                <button
-                  className="btn-ghost"
-                  disabled={editing || !!scoreError || !scoreChanged}
-                  title="Mismo ganador, otro marcador"
-                  onClick={() => correctResult({ matchId: editingMatch.id, winner })}
-                >
-                  {correcting ? '...' : '✓ Guardar marcador'}
-                </button>
-                <button
-                  className="btn-primary"
-                  disabled={editing || !!scoreError}
-                  onClick={() => correctResult({ matchId: editingMatch.id, winner: other })}
-                >
-                  {correcting ? '...' : `✓ Ganó ${other}`}
-                </button>
-              </div>
+          <Modal labelledBy={editTitleId} onClose={() => setEditingMatch(null)} canClose={!editing}>
+            <h2 id={editTitleId}>Corregir resultado</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+              {editingMatch.player1} <span style={{ color: 'var(--text-3)' }}>vs</span> {editingMatch.player2}
+              {' · '}ganó <strong>{winner}</strong>{currentLabel && <> ({currentLabel})</>}
+            </p>
+            <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+              Cambiar el ganador o deshacer devuelve las monedas que dio este resultado (el saldo puede quedar en
+              negativo si ya se gastaron). Cambiar solo el marcador no mueve monedas.
+            </p>
+            <ScoreFields
+              winner={winnerScore}
+              loser={loserScore}
+              error={scoreError}
+              onWinner={setWinnerScore}
+              onLoser={setLoserScore}
+            />
+            <div className="modal-actions">
+              <button className="btn-ghost" onClick={() => setEditingMatch(null)} disabled={editing}>
+                Cancelar
+              </button>
+              <button
+                className="btn-danger"
+                disabled={editing}
+                onClick={() => revertResult(editingMatch.id)}
+              >
+                {reverting ? '...' : '↩ Deshacer resultado'}
+              </button>
+              <button
+                className="btn-ghost"
+                disabled={editing || !!scoreError || !scoreChanged}
+                title="Mismo ganador, otro marcador"
+                onClick={() => correctResult({ matchId: editingMatch.id, winner })}
+              >
+                {correcting ? '...' : '✓ Guardar marcador'}
+              </button>
+              <button
+                className="btn-primary"
+                disabled={editing || !!scoreError}
+                onClick={() => correctResult({ matchId: editingMatch.id, winner: other })}
+              >
+                {correcting ? '...' : `✓ Ganó ${other}`}
+              </button>
             </div>
-          </div>
+          </Modal>
         );
       })()}
     </>

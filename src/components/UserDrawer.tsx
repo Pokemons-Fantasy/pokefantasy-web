@@ -33,19 +33,13 @@ export default function UserDrawer({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Foco dentro al abrir y de vuelta al botón que lo abrió al cerrar; la página no hace scroll detrás.
-  useFocusTrap(panelRef, { initialFocusRef: closeRef });
+  useFocusTrap(panelRef, { initialFocusRef: closeRef, onEscape: onClose });
 
   useEffect(() => {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = overflow; };
   }, []);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   const leagueName = (id: string) => leagues.find((l) => l.id === id)?.name ?? 'Liga';
   const totalPending = [...pendingByLeague.values()].reduce((a, b) => a + b, 0);

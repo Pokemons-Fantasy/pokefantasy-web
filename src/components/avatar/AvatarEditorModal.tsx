@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { useToastStore } from '../../store/toastStore';
 import { extractErrorMessage } from '../../utils/errorMessage';
 import { previewImageStyle } from '../../utils/avatarFile';
 import { cropToJpeg, loadImage } from './cropImage';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
+import Modal from '../Modal';
 
 const MAX_ZOOM = 4;
 
@@ -32,8 +32,6 @@ interface CropArea {
 export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalProps) {
   const titleId = useId();
   const zoomId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const pressedOnBackdrop = useRef(false);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [loaded, setLoaded] = useState<LoadedImage | null>(null);
@@ -55,14 +53,6 @@ export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalPr
     };
   }, [file]);
 
-  useFocusTrap(dialogRef);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
   const onCropComplete = useCallback((percent: Area, pixels: Area) => setArea({ percent, pixels }), []);
 
   const save = useMutation({
@@ -78,79 +68,65 @@ export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalPr
   });
 
   return (
-    <div
-      className="modal-overlay"
-      // Solo cierra si el clic empezó en el fondo: al arrastrar la foto y soltar fuera del modal, el
-      // navegador lanza el click en el ancestro común (el fondo) y se perdería el encuadre.
-      onMouseDown={(e) => { pressedOnBackdrop.current = e.target === e.currentTarget; }}
-      onClick={(e) => { if (pressedOnBackdrop.current && e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        ref={dialogRef}
-        className="modal animate-in-fast avatar-editor"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <h2 id={titleId}>Encuadra tu foto</h2>
+    // Modal solo cierra por el fondo si la pulsación empezó en él: arrastrar la foto y soltar fuera no la pierde.
+    <Modal labelledBy={titleId} onClose={onClose} className="avatar-editor">
+      <h2 id={titleId}>Encuadra tu foto</h2>
 
-        {loadFailed && (
-          <p className="error" role="alert">
-            No se puede abrir esta imagen. Prueba con una foto en JPG o PNG.
-          </p>
-        )}
-        {!loaded && !loadFailed && <div className="avatar-editor-stage skeleton" aria-hidden="true" />}
+      {loadFailed && (
+        <p className="error" role="alert">
+          No se puede abrir esta imagen. Prueba con una foto en JPG o PNG.
+        </p>
+      )}
+      {!loaded && !loadFailed && <div className="avatar-editor-stage skeleton" aria-hidden="true" />}
 
-        {loaded && (
-          <>
-            <div className="avatar-editor-stage">
-              <Cropper
-                image={loaded.src}
-                crop={crop}
-                zoom={zoom}
-                minZoom={1}
-                maxZoom={MAX_ZOOM}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-            <div className="avatar-editor-controls">
-              <label htmlFor={zoomId}>Zoom</label>
-              <input
-                id={zoomId}
-                type="range"
-                min={1}
-                max={MAX_ZOOM}
-                step={0.01}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-              />
-              {area && (
-                <div className="avatar-preview" aria-hidden="true">
-                  <img src={loaded.src} alt="" style={previewImageStyle(area.percent)} />
-                </div>
-              )}
-            </div>
-          </>
-        )}
+      {loaded && (
+        <>
+          <div className="avatar-editor-stage">
+            <Cropper
+              image={loaded.src}
+              crop={crop}
+              zoom={zoom}
+              minZoom={1}
+              maxZoom={MAX_ZOOM}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+          <div className="avatar-editor-controls">
+            <label htmlFor={zoomId}>Zoom</label>
+            <input
+              id={zoomId}
+              type="range"
+              min={1}
+              max={MAX_ZOOM}
+              step={0.01}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+            />
+            {area && (
+              <div className="avatar-preview" aria-hidden="true">
+                <img src={loaded.src} alt="" style={previewImageStyle(area.percent)} />
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
-        <div className="avatar-editor-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={!loaded || !area || save.isPending}
-            onClick={() => loaded && area && save.mutate({ image: loaded.image, pixels: area.pixels })}
-          >
-            {save.isPending ? 'Guardando...' : 'Guardar'}
-          </button>
-        </div>
+      <div className="avatar-editor-actions">
+        <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={!loaded || !area || save.isPending}
+          onClick={() => loaded && area && save.mutate({ image: loaded.image, pixels: area.pixels })}
+        >
+          {save.isPending ? 'Guardando...' : 'Guardar'}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }
