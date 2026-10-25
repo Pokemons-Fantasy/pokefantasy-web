@@ -6,6 +6,9 @@ import { getLeagueDetail, getLeagueSettings } from '../api/leagues';
 import { getDraftStatus } from '../api/pokemons';
 import { deriveTeams } from '../utils/teams';
 import PlayShowdownModal from '../components/schedule/PlayShowdownModal';
+import LineupModal from '../components/schedule/LineupModal';
+import { myLineup } from '../utils/lineup';
+import { BATTLE_DEFAULTS } from '../utils/showdown';
 import {
   getSchedule,
   recordMatchResult,
@@ -75,23 +78,43 @@ export default function SchedulePage() {
     (m) => m.username === username && m.leagueRole === 'ADMIN'
   );
 
-  // "Jugar en Showdown": ajustes y equipo solo se piden al abrir el modal.
+  // "Jugar en Showdown" y alineación: los ajustes solo se piden al abrir uno de los modales; el draft
+  // siempre, porque da los sprites de las alineaciones (y suele estar ya en caché).
   const [playingMatch, setPlayingMatch] = useState<MatchDto | null>(null);
+  const [lineupMatch, setLineupMatch] = useState<MatchDto | null>(null);
   const { data: leagueSettings, status: settingsStatus } = useQuery({
     queryKey: ['league-settings', leagueId],
     queryFn: () => getLeagueSettings(leagueId!),
-    enabled: !!leagueId && !!playingMatch,
+    enabled: !!leagueId && (!!playingMatch || !!lineupMatch),
     staleTime: 5 * 60_000,
   });
   const { data: draft, status: draftStatus } = useQuery({
     queryKey: ['draft-status', leagueId],
     queryFn: () => getDraftStatus(leagueId!),
-    enabled: !!leagueId && !!playingMatch,
+    enabled: !!leagueId,
+    staleTime: 60_000,
   });
   const playStatus = settingsStatus === 'error' || draftStatus === 'error' ? 'error'
     : settingsStatus === 'success' && draftStatus === 'success' ? 'ready' : 'loading';
   const showdownNameOf = (player: string) => league?.members.find((m) => m.username === player)?.showdownName;
-  const myPokemonNames = deriveTeams(draft).find((t) => t.username === username)?.picks.map((p) => p.pokemonName) ?? [];
+  const myPicks = deriveTeams(draft).find((t) => t.username === username)?.picks ?? [];
+  const spriteIds = new Map((draft?.picks ?? []).map((p) => [p.pokemonName, p.pokemonId]));
+
+  // El modal de alineación necesita los ajustes (lista abierta o cerrada) y mi equipo: se cargan al pulsar,
+  // y si fallan se avisa en vez de no hacer nada.
+  async function openLineup(match: MatchDto) {
+    try {
+      await Promise.all([
+        queryClient.fetchQuery({ queryKey: ['league-settings', leagueId], queryFn: () => getLeagueSettings(leagueId!),
+          staleTime: 5 * 60_000 }),
+        queryClient.fetchQuery({ queryKey: ['draft-status', leagueId], queryFn: () => getDraftStatus(leagueId!),
+          staleTime: 60_000 }),
+      ]);
+      setLineupMatch(match);
+    } catch {
+      addToast('error', 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.');
+    }
+  }
 
   const { mutate: recordResult, isPending: recording } = useMutation({
     mutationFn: ({ matchId, winner }: { matchId: string; winner: string }) =>
@@ -231,6 +254,8 @@ export default function SchedulePage() {
                 onRecord={openRecord}
                 onEdit={openEdit}
                 onPlay={setPlayingMatch}
+                onLineup={openLineup}
+                spriteIds={spriteIds}
               />
             ))}
           </div>
@@ -245,12 +270,23 @@ export default function SchedulePage() {
             myShowdownName={username ? showdownNameOf(username) : null}
             rivalShowdownName={showdownNameOf(rival)}
             settings={leagueSettings ?? {}}
-            myPokemonNames={myPokemonNames}
+            myPokemonNames={myLineup(playingMatch, username)?.pokemonNames ?? myPicks.map((p) => p.pokemonName)}
             status={playStatus}
             onClose={() => setPlayingMatch(null)}
           />
         );
       })()}
+
+      {lineupMatch && leagueSettings && (
+        <LineupModal
+          leagueId={leagueId!}
+          matchId={lineupMatch.id}
+          myPicks={myPicks}
+          current={myLineup(lineupMatch, username)}
+          teamSheet={leagueSettings.teamSheet ?? BATTLE_DEFAULTS.teamSheet}
+          onClose={() => setLineupMatch(null)}
+        />
+      )}
 
       {/* Record result modal */}
       {pendingMatch && (

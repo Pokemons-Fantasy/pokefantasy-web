@@ -890,6 +890,65 @@ button.member-menu-item {
 .play-showdown .field-hint { font-size: 0.8rem; color: var(--text-3); }
 .play-showdown .field-hint-error { color: var(--danger); }
 
+/* Alineación del partido (calendario) */
+.lineup-modal { max-width: 560px; }
+.lineup-count { font-size: 0.85rem; color: var(--text-2); margin: 0.5rem 0; }
+.lineup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
+.lineup-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.lineup-option.selected { border-color: var(--accent); background: var(--surface-2); }
+.lineup-option input { margin: 0; }
+.lineup-option input:disabled + img { opacity: 0.4; }
+.lineup-paste { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
+.lineup-paste label { font-size: 0.8rem; color: var(--text-2); }
+/* Fila del partido en dos pisos: arriba jugadores y acciones; abajo cada alineación bajo su jugador y el
+   estado debajo. Los contenedores usan display: contents para que todo cuelgue de la rejilla de la fila. */
+.match-row {
+  display: grid;
+  /* Acciones con techo de ancho: si no caben, se apilan y los jugadores conservan sitio para sus 6 sprites. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) fit-content(15rem);
+  grid-template-areas:
+    "p1 badge p2 actions"
+    "l1 . l2 ."
+    "st st st st";
+  align-items: center;
+  column-gap: 0.75rem;
+}
+.match-main, .match-extra { display: contents; }
+.match-main > .match-player.left { grid-area: p1; }
+.match-main > .match-badge { grid-area: badge; }
+.match-main > .match-player.right { grid-area: p2; }
+.match-actions { grid-area: actions; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
+.match-lineup.left { grid-area: l1; align-items: flex-end; text-align: right; }
+.match-lineup.right { grid-area: l2; align-items: flex-start; }
+.match-lineup { display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.5rem; min-width: 0; }
+.match-lineup:empty { display: none; }
+.match-lineup.left .match-lineup-sprites { justify-content: flex-end; }
+.match-lineup-sprites { display: flex; flex-wrap: wrap; gap: 0.15rem; }
+.match-lineup-name { font-size: 0.75rem; color: var(--text-2); }
+.match-lineup-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; }
+.match-lineup-link:hover { text-decoration: underline; }
+.match-lineup-state { font-size: 0.75rem; color: var(--text-3); }
+.match-lineup-state.sent { color: var(--success); }
+.match-lineup-status { grid-area: st; text-align: center; font-size: 0.8rem; color: var(--text-3); }
+.match-lineup-status:not(:empty) { margin-top: 0.4rem; }
+.match-lineup-warnings { margin: 0; padding-left: 1.25rem; font-size: 0.75rem; color: var(--warning, var(--text-3)); text-align: left; }
+.lineup-silhouette {
+  width: 28px;
+  height: 28px;
+  margin: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  opacity: 0.6;
+}
+
 /* Cuenta de Showdown (perfil) */
 .showdown-account { display: flex; flex-direction: column; gap: 0.4rem; max-width: 420px; padding: 1.25rem; }
 .showdown-account label { font-size: 0.8rem; color: var(--text-2); }
@@ -2203,9 +2262,7 @@ a.btn-back, a.logo { text-decoration: none; }
 .jornada-empty { color: var(--text-3); font-size: 0.85rem; }
 
 .match-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  /* Maquetación (rejilla en dos pisos) junto a las reglas de la alineación. */
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -2250,7 +2307,20 @@ a.btn-back, a.logo { text-decoration: none; }
   .jornada-card { padding: 1rem; }
   .jornada-card.played { padding: 0; }
   .jornada-result { margin-left: 0; flex-basis: 100%; padding-left: 1.1rem; }
-  .match-row { gap: 0.5rem; padding: 0.55rem 0.65rem; }
+  .match-row {
+    column-gap: 0.5rem;
+    padding: 0.55rem 0.65rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "p1 badge p2"
+      "actions actions actions"
+      "l1 . l2"
+      "st st st";
+  }
+  .match-actions { justify-content: center; margin-top: 0.4rem; }
+  .match-lineup-sprites img { width: 30px; height: 30px; }
+  .lineup-silhouette { width: 22px; height: 22px; margin: 4px; }
+  .match-actions:empty { display: none; }
 }
 
 /* ─── COIN BADGE ─── */
