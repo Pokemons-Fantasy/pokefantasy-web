@@ -356,6 +356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leagues/{leagueId}/schedule/matches/{matchId}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importSeries"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/members": {
         parameters: {
             query?: never;
@@ -700,6 +716,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getSchedule"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leagues/{leagueId}/schedule/matches/{matchId}/replays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["replayCandidates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1098,6 +1130,9 @@ export interface components {
         StealPokemonRequest: {
             targetPokemonName?: string;
         };
+        ImportSeriesRequest: {
+            replayIds?: string[];
+        };
         AddMemberRequest: {
             username?: string;
         };
@@ -1293,12 +1328,27 @@ export interface components {
             player2Lineup?: components["schemas"]["LineupResponse"];
             lineupOpen?: boolean;
             lineupPending?: boolean;
+            replayIds?: string[];
+            importWarnings?: string[];
         };
         ScheduleResponse: {
             leagueId?: string;
             jornadas?: components["schemas"]["JornadaResponse"][];
             stealWindowOpen?: boolean;
             swapWindowOpen?: boolean;
+        };
+        ReplayCandidateResponse: {
+            id?: string;
+            url?: string;
+            /** Format: int64 */
+            uploadtime?: number;
+            winnerUsername?: string;
+            seriesId?: string;
+            /** Format: int32 */
+            gameNumber?: number;
+            selectable?: boolean;
+            reason?: string;
+            warnings?: string[];
         };
         CoinBalanceResponse: {
             /** Format: int32 */
@@ -2133,6 +2183,31 @@ export interface operations {
             };
         };
     };
+    importSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+                matchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportSeriesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     addMember: {
         parameters: {
             query?: never;
@@ -2614,6 +2689,31 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ScheduleResponse"];
+                };
+            };
+        };
+    };
+    replayCandidates: {
+        parameters: {
+            query?: {
+                url?: string;
+            };
+            header?: never;
+            path: {
+                leagueId: string;
+                matchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReplayCandidateResponse"][];
                 };
             };
         };

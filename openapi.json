@@ -919,6 +919,47 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/schedule/matches/{matchId}/import": {
+            "post": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "importSeries",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImportSeriesRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/members": {
             "post": {
                 "tags": [
@@ -1549,6 +1590,55 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ScheduleResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/leagues/{leagueId}/schedule/matches/{matchId}/replays": {
+            "get": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "replayCandidates",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "url",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ReplayCandidateResponse"
+                                    }
                                 }
                             }
                         }
@@ -2464,6 +2554,17 @@
                     }
                 }
             },
+            "ImportSeriesRequest": {
+                "type": "object",
+                "properties": {
+                    "replayIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "AddMemberRequest": {
                 "type": "object",
                 "properties": {
@@ -2978,6 +3079,18 @@
                     },
                     "lineupPending": {
                         "type": "boolean"
+                    },
+                    "replayIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "importWarnings": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -2998,6 +3111,43 @@
                     },
                     "swapWindowOpen": {
                         "type": "boolean"
+                    }
+                }
+            },
+            "ReplayCandidateResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "uploadtime": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "winnerUsername": {
+                        "type": "string"
+                    },
+                    "seriesId": {
+                        "type": "string"
+                    },
+                    "gameNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "selectable": {
+                        "type": "boolean"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "warnings": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },

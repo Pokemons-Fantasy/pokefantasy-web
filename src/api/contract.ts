@@ -14,7 +14,7 @@ import type { ActivityEvent, ActivityFeedResponse } from './activity';
 import type { AdminLeague, AdminUser } from './admin';
 import type { AvatarVersionResponse, CurrentUser, LoginResponse } from './auth';
 import type {
-  CoinBalanceResponse, JornadaDto, League, LeagueDetail, LeagueMember, LeagueSettings, Lineup,
+  CoinBalanceResponse, JornadaDto, League, LeagueDetail, LeagueMember, LeagueSettings, Lineup, ReplayCandidate,
   MatchDto, PlayerSeasonStats, PlayerStanding, RedeemInviteResponse, ScheduleResponse,
 } from './leagues';
 import type {
@@ -58,6 +58,7 @@ export type Contract = [
   Assert<FieldsMatch<MatchDto, S['MatchResponse']>>,
   Assert<FieldsMatch<JornadaDto, S['JornadaResponse']>>,
   Assert<FieldsMatch<Lineup, S['LineupResponse']>>,
+  Assert<FieldsMatch<ReplayCandidate, S['ReplayCandidateResponse']>>,
   Assert<FieldsMatch<ScheduleResponse, S['ScheduleResponse']>>,
   Assert<FieldsMatch<PlayerStanding, S['PlayerStandingResponse']>>,
   Assert<FieldsMatch<PlayerSeasonStats, S['PlayerSeasonStats']>>,
