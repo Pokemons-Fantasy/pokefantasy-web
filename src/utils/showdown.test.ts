@@ -10,27 +10,27 @@ describe('pickedTeamSizeLabel', () => {
 
 describe('showdownFormat', () => {
   it('sin ajustes usa los de por defecto: dobles, elegir 4 y al mejor de 3', () => {
-    expect(showdownFormat({})).toBe('gen9doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
+    expect(showdownFormat({})).toBe('doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
   });
 
   it('individual con los 6 y una partida no lleva reglas', () => {
-    expect(showdownFormat({ battleGameType: 'SINGLES', pickedTeamSize: 6, bestOf: 1 })).toBe('gen9customgame');
+    expect(showdownFormat({ battleGameType: 'SINGLES', pickedTeamSize: 6, bestOf: 1 })).toBe('customgame');
   });
 
   it('individual eligiendo 3 a una partida', () => {
     expect(showdownFormat({ battleGameType: 'SINGLES', pickedTeamSize: 3, bestOf: 1 }))
-      .toBe('gen9customgame@@@Picked Team Size = 3');
+      .toBe('customgame@@@Picked Team Size = 3');
   });
 
   it('dobles con los 6 al mejor de 3', () => {
-    expect(showdownFormat({ pickedTeamSize: 6, bestOf: 3 })).toBe('gen9doublescustomgame@@@Best Of = 3');
+    expect(showdownFormat({ pickedTeamSize: 6, bestOf: 3 })).toBe('doublescustomgame@@@Best Of = 3');
   });
 });
 
 describe('challengeCommand', () => {
-  it('reta al nombre de Showdown del rival con el formato de la liga', () => {
-    expect(challengeCommand('Ash Ketchum', {}))
-      .toBe('/challenge Ash Ketchum, gen9doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
+  it('no lleva usuario: en el privado Showdown reta a quien tienes delante', () => {
+    expect(challengeCommand({})).toBe('/challenge doublescustomgame@@@Picked Team Size = 4, Best Of = 3');
+    expect(challengeCommand({ battleGameType: 'SINGLES', pickedTeamSize: 6, bestOf: 1 })).toBe('/challenge customgame');
   });
 });
 

@@ -324,14 +324,15 @@ describe('SchedulePage — jugar en Showdown', () => {
       .not.toBeInTheDocument();
   });
 
-  it('abre el modal con el reto al nombre de Showdown del rival', async () => {
+  it('abre el modal con el reto para el privado con el rival', async () => {
     renderPage();
     const user = userEvent.setup();
 
     await user.click(within(await screen.findByTestId('match-p1')).getByRole('button', { name: 'Jugar en Showdown' }));
 
     expect(screen.getByRole('dialog', { name: 'Jugar en Showdown' })).toBeInTheDocument();
-    expect(screen.getByText(/^\/challenge Ash Ketchum, /)).toBeInTheDocument();
+    expect(screen.getByText('En el chat privado con Ash Ketchum:')).toBeInTheDocument();
+    expect(screen.getByText('/challenge doublescustomgame@@@Picked Team Size = 4, Best Of = 3')).toBeInTheDocument();
   });
 });
 

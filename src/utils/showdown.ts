@@ -48,13 +48,17 @@ export function showdownFormat(settings: BattleSettings): string {
   const rules: string[] = [];
   if (picked < 6) rules.push(`Picked Team Size = ${picked}`);
   if (bestOf === 3) rules.push('Best Of = 3');
-  const format = gameType === 'SINGLES' ? 'gen9customgame' : 'gen9doublescustomgame';
+  // Sin la generación delante: Showdown la completa con la actual (gen9).
+  const format = gameType === 'SINGLES' ? 'customgame' : 'doublescustomgame';
   return rules.length ? `${format}@@@${rules.join(', ')}` : format;
 }
 
-/** Comando para pegar en el chat de Showdown y retar al rival con el formato de la liga. */
-export function challengeCommand(rivalShowdownName: string, settings: BattleSettings): string {
-  return `/challenge ${rivalShowdownName}, ${showdownFormat(settings)}`;
+/**
+ * Reto para pegar en el chat privado con el rival: ahí Showdown reta a quien tienes en el privado y todo lo que
+ * sigue a `/challenge` es el formato, así que con el nombre delante saldría «Unrecognized format».
+ */
+export function challengeCommand(settings: BattleSettings): string {
+  return `/challenge ${showdownFormat(settings)}`;
 }
 
 /** Equipo en el formato de texto de Showdown ("Import from text"): solo las especies, un bloque por Pokémon. */

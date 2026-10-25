@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import PlayShowdownModal from './PlayShowdownModal';
-import { challengeCommand, SHOWDOWN_PLAY_URL, showdownTeamText } from '../../utils/showdown';
+import { SHOWDOWN_PLAY_URL, showdownTeamText } from '../../utils/showdown';
 import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
 
@@ -38,12 +38,14 @@ function renderModal(props: {
 describe('PlayShowdownModal', () => {
   beforeEach(() => vi.mocked(Clipboard.write).mockClear());
 
-  it('muestra el reto exacto y lo copia', async () => {
+  it('muestra el reto para el privado con el rival y lo copia', async () => {
     renderModal({});
-    const command = challengeCommand('Misty Cerulean', {});
+    const command = '/challenge doublescustomgame@@@Picked Team Size = 4, Best Of = 3';
 
     expect(screen.getByRole('dialog', { name: 'Jugar en Showdown' })).toHaveFocus();
+    expect(screen.getByText('En el chat privado con Misty Cerulean:')).toBeInTheDocument();
     expect(screen.getByText(command)).toBeInTheDocument();
+    expect(screen.queryByText(/Misty Cerulean,/)).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Copiar reto' }));
 
     expect(Clipboard.write).toHaveBeenCalledWith({ string: command });
@@ -68,7 +70,7 @@ describe('PlayShowdownModal', () => {
     expect(steps).toEqual([
       'En Showdown, abre el Teambuilder, crea un equipo nuevo y pega tu equipo con «Import from text».',
       'Completa movimientos, objetos, habilidades y estadísticas, y elige el formato Doubles Custom Game.',
-      'Quien reta pega el reto en el chat de Showdown y elige su equipo; el rival elige el suyo al aceptar.',
+      'Quien reta abre un chat privado con el rival en Showdown («Find a user»), pega el reto y elige su equipo; el rival elige el suyo al aceptar.',
       'En el Team Preview, cada uno elige sus 4 Pokémon.',
     ]);
     expect(screen.getByText(
