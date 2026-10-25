@@ -5,6 +5,7 @@ import { deleteAccount } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface DeleteAccountModalProps {
   onClose: () => void;
@@ -17,6 +18,7 @@ interface DeleteAccountModalProps {
 export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
   const titleId = useId();
   const passwordId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -34,11 +36,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
     onError: (error) => addToast('error', extractErrorMessage(error)),
   });
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    passwordRef.current?.focus();
-    return () => previous?.focus();
-  }, []);
+  useFocusTrap(dialogRef, { initialFocusRef: passwordRef });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -53,7 +51,7 @@ export default function DeleteAccountModal({ onClose }: DeleteAccountModalProps)
       className="modal-overlay"
       onClick={(e) => { if (e.target === e.currentTarget && !mutation.isPending) onClose(); }}
     >
-      <div className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={dialogRef} className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <h2 id={titleId}>Borrar cuenta</h2>
         <p className="confirm-dialog-message">
           Se borrará tu cuenta y no se puede deshacer. Saldrás de todas tus ligas, tus Pokémon volverán al banquillo

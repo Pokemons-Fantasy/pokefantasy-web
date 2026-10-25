@@ -6,6 +6,7 @@ import { useToastStore } from '../../store/toastStore';
 import { extractErrorMessage } from '../../utils/errorMessage';
 import { lineupSize } from '../../utils/lineup';
 import { spriteUrl } from '../../utils/sprites';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface LineupModalProps {
   leagueId: string;
@@ -29,11 +30,7 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
   const [selected, setSelected] = useState<string[]>(current?.pokemonNames ?? []);
   const [pasteUrl, setPasteUrl] = useState(current?.pasteUrl ?? '');
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    dialogRef.current?.focus();
-    return () => previous?.focus();
-  }, []);
+  useFocusTrap(dialogRef);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };

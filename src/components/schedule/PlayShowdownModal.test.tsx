@@ -129,6 +129,19 @@ describe('PlayShowdownModal', () => {
     }));
   });
 
+  it('Tab y Shift+Tab no sacan el foco del modal', async () => {
+    renderModal({});
+    const dialog = screen.getByRole('dialog', { name: 'Jugar en Showdown' });
+
+    await userEvent.tab({ shift: true });
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    expect(document.activeElement).not.toBe(dialog);
+    for (let i = 0; i < 10; i++) {
+      await userEvent.tab();
+      expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    }
+  });
+
   it('Cerrar llama a onClose', async () => {
     const onClose = renderModal({});
 

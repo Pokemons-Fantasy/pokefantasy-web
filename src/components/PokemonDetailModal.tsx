@@ -3,6 +3,7 @@ import type { Tier } from '../api/pokemons';
 import { spriteUrl } from '../utils/sprites';
 import { TYPE_COLORS, TIER_COLORS } from '../utils/colors';
 import { typeLabel } from '../utils/pokemonTypes';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface Stats {
   hp: number;
@@ -33,9 +34,9 @@ const STAT_META: { key: keyof Stats; label: string; color: string }[] = [
 
 export default function PokemonDetailModal({ pokemonId, pokemonName, tier, stats, types, onClose }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef);
 
   useEffect(() => {
-    dialogRef.current?.focus();
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);

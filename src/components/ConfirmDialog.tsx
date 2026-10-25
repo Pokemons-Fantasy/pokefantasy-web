@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface ConfirmDialogProps {
   title: string;
@@ -15,7 +16,7 @@ interface ConfirmDialogProps {
 }
 
 /**
- * Confirmación accesible: el foco empieza en "Cancelar" (lo seguro) y al cerrar vuelve a donde estaba;
+ * Confirmación accesible: el foco empieza en "Cancelar" (lo seguro), Tab no sale del diálogo y al cerrar vuelve a donde estaba;
  * Escape y el fondo cierran, y mientras la acción está en curso no se puede cerrar.
  */
 export default function ConfirmDialog({
@@ -23,13 +24,9 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const titleId = useId();
   const messageId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    cancelRef.current?.focus();
-    return () => previous?.focus();
-  }, []);
+  useFocusTrap(dialogRef, { initialFocusRef: cancelRef });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -45,6 +42,7 @@ export default function ConfirmDialog({
       onClick={(e) => { if (e.target === e.currentTarget && !pending) onClose(); }}
     >
       <div
+        ref={dialogRef}
         className="modal animate-in-fast confirm-dialog"
         role="alertdialog"
         aria-modal="true"

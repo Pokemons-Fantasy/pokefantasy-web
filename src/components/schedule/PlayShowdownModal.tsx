@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import {
   BATTLE_DEFAULTS, challengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
 } from '../../utils/showdown';
@@ -38,11 +39,7 @@ export default function PlayShowdownModal({
     return () => clearTimeout(timer);
   }, [copied]);
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    dialogRef.current?.focus();
-    return () => previous?.focus();
-  }, []);
+  useFocusTrap(dialogRef);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };

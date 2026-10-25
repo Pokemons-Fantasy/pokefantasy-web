@@ -7,6 +7,7 @@ import { useToastStore } from '../../store/toastStore';
 import { extractErrorMessage } from '../../utils/errorMessage';
 import { previewImageStyle } from '../../utils/avatarFile';
 import { cropToJpeg, loadImage } from './cropImage';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 const MAX_ZOOM = 4;
 
@@ -54,8 +55,9 @@ export default function AvatarEditorModal({ file, onClose }: AvatarEditorModalPr
     };
   }, [file]);
 
+  useFocusTrap(dialogRef);
+
   useEffect(() => {
-    dialogRef.current?.focus();
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
