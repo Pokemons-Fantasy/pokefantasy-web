@@ -5,10 +5,10 @@ import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
 import Modal from '../Modal';
 import {
-  BATTLE_DEFAULTS, challengeCommand, dmChallengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
+  BATTLE_DEFAULTS, challengeCommand, SHOWDOWN_FORMAT_NAMES, SHOWDOWN_PLAY_URL, showdownTeamText,
 } from '../../utils/showdown';
 
-type Copyable = 'dm' | 'room' | 'team';
+type Copyable = 'challenge' | 'team';
 
 interface PlayShowdownModalProps {
   /** Username del rival en la liga. */
@@ -42,8 +42,7 @@ export default function PlayShowdownModal({
 
   const ready = status === 'ready';
   const canChallenge = !!myShowdownName && !!rivalShowdownName && status !== 'error';
-  const dmCommand = rivalShowdownName && ready ? dmChallengeCommand(settings) : '';
-  const roomCommand = rivalShowdownName && ready ? challengeCommand(rivalShowdownName, settings) : '';
+  const command = rivalShowdownName && ready ? challengeCommand(settings) : '';
   const gameType = settings.battleGameType ?? BATTLE_DEFAULTS.battleGameType;
   const picked = settings.pickedTeamSize ?? BATTLE_DEFAULTS.pickedTeamSize;
 
@@ -76,27 +75,14 @@ export default function PlayShowdownModal({
         <>
           <p className="play-showdown-where">En el chat privado con {rivalShowdownName}:</p>
           <div className="play-showdown-command" aria-busy={!ready}>
-            <code>{dmCommand}</code>
+            <code>{command}</code>
             <button
               type="button"
               className="btn-primary"
-              onClick={() => copy(dmCommand, 'dm')}
+              onClick={() => copy(command, 'challenge')}
               disabled={!ready}
             >
-              {copied === 'dm' ? '✓ Copiado' : 'Copiar reto'}
-            </button>
-          </div>
-          <p className="play-showdown-where">En una sala, como el Lobby:</p>
-          <div className="play-showdown-command" aria-busy={!ready}>
-            <code>{roomCommand}</code>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => copy(roomCommand, 'room')}
-              disabled={!ready}
-              aria-label="Copiar reto para una sala"
-            >
-              {copied === 'room' ? '✓ Copiado' : 'Copiar'}
+              {copied === 'challenge' ? '✓ Copiado' : 'Copiar reto'}
             </button>
           </div>
         </>

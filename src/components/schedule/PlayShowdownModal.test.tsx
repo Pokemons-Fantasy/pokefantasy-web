@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Clipboard } from '@capacitor/clipboard';
 import PlayShowdownModal from './PlayShowdownModal';
-import { challengeCommand, dmChallengeCommand, SHOWDOWN_PLAY_URL, showdownTeamText } from '../../utils/showdown';
+import { SHOWDOWN_PLAY_URL, showdownTeamText } from '../../utils/showdown';
 import type { LeagueSettings } from '../../api/leagues';
 import { useToastStore } from '../../store/toastStore';
 
@@ -40,23 +40,13 @@ describe('PlayShowdownModal', () => {
 
   it('muestra el reto para el privado con el rival y lo copia', async () => {
     renderModal({});
-    const command = dmChallengeCommand({});
+    const command = '/challenge doublescustomgame@@@Picked Team Size = 4, Best Of = 3';
 
     expect(screen.getByRole('dialog', { name: 'Jugar en Showdown' })).toHaveFocus();
     expect(screen.getByText('En el chat privado con Misty Cerulean:')).toBeInTheDocument();
     expect(screen.getByText(command)).toBeInTheDocument();
+    expect(screen.queryByText(/Misty Cerulean,/)).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Copiar reto' }));
-
-    expect(Clipboard.write).toHaveBeenCalledWith({ string: command });
-  });
-
-  it('ofrece también el reto con el nombre del rival para pegarlo en una sala', async () => {
-    renderModal({});
-    const command = challengeCommand('Misty Cerulean', {});
-
-    expect(screen.getByText('En una sala, como el Lobby:')).toBeInTheDocument();
-    expect(screen.getByText(command)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Copiar reto para una sala' }));
 
     expect(Clipboard.write).toHaveBeenCalledWith({ string: command });
   });
@@ -117,7 +107,6 @@ describe('PlayShowdownModal', () => {
 
     expect(screen.queryByText(/^\/challenge /)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copiar reto' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Copiar reto para una sala' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Copiar mi equipo' })).toBeDisabled();
   });
 

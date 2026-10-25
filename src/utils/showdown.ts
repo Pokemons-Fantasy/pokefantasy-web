@@ -53,16 +53,11 @@ export function showdownFormat(settings: BattleSettings): string {
   return rules.length ? `${format}@@@${rules.join(', ')}` : format;
 }
 
-/** Reto para pegar en una sala de Showdown (el Lobby): con el nombre del rival y el formato de la liga. */
-export function challengeCommand(rivalShowdownName: string, settings: BattleSettings): string {
-  return `/challenge ${rivalShowdownName}, ${showdownFormat(settings)}`;
-}
-
 /**
  * Reto para pegar en el chat privado con el rival: ahí Showdown reta a quien tienes en el privado y todo lo que
  * sigue a `/challenge` es el formato, así que con el nombre delante saldría «Unrecognized format».
  */
-export function dmChallengeCommand(settings: BattleSettings): string {
+export function challengeCommand(settings: BattleSettings): string {
   return `/challenge ${showdownFormat(settings)}`;
 }
 
