@@ -120,6 +120,15 @@ describe('ImportSeriesModal', () => {
     )).toBeInTheDocument();
   });
 
+  it('si no se pueden cargar los replays, muestra el motivo del backend en vez de "no hay replays"', async () => {
+    api.getReplayCandidates.mockRejectedValue({ response: { data: { message: 'misty no ha vinculado su cuenta de Showdown.' } } });
+    renderModal();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('misty no ha vinculado su cuenta de Showdown.');
+    expect(screen.queryByText(/No hay replays de esta semana/)).not.toBeInTheDocument();
+    expect(api.getReplayCandidates).toHaveBeenCalledTimes(1);
+  });
+
   it('si el backend falla al registrar, muestra su mensaje', async () => {
     api.importSeries.mockRejectedValue({ response: { data: { message: 'El resultado de este partido ya se ha registrado.' } } });
     renderModal();

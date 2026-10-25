@@ -42,6 +42,14 @@ describe('seriesSummary', () => {
     expect(seriesSummary([c('1', 'ash'), c('2', 'ash')], 1)).toEqual({ error: 'Marca una partida.' });
   });
 
+  it('partidas de series distintas o saltándose una, como el backend', () => {
+    expect(seriesSummary([c('1', 'ash', 's1', 1), c('2', 'ash', 's2', 1)], 3))
+      .toEqual({ error: 'Marca partidas de una misma serie.' });
+    expect(seriesSummary([c('1', 'ash', 's1', 1), c('3', 'ash', 's1', 3)], 3))
+      .toEqual({ error: 'Marca las partidas seguidas de la serie, empezando por la 1.' });
+    expect(seriesSummary([c('1', 'ash', 's1', 1), c('2', 'ash', 's1', 2)], 3)).toEqual({ winner: 'ash', score: '2-0' });
+  });
+
   it('nada marcado', () => {
     expect(seriesSummary([], 3)).toEqual({ error: 'Marca las partidas de la serie.' });
   });

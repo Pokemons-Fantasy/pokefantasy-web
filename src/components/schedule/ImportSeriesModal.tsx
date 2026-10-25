@@ -32,9 +32,13 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
   const [pasted, setPasted] = useState<ReplayCandidate[]>([]);
   const [url, setUrl] = useState('');
 
-  const { data: found, isLoading } = useQuery({
+  // Cada carga son hasta 16 peticiones a Showdown: nada de recargar al volver de "Ver replay" ni reintentar solo.
+  const { data: found, isLoading, error, refetch } = useQuery({
     queryKey: ['replay-candidates', leagueId, match.id],
     queryFn: () => getReplayCandidates(leagueId, match.id),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
   const candidates = [...(found ?? []), ...pasted.filter((p) => !(found ?? []).some((f) => f.id === p.id))];
   const groups = groupBySeries(candidates);
@@ -93,7 +97,13 @@ export default function ImportSeriesModal({ leagueId, match, bestOf, onClose }: 
       </p>
 
       {isLoading && <SkeletonTable rows={3} />}
-      {!isLoading && candidates.length === 0 && (
+      {error && (
+        <div className="field-hint field-hint-error" role="alert">
+          {extractErrorMessage(error, 'No se pudieron buscar los replays')}{' '}
+          <button type="button" className="btn-ghost" onClick={() => refetch()}>Reintentar</button>
+        </div>
+      )}
+      {!isLoading && !error && candidates.length === 0 && (
         <p className="field-hint">
           No hay replays de esta semana entre los dos. ¿Los subisteis con «Upload and share replay»? Si son privados,
           pega el enlace.

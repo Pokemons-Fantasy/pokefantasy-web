@@ -31,6 +31,14 @@ export type SeriesSummary = { winner: string; score: string | null } | { error: 
  */
 export function seriesSummary(selected: ReplayCandidate[], bestOf: number): SeriesSummary {
   if (selected.length === 0) return { error: 'Marca las partidas de la serie.' };
+  const series = new Set(selected.map((g) => g.seriesId ?? ''));
+  if (series.size > 1) return { error: 'Marca partidas de una misma serie.' };
+  if (!series.has('')) {
+    const numbers = selected.map((g) => g.gameNumber ?? 0).sort((a, b) => a - b);
+    if (numbers.some((n, i) => n !== i + 1)) {
+      return { error: 'Marca las partidas seguidas de la serie, empezando por la 1.' };
+    }
+  }
   const wins = new Map<string, number>();
   selected.forEach((g) => { if (g.winnerUsername) wins.set(g.winnerUsername, (wins.get(g.winnerUsername) ?? 0) + 1); });
   const [winner, winnerWins] = [...wins.entries()].sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
