@@ -8,6 +8,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/avatar/UserAvatar';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { useDebounce } from '../hooks/useDebounce';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useToastStore } from '../store/toastStore';
 import { extractErrorMessage } from '../utils/errorMessage';
 import { leagueNameError } from '../utils/leagueName';
@@ -154,6 +155,7 @@ export default function AdminPage() {
 function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose: () => void }) {
   const titleId = useId();
   const inputId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(league.name);
   const error = leagueNameError(name);
@@ -170,11 +172,7 @@ function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose:
     onError: (e) => addToast('error', extractErrorMessage(e)),
   });
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    inputRef.current?.focus();
-    return () => previous?.focus();
-  }, []);
+  useFocusTrap(dialogRef, { initialFocusRef: inputRef });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -186,7 +184,7 @@ function RenameLeagueDialog({ league, onClose }: { league: AdminLeague; onClose:
 
   return (
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget && !mutation.isPending) onClose(); }}>
-      <div className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={dialogRef} className="modal animate-in-fast confirm-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <h2 id={titleId}>Renombrar liga</h2>
         <form onSubmit={(e) => { e.preventDefault(); if (!error) mutation.mutate(); }}>
           <label htmlFor={inputId}>Nuevo nombre</label>

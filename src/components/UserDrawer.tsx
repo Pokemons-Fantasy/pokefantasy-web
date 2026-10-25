@@ -5,6 +5,7 @@ import type { League } from '../api/leagues';
 import UserAvatar from './avatar/UserAvatar';
 import PushToggle from './push/PushToggle';
 import AppVersion from './AppVersion';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface UserDrawerProps {
   username: string;
@@ -20,8 +21,6 @@ interface UserDrawerProps {
   onClose: () => void;
 }
 
-const FOCUSABLE = 'a[href], button:not([disabled])';
-
 /**
  * Panel lateral de la cuenta (móvil): perfil, ligas, intercambios pendientes, tema y cerrar sesión.
  * Va en un portal porque la cabecera usa backdrop-filter y fijaría el panel dentro de ella.
@@ -34,36 +33,16 @@ export default function UserDrawer({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Foco dentro al abrir y de vuelta al botón que lo abrió al cerrar; la página no hace scroll detrás.
+  useFocusTrap(panelRef, { initialFocusRef: closeRef });
+
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
-    return () => {
-      document.body.style.overflow = overflow;
-      previous?.focus();
-    };
+    return () => { document.body.style.overflow = overflow; };
   }, []);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab' || !panelRef.current) return;
-      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
