@@ -7,6 +7,7 @@ import SchedulePage from './SchedulePage';
 import { useAuthStore } from '../store/authStore';
 import * as leaguesApi from '../api/leagues';
 import * as pokemonsApi from '../api/pokemons';
+import { Clipboard } from '@capacitor/clipboard';
 import type { LeagueDetail, ScheduleResponse } from '../api/leagues';
 
 vi.mock('../api/leagues', async (importOriginal) => ({
@@ -298,5 +299,87 @@ describe('SchedulePage — jugar en Showdown', () => {
 
     expect(screen.getByRole('dialog', { name: 'Jugar en Showdown' })).toBeInTheDocument();
     expect(screen.getByText(/^\/challenge Ash Ketchum, /)).toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage — alineación', () => {
+  const MISTY_PICKS = ['starmie', 'psyduck', 'goldeen', 'staryu', 'horsea', 'lapras'].map((pokemonName, i) => ({
+    username: 'misty', pokemonName, pokemonId: 100 + i, round: 1, pickedAt: '2026-01-01T00:00:00Z',
+  }));
+  const DRAFT = { status: 'COMPLETED', turnOrder: ['ash', 'misty'], picks: MISTY_PICKS } as unknown as pokemonsApi.DraftStatus;
+
+  function scheduleWith(match: Partial<ScheduleResponse['jornadas'][0]['matches'][0]>, lineupOpensAt?: string) {
+    return {
+      leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false,
+      jornadas: [{ roundNumber: 1, lineupOpensAt, matches: [
+        { id: 'p1', player1: 'ash', player2: 'misty', status: 'PENDING' as const, ...match },
+      ] }],
+    } satisfies ScheduleResponse;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'misty' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(DRAFT);
+  });
+
+  it('con el periodo abierto ofrece declararla y abre el modal con mi equipo', async () => {
+    api.getSchedule.mockResolvedValue(scheduleWith({ lineupOpen: true }));
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Declarar alineación' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Declarar alineación' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'starmie' })).toBeInTheDocument();
+  });
+
+  it('enviada y sin la del rival: se puede cambiar y se espera al rival', async () => {
+    api.getSchedule.mockResolvedValue(scheduleWith({
+      lineupOpen: true, player2LineupSubmitted: true, player2Lineup: { pokemonNames: ['starmie'] },
+    }));
+    renderPage();
+
+    expect(await screen.findByRole('button', { name: 'Cambiar alineación' })).toBeInTheDocument();
+    expect(screen.getByText('Esperando la alineación de ash')).toBeInTheDocument();
+  });
+
+  it('el rival ya la envió', async () => {
+    api.getSchedule.mockResolvedValue(scheduleWith({ lineupOpen: true, player1LineupSubmitted: true }));
+    renderPage();
+
+    expect(await screen.findByText('ash ya ha enviado su alineación')).toBeInTheDocument();
+  });
+
+  it('antes del cierre del mercado dice desde cuándo', async () => {
+    api.getSchedule.mockResolvedValue(scheduleWith({}, '2099-06-05T16:00:00'));
+    renderPage();
+
+    expect(await screen.findByText('Podrás declarar tu alineación desde vie 5 jun, 16:00')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Declarar alineación' })).not.toBeInTheDocument();
+  });
+
+  it('"Copiar mi equipo" en Showdown copia solo la alineación declarada', async () => {
+    api.getLeagueDetail.mockResolvedValue({
+      ...LEAGUE,
+      members: [
+        { username: 'ash', leagueRole: 'ADMIN', showdownName: 'Ash Ketchum' },
+        { username: 'misty', leagueRole: 'USER', showdownName: 'Misty Cerulean' },
+      ],
+    });
+    api.getSchedule.mockResolvedValue(scheduleWith({
+      player2LineupSubmitted: true, player2Lineup: { pokemonNames: ['starmie', 'lapras'] },
+    }));
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Jugar en Showdown' }));
+    const copy = await screen.findByRole('button', { name: 'Copiar mi equipo' });
+    await waitFor(() => expect(copy).toBeEnabled());
+    await user.click(copy);
+
+    expect(Clipboard.write).toHaveBeenCalledWith({ string: 'Starmie\n\nLapras' });
   });
 });
