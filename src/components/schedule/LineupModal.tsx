@@ -51,6 +51,8 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
     onError: (err) => addToast('error', extractErrorMessage(err, 'No se pudo enviar la alineación')),
   });
 
+  const fullHintId = useId();
+  const full = selected.length >= size;
   const urlOk = !open || pasteUrl.trim().startsWith('https://');
   const canSubmit = size > 0 && selected.length === size && urlOk && !mutation.isPending;
 
@@ -75,6 +77,9 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
         {size === 0
           ? <p className="field-hint field-hint-error">No tienes Pokémon para declarar.</p>
           : <p className="lineup-count" aria-live="polite">{selected.length} de {size}</p>}
+        {full && size > 0 && (
+          <p id={fullHintId} className="field-hint">Ya tienes los {size}. Quita uno para elegir otro.</p>
+        )}
 
         <div className="lineup-grid">
           {myPicks.map((p) => {
@@ -86,7 +91,8 @@ export default function LineupModal({ leagueId, matchId, myPicks, current, teamS
                   id={id}
                   type="checkbox"
                   checked={checked}
-                  disabled={!checked && selected.length >= size}
+                  disabled={!checked && full}
+                  aria-describedby={!checked && full ? fullHintId : undefined}
                   onChange={() => toggle(p.pokemonName)}
                 />
                 <img src={spriteUrl(p.pokemonId)} alt={p.pokemonName} width={56} height={56} loading="lazy" />

@@ -135,3 +135,15 @@ describe('LineupModal — sin equipo', () => {
     expect(screen.getByRole('button', { name: 'Enviar alineación' })).toBeDisabled();
   });
 });
+
+describe('LineupModal — casillas deshabilitadas', () => {
+  it('al llegar al máximo explica cómo cambiar la selección', async () => {
+    renderModal();
+    const user = userEvent.setup();
+
+    await pick(user, NAMES.slice(0, 6));
+
+    const hint = screen.getByText('Ya tienes los 6. Quita uno para elegir otro.');
+    expect(screen.getByRole('checkbox', { name: 'snorlax' })).toHaveAttribute('aria-describedby', hint.id);
+  });
+});
