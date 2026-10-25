@@ -4,6 +4,7 @@ import { lineupState } from '../../utils/lineup';
 import { formatDay } from '../../utils/dates';
 import UserAvatar from '../avatar/UserAvatar';
 import MatchLineups from './MatchLineups';
+import { replayUrl } from '../../utils/replays';
 
 interface MatchRowProps {
   match: MatchDto;
@@ -17,6 +18,8 @@ interface MatchRowProps {
   /** Abrir "Jugar en Showdown" (solo en mis partidos pendientes). */
   onPlay: () => void;
   onLineup: () => void;
+  /** Abrir "Importar de Showdown" (jugadores del partido o admin, partido pendiente). */
+  onImport: () => void;
 }
 
 /** "vie 5 jun, 16:00" de una fecha-hora local del backend ("YYYY-MM-DDTHH:mm[:ss]"). */
@@ -25,7 +28,7 @@ function formatDayTime(iso: string): string {
 }
 
 export default function MatchRow({
-  match, username, isAdmin, lineupOpensAt, spriteIds, onRecord, onEdit, onPlay, onLineup,
+  match, username, isAdmin, lineupOpensAt, spriteIds, onRecord, onEdit, onPlay, onLineup, onImport,
 }: MatchRowProps) {
   const completed = match.status === 'COMPLETED';
   const mine = !!username && (match.player1 === username || match.player2 === username);
@@ -74,6 +77,9 @@ export default function MatchRow({
               {lineup === 'waiting-rival' ? 'Cambiar alineación' : 'Declarar alineación'}
             </button>
           )}
+          {(mine || isAdmin) && !completed && (
+            <button type="button" className="match-action" onClick={onImport}>Importar de Showdown</button>
+          )}
           {isAdmin && !completed && (
             <button type="button" className="match-action" onClick={onRecord}>▶ Resultado</button>
           )}
@@ -90,6 +96,19 @@ export default function MatchRow({
         </div>
       </div>
       <MatchLineups match={match} username={username} spriteIds={spriteIds} status={status} />
+      {!!match.replayIds?.length && (
+        <div className="match-replays">
+          <span>Replays:</span>
+          {match.replayIds.map((id, i) => (
+            <a key={id} href={replayUrl(id)} target="_blank" rel="noopener noreferrer">Partida {i + 1}</a>
+          ))}
+          {!!match.importWarnings?.length && (
+            <ul className="match-lineup-warnings">
+              {match.importWarnings.map((w) => <li key={w}>{w}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

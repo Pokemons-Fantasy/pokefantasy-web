@@ -138,7 +138,43 @@ export interface MatchDto {
   lineupOpen?: boolean;
   /** Podrá declararla cuando cierre el mercado de la jornada (lo decide el backend con la hora de Madrid). */
   lineupPending?: boolean;
+  /** Replays de Showdown con los que se importó el resultado, en orden de partida; ausente si fue a mano. */
+  replayIds?: string[] | null;
+  /** Avisos del import (lo que se llevó fuera de la alineación). */
+  importWarnings?: string[] | null;
 }
+
+/** Un replay de Showdown que podría ser una partida del partido (lo evalúa el backend). */
+export interface ReplayCandidate {
+  id: string;
+  url: string;
+  /** Epoch en segundos. */
+  uploadtime: number;
+  /** Usuario de la liga que ganó esa partida. */
+  winnerUsername?: string | null;
+  seriesId?: string | null;
+  gameNumber?: number | null;
+  selectable: boolean;
+  /** Por qué no se puede usar. */
+  reason?: string | null;
+  warnings?: string[];
+}
+
+export const getReplayCandidates = async (
+  leagueId: string,
+  matchId: string,
+  url?: string
+): Promise<ReplayCandidate[]> => {
+  const { data } = await apiClient.get<ReplayCandidate[]>(
+    `/v1/leagues/${leagueId}/schedule/matches/${matchId}/replays`,
+    { params: url ? { url } : undefined }
+  );
+  return data;
+};
+
+export const importSeries = async (leagueId: string, matchId: string, replayIds: string[]): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/schedule/matches/${matchId}/import`, { replayIds });
+};
 
 export interface Lineup {
   pokemonNames: string[];
