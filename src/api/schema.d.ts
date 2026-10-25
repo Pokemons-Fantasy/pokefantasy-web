@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leagues/{leagueId}/schedule/matches/{matchId}/lineup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["declareLineup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/my-mvp": {
         parameters: {
             query?: never;
@@ -1004,6 +1020,10 @@ export interface components {
             /** Format: int32 */
             loserScore?: number;
         };
+        DeclareLineupRequest: {
+            pokemonNames?: string[];
+            pasteUrl?: string;
+        };
         SetLeagueMvpRequest: {
             pokemonName?: string;
         };
@@ -1249,6 +1269,12 @@ export interface components {
             startDate?: string;
             stealDeadline?: string;
             swapDeadline?: string;
+            lineupOpensAt?: string;
+        };
+        LineupResponse: {
+            pokemonNames?: string[];
+            pasteUrl?: string;
+            pasteWarnings?: string[];
         };
         MatchResponse: {
             id?: string;
@@ -1261,6 +1287,12 @@ export interface components {
             winnerScore?: number;
             /** Format: int32 */
             loserScore?: number;
+            player1LineupSubmitted?: boolean;
+            player2LineupSubmitted?: boolean;
+            player1Lineup?: components["schemas"]["LineupResponse"];
+            player2Lineup?: components["schemas"]["LineupResponse"];
+            lineupOpen?: boolean;
+            lineupPending?: boolean;
         };
         ScheduleResponse: {
             leagueId?: string;
@@ -1665,6 +1697,31 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    declareLineup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+                matchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclareLineupRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
