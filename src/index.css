@@ -890,6 +890,33 @@ button.member-menu-item {
 .play-showdown .field-hint { font-size: 0.8rem; color: var(--text-3); }
 .play-showdown .field-hint-error { color: var(--danger); }
 
+/* Alineación del partido (calendario) */
+.lineup-modal { max-width: 560px; }
+.lineup-count { font-size: 0.85rem; color: var(--text-2); margin: 0.5rem 0; }
+.lineup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
+.lineup-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.lineup-option.selected { border-color: var(--accent); background: var(--surface-2); }
+.lineup-option input { margin: 0; }
+.lineup-option input:disabled + img { opacity: 0.4; }
+.lineup-paste { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
+.lineup-paste label { font-size: 0.8rem; color: var(--text-2); }
+.match-lineup-status { flex-basis: 100%; font-size: 0.8rem; color: var(--text-3); }
+.match-lineups { flex-basis: 100%; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.4rem; }
+.match-lineup { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.match-lineup-owner { font-size: 0.8rem; color: var(--text-2); min-width: 4rem; }
+.match-lineup-sprites { display: flex; flex-wrap: wrap; gap: 0.15rem; }
+.match-lineup-name { font-size: 0.75rem; color: var(--text-2); }
+.match-lineup-link { font-size: 0.8rem; }
+.match-lineup-warnings { flex-basis: 100%; margin: 0; padding-left: 1.25rem; font-size: 0.75rem; color: var(--warning, var(--text-3)); }
+
 /* Cuenta de Showdown (perfil) */
 .showdown-account { display: flex; flex-direction: column; gap: 0.4rem; max-width: 420px; padding: 1.25rem; }
 .showdown-account label { font-size: 0.8rem; color: var(--text-2); }
