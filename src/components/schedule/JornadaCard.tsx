@@ -18,6 +18,7 @@ interface JornadaCardProps {
   onEdit: (match: MatchDto) => void;
   onPlay: (match: MatchDto) => void;
   onLineup: (match: MatchDto) => void;
+  onImport: (match: MatchDto) => void;
   spriteIds: Map<string, number>;
   ref?: Ref<HTMLElement>;
 }
@@ -27,7 +28,7 @@ interface JornadaCardProps {
  * las próximas se muestran desplegadas.
  */
 export default function JornadaCard({
-  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, spriteIds, ref,
+  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, onImport, spriteIds, ref,
 }: JornadaCardProps) {
   const n = jornada.roundNumber;
   const titleId = `jornada-${n}-title`;
@@ -47,6 +48,7 @@ export default function JornadaCard({
           onEdit={() => onEdit(match)}
           onPlay={() => onPlay(match)}
           onLineup={() => onLineup(match)}
+          onImport={() => onImport(match)}
           lineupOpensAt={jornada.lineupOpensAt}
           spriteIds={spriteIds}
         />

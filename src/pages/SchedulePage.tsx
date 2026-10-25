@@ -8,6 +8,7 @@ import { deriveTeams } from '../utils/teams';
 import PlayShowdownModal from '../components/schedule/PlayShowdownModal';
 import Modal from '../components/Modal';
 import LineupModal from '../components/schedule/LineupModal';
+import ImportSeriesModal from '../components/schedule/ImportSeriesModal';
 import { myLineup } from '../utils/lineup';
 import { BATTLE_DEFAULTS } from '../utils/showdown';
 import {
@@ -114,6 +115,20 @@ export default function SchedulePage() {
           staleTime: 60_000 }),
       ]);
       setLineupMatch(match);
+    } catch {
+      addToast('error', 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.');
+    }
+  }
+
+  // El import necesita el formato de la serie (bestOf) de la liga.
+  const [importMatch, setImportMatch] = useState<MatchDto | null>(null);
+  const [importBestOf, setImportBestOf] = useState<number>(BATTLE_DEFAULTS.bestOf);
+  async function openImport(match: MatchDto) {
+    try {
+      const settings = await queryClient.fetchQuery({ queryKey: ['league-settings', leagueId],
+        queryFn: () => getLeagueSettings(leagueId!), staleTime: 5 * 60_000 });
+      setImportBestOf(settings.bestOf ?? BATTLE_DEFAULTS.bestOf);
+      setImportMatch(match);
     } catch {
       addToast('error', 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.');
     }
@@ -258,6 +273,7 @@ export default function SchedulePage() {
                 onEdit={openEdit}
                 onPlay={setPlayingMatch}
                 onLineup={openLineup}
+                onImport={openImport}
                 spriteIds={spriteIds}
               />
             ))}
@@ -288,6 +304,15 @@ export default function SchedulePage() {
           current={myLineup(lineupMatch, username)}
           teamSheet={leagueSettings.teamSheet ?? BATTLE_DEFAULTS.teamSheet}
           onClose={() => setLineupMatch(null)}
+        />
+      )}
+
+      {importMatch && (
+        <ImportSeriesModal
+          leagueId={leagueId!}
+          match={importMatch}
+          bestOf={importBestOf}
+          onClose={() => setImportMatch(null)}
         />
       )}
 

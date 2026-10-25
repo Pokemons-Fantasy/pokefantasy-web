@@ -917,7 +917,8 @@ button.member-menu-item {
   grid-template-areas:
     "p1 badge p2 actions"
     "l1 . l2 ."
-    "st st st st";
+    "st st st st"
+    "rp rp rp rp";
   align-items: center;
   column-gap: 0.75rem;
 }
@@ -940,6 +941,36 @@ button.member-menu-item {
 .match-lineup-status { grid-area: st; text-align: center; font-size: 0.8rem; color: var(--text-3); }
 .match-lineup-status:not(:empty) { margin-top: 0.4rem; }
 .match-lineup-warnings { margin: 0; padding-left: 1.25rem; font-size: 0.75rem; color: var(--warning, var(--text-3)); text-align: left; }
+.match-replays {
+  grid-area: rp;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.match-replays a { color: var(--accent); text-decoration: none; }
+.match-replays a:hover { text-decoration: underline; }
+.match-replays .match-lineup-warnings { flex-basis: 100%; list-style: none; padding: 0; text-align: center; }
+
+/* Importar de Showdown */
+.import-series { max-width: 560px; }
+.import-series-group { border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 0.75rem; margin: 0.6rem 0; }
+.import-series-group legend { font-size: 0.8rem; color: var(--text-2); padding: 0 0.3rem; }
+.import-series-group ul, .import-series-loose { list-style: none; margin: 0 0 0.4rem; padding: 0; }
+.import-game { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.2rem 0; font-size: 0.9rem; }
+.import-game label { display: flex; align-items: center; gap: 0.4rem; }
+.import-game-link { font-size: 0.75rem; color: var(--accent); }
+.import-game .field-hint { flex-basis: 100%; margin: 0 0 0 1.6rem; }
+.import-series-paste { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.75rem 0; }
+.import-series-paste label { font-size: 0.8rem; color: var(--text-2); }
+.import-series-paste .config-inline { align-items: center; }
+.import-series-paste .search-input { flex: 1; min-width: 0; }
+.import-series-summary { font-weight: 600; color: var(--success); }
+
 .lineup-silhouette {
   width: 28px;
   height: 28px;
@@ -2320,7 +2351,8 @@ a.btn-back, a.logo { text-decoration: none; }
       "p1 badge p2"
       "actions actions actions"
       "l1 . l2"
-      "st st st";
+      "st st st"
+      "rp rp rp";
   }
   .match-actions { justify-content: center; margin-top: 0.4rem; }
   .match-lineup-sprites img { width: 30px; height: 30px; }

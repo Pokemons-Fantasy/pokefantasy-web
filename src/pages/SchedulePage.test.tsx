@@ -20,6 +20,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   revertMatchResult: vi.fn(),
   recordMatchResult: vi.fn(),
   getLeagueSettings: vi.fn().mockResolvedValue({}),
+  getReplayCandidates: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
@@ -455,5 +456,56 @@ describe('SchedulePage — alineación (errores y jornadas futuras)', () => {
       type: 'error', message: 'No se pudieron cargar los ajustes de la liga. Inténtalo de nuevo.',
     }));
     expect(screen.queryByRole('dialog', { name: 'Declarar alineación' })).not.toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage — importar de Showdown', () => {
+  const SCHEDULE_WITH_IMPORT: ScheduleResponse = {
+    leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false,
+    jornadas: [{ roundNumber: 1, matches: [
+      { id: 'i1', player1: 'ash', player2: 'misty', status: 'PENDING' },
+      { id: 'i2', player1: 'brock', player2: 'gary', status: 'PENDING' },
+      { id: 'i3', player1: 'misty', player2: 'brock', winnerUsername: 'misty', status: 'COMPLETED',
+        winnerScore: 2, loserScore: 1, replayIds: ['g1', 'g2', 'g3'],
+        importWarnings: ['misty llevó Raichu, que no está en su alineación.'] },
+    ] }],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getSchedule.mockResolvedValue(SCHEDULE_WITH_IMPORT);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('el jugador ve "Importar de Showdown" solo en su partido pendiente', async () => {
+    useAuthStore.setState({ username: 'misty' });
+    renderPage();
+
+    expect(within(await screen.findByTestId('match-i1')).getByRole('button', { name: 'Importar de Showdown' }))
+      .toBeInTheDocument();
+    expect(within(screen.getByTestId('match-i2')).queryByRole('button', { name: 'Importar de Showdown' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('el admin lo ve en cualquier partido pendiente y abre el modal', async () => {
+    useAuthStore.setState({ username: 'ash' });
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(within(await screen.findByTestId('match-i2')).getByRole('button', { name: 'Importar de Showdown' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Importar de Showdown' })).toBeInTheDocument();
+  });
+
+  it('un partido importado enlaza sus replays y muestra los avisos', async () => {
+    useAuthStore.setState({ username: 'gary' });
+    renderPage();
+
+    const row = await screen.findByTestId('match-i3');
+    const link = within(row).getByRole('link', { name: 'Partida 2' });
+    expect(link).toHaveAttribute('href', 'https://replay.pokemonshowdown.com/g2');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(within(row).getByText('misty llevó Raichu, que no está en su alineación.')).toBeInTheDocument();
   });
 });
