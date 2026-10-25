@@ -28,13 +28,13 @@ describe('MatchLineups', () => {
       .toBeInTheDocument();
   });
 
-  it('sin revelar: solo la mía', () => {
+  it('sin revelar: de la del rival no se ve ningún Pokémon', () => {
     render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
       player1LineupSubmitted: true, player1Lineup: { pokemonNames: ['pikachu'] },
     })} />);
 
     expect(screen.getByRole('region', { name: 'Alineación de ash' })).toBeInTheDocument();
-    expect(screen.queryByRole('region', { name: 'Alineación de misty' })).not.toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Alineación de misty' })).queryByRole('img')).not.toBeInTheDocument();
   });
 
   it('sin alineaciones que mostrar no pinta nada', () => {
@@ -51,5 +51,51 @@ describe('MatchLineups — enlaces', () => {
     })} />);
 
     expect(screen.queryByRole('link', { name: 'Ver equipo' })).not.toBeInTheDocument();
+  });
+});
+
+describe('MatchLineups — dos pisos y siluetas', () => {
+  it('cada alineación va en su lado: player1 a la izquierda y player2 a la derecha', () => {
+    render(<MatchLineups username="brock" spriteIds={SPRITES} match={match({
+      player1LineupSubmitted: true, player2LineupSubmitted: true,
+      player1Lineup: { pokemonNames: ['pikachu'] }, player2Lineup: { pokemonNames: ['starmie'] },
+    })} />);
+
+    expect(screen.getByRole('region', { name: 'Alineación de ash' })).toHaveClass('left');
+    expect(screen.getByRole('region', { name: 'Alineación de misty' })).toHaveClass('right');
+  });
+
+  it('antes de revelar, el rival que no ha enviado sale como siluetas "Pendiente" y yo con mis sprites', () => {
+    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+      lineupOpen: true, player1LineupSubmitted: true, player2LineupSubmitted: false,
+      player1Lineup: { pokemonNames: ['pikachu'] },
+    })} status="Esperando la alineación de misty" />);
+
+    const rival = screen.getByRole('region', { name: 'Alineación de misty' });
+    expect(within(rival).getByText('Pendiente')).toBeInTheDocument();
+    expect(within(rival).queryByRole('img')).not.toBeInTheDocument();
+    expect(rival.querySelectorAll('.lineup-silhouette')).toHaveLength(6);
+    expect(within(screen.getByRole('region', { name: 'Alineación de ash' })).getByRole('img', { name: 'pikachu' }))
+      .toBeInTheDocument();
+    expect(screen.getByText('Esperando la alineación de misty')).toBeInTheDocument();
+  });
+
+  it('el rival ya la envió: siluetas con "Enviada ✓" y la mía pendiente', () => {
+    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+      lineupOpen: true, player2LineupSubmitted: true,
+    })} />);
+
+    expect(within(screen.getByRole('region', { name: 'Alineación de misty' })).getByText('Enviada ✓'))
+      .toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Alineación de ash' })).getByText('Pendiente'))
+      .toBeInTheDocument();
+  });
+
+  it('solo con un texto de estado (mercado aún abierto) no pinta siluetas', () => {
+    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({ lineupPending: true })}
+      status="Podrás declarar tu alineación desde vie 5 jun, 16:00" />);
+
+    expect(screen.getByText('Podrás declarar tu alineación desde vie 5 jun, 16:00')).toBeInTheDocument();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
 });
