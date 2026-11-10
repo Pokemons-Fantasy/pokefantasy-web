@@ -11,16 +11,18 @@ describe('DraftTurnBar', () => {
     const bar = screen.getByRole('status');
     expect(bar).toHaveTextContent('Te toca');
     expect(bar).toHaveTextContent('Ronda 2');
-    expect(bar).toHaveTextContent('23s');
     expect(bar).toHaveTextContent('Te quedan 300');
-    expect(bar).toHaveAttribute('data-mine', 'true');
+    expect(bar.closest('[data-mine]')).toHaveAttribute('data-mine', 'true');
+    // El reloj va fuera de la región viva: si no, el lector de pantalla lo leería cada segundo
+    expect(bar).not.toHaveTextContent('23s');
+    expect(screen.getByRole('timer')).toHaveTextContent('23s');
   });
 
   it('cuando es de otro, dice de quién', () => {
     render(<DraftTurnBar {...base} currentTurn="misty" isMyTurn={false} />);
     const bar = screen.getByRole('status');
     expect(bar).toHaveTextContent('Turno de misty');
-    expect(bar).not.toHaveAttribute('data-mine');
+    expect(bar.closest('[data-mine]')).toBeNull();
   });
 
   it('con onChoose ofrece volver a elegir', async () => {

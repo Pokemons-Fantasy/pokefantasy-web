@@ -128,6 +128,15 @@ describe('DraftPage en móvil', () => {
     expect(screen.queryByText(/Te toca|Turno de/)).not.toBeInTheDocument();
   });
 
+  it('con el draft cancelado avisa de que esos picks no cuentan', async () => {
+    vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({
+      status: 'CANCELLED', currentTurn: null, draftHistory: [pick('ash', 'abra', 1)],
+    }));
+    renderAt();
+    expect(await screen.findByText('El draft se canceló: estos picks no cuentan.')).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Jugadores' })).toBeInTheDocument();
+  });
+
   it('en preparación se ve como en escritorio', async () => {
     useAuthStore.setState({ username: 'brock' });
     vi.mocked(pokemonsApi.getDraftStatus).mockResolvedValue(draft({ status: 'PENDING', currentTurn: null }));

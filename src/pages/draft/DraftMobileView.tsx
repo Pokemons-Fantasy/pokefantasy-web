@@ -4,6 +4,7 @@ import DraftTurnBar from '../../components/draft/DraftTurnBar';
 import DraftPoolGrid from '../../components/draft/DraftPoolGrid';
 import DraftPlayerBoard from '../../components/draft/DraftPlayerBoard';
 import PushPrompt from '../../components/push/PushPrompt';
+import Notice from '../../components/Notice';
 import DraftDesktopView from './DraftDesktopView';
 import type { DraftPageModel } from './useDraftPage';
 import styles from './DraftMobileView.module.css';
@@ -41,6 +42,7 @@ export default function DraftMobileView({ model }: { model: DraftPageModel }) {
     return (
       <main className="page-content">
         <h1 className="sr-only">Draft</h1>
+        {draft.status === 'CANCELLED' && <Notice variant="info">El draft se canceló: estos picks no cuentan.</Notice>}
         {playerBoard}
       </main>
     );
