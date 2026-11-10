@@ -145,7 +145,7 @@
 .setup-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .setup-tier-empty { color: var(--text-3); font-size: 0.875rem; }
 .setup-move-bar {
-  position: sticky; bottom: 0.75rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  position: sticky; bottom: calc(0.75rem + var(--bottom-nav-h)); display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
   padding: 0.6rem 0.9rem; margin-top: 1rem; border-radius: 12px;
   background: var(--surface-2); border: 1px solid var(--border);
 }
