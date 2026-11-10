@@ -72,6 +72,21 @@ describe('Sheet', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('admite alertdialog y descripción', () => {
+    render(
+      <Sheet labelledBy="t" describedBy="d" role="alertdialog" onClose={vi.fn()}>
+        <h2 id="t">Borrar</h2><p id="d">No se puede deshacer.</p>
+      </Sheet>,
+    );
+    const dialog = screen.getByRole('alertdialog', { name: 'Borrar' });
+    expect(dialog).toHaveAccessibleDescription('No se puede deshacer.');
+  });
+
+  it('el asa es la zona de arrastre', () => {
+    renderSheet();
+    expect(screen.getByTestId('sheet-handle')).toBeInTheDocument();
+  });
+
   it('bloquea el scroll de la página mientras está abierto', () => {
     document.body.style.overflow = 'auto';
     const { unmount } = render(
