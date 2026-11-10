@@ -111,7 +111,7 @@
   .draft-board-empty.current { animation: none; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .draft-board td { min-width: 76px; height: 80px; }
   .draft-board-sprite { width: 36px; height: 36px; }
 }

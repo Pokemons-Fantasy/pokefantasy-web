@@ -123,7 +123,7 @@
   .jornada-chevron { transition: none; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .jornada-card { padding: 1rem; }
   .jornada-card.played { padding: 0; }
   .jornada-result { margin-left: 0; flex-basis: 100%; padding-left: 1.1rem; }

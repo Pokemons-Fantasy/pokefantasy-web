@@ -138,7 +138,7 @@
 .save-bar-diff strong { color: var(--accent); }
 .save-bar-error { margin: 0; font-size: 0.8rem; }
 .save-bar-actions { display: flex; gap: 0.5rem; margin-left: auto; }
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .config-grid-2 { grid-template-columns: 1fr; }
   .config-section { padding: 1rem; }
   .save-bar-actions { width: 100%; }

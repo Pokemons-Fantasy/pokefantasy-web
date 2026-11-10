@@ -1,6 +1,6 @@
 /* ─── RESPONSIVE ─── */
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* Layout */
   .page-content {
     padding: 1.5rem 1rem 3rem;

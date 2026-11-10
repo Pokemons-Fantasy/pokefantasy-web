@@ -100,7 +100,7 @@
 
 /* Filtros del Pool: en escritorio se reparten en varias líneas (la tira con scroll oculto no se ve ni se
    desplaza con la rueda); en móvil siguen siendo una tira que se desliza, con el borde con más filtros difuminado */
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .pool-filter-row { flex-wrap: wrap; overflow-x: visible; }
 }
 .pool-filter-row.fade-end {
@@ -130,7 +130,7 @@
   .pool-card.state-own:hover { transform: none; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .pool-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
 }
 
