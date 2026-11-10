@@ -20,7 +20,7 @@ export interface TeamsSummary {
   swap: WindowStatus;
 }
 
-export function teamsSummary(schedule: ScheduleResponse | undefined, username: string, now: Date): TeamsSummary | null {
+export function teamsSummary(schedule: ScheduleResponse | null | undefined, username: string, now: Date): TeamsSummary | null {
   if (!schedule) return null;
   const { current, next, resting, last } = seasonSummary(schedule, username);
   // Misma regla que la home: el partido es "tuyo" si cae en la jornada en juego

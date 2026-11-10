@@ -1,0 +1,20 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.teamHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-2);
+  font-size: 0.85rem;
+}
