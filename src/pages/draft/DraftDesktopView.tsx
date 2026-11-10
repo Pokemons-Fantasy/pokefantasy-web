@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import TurnClock from '../../components/draft/TurnClock';
 import { SkeletonTable } from '../../components/SkeletonTable';
 import DraftBoard from '../../components/draft/DraftBoard';
 import DraftPoolGrid from '../../components/draft/DraftPoolGrid';
@@ -12,7 +12,7 @@ import type { DraftPageModel } from './useDraftPage';
 /** Draft en escritorio: estadísticas, aviso de turno, rejilla del pool y tablero en una columna. */
 export default function DraftDesktopView({ model }: { model: DraftPageModel }) {
   const {
-    leagueId, username, setShowCancelModal, setDetailEntry, setPendingPick, favorites, toggleFavorite, secondsLeft, prefersReducedMotion, draft, isLoading, pool, totalRounds, isAdmin, availablePool, isMyTurn, history, draftInProgress, config, myRemaining, myTeamSize, iAmOut, board, tierByName, entryByName, spending, picking, statusLabel, statusClass,
+    leagueId, username, setShowCancelModal, setDetailEntry, setPendingPick, favorites, toggleFavorite, secondsLeft, draft, isLoading, pool, totalRounds, isAdmin, availablePool, isMyTurn, history, draftInProgress, config, myRemaining, myTeamSize, iAmOut, board, tierByName, entryByName, spending, picking, statusLabel, statusClass,
   } = model;
 
   return (
@@ -49,29 +49,7 @@ export default function DraftDesktopView({ model }: { model: DraftPageModel }) {
               <div className="draft-stat-label">Turno actual</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <div className="draft-stat-value accent">{draft.currentTurn}</div>
-                {secondsLeft !== null && (() => {
-                  const urgent = secondsLeft <= 10;
-                  const urgency = urgent ? (10 - secondsLeft) / 10 : 0; // 0..1
-                  return (
-                    <motion.span
-                      key={urgent ? 'urgent' : 'calm'}
-                      animate={urgent && !prefersReducedMotion ? { scale: [1, 1.06 + urgency * 0.14, 1] } : { scale: 1 }}
-                      transition={
-                        urgent && !prefersReducedMotion
-                          ? { duration: 0.9 - urgency * 0.5, repeat: Infinity, ease: 'easeInOut' }
-                          : { duration: 0.2 }
-                      }
-                      style={{
-                        display: 'inline-block',
-                        fontWeight: 600,
-                        fontSize: '0.875rem',
-                        color: urgent ? 'var(--danger)' : 'var(--text-2)',
-                      }}
-                    >
-                      ⏱ {secondsLeft}s
-                    </motion.span>
-                  );
-                })()}
+                {secondsLeft !== null && <TurnClock secondsLeft={secondsLeft} />}
               </div>
             </div>
           )}
