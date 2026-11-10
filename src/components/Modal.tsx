@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useBackHandler } from '../hooks/useBackButton';
 
 interface ModalProps {
   /** Id del título (`useId`) que nombra el diálogo. */
@@ -30,6 +31,7 @@ export default function Modal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const pressedOnBackdrop = useRef(false);
   useFocusTrap(dialogRef, { initialFocusRef, onEscape: canClose ? onClose : undefined });
+  useBackHandler(canClose ? onClose : undefined);
 
   return (
     <div
