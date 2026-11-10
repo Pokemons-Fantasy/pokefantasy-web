@@ -14,7 +14,8 @@
 
 .bar[data-mine] {
   border-color: var(--warning-border);
-  background: var(--warning-bg);
+  /* --warning-bg es translúcido: sobre la superficie, para que no se vea la rejilla al pasar por debajo */
+  background: linear-gradient(var(--warning-bg), var(--warning-bg)), var(--surface);
   box-shadow: inset 0 -1px 0 var(--warning-border);
 }
 
