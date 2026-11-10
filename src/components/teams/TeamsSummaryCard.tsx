@@ -4,7 +4,8 @@ import CoinBadge from './CoinBadge';
 import styles from './TeamsSummaryCard.module.css';
 
 interface TeamsSummaryCardProps {
-  summary: TeamsSummary;
+  /** null sin calendario: solo se pintan las monedas y el botón de intercambios. */
+  summary: TeamsSummary | null;
   coins: number | undefined;
   /** Intercambios que esperan tu respuesta. */
   pendingTrades: number;
@@ -13,13 +14,34 @@ interface TeamsSummaryCardProps {
 
 /** Card de resumen de Equipos en móvil: jornada, tu partido, mercado, monedas e intercambios. */
 export default function TeamsSummaryCard({ summary, coins, pendingTrades, onOpenTrades }: TeamsSummaryCardProps) {
+  return (
+    <section className={styles.card} aria-label="Resumen de la jornada">
+      {summary && <MatchAndMarket summary={summary} />}
+
+      <div className={summary ? styles.footer : styles.footerOnly}>
+        {coins !== undefined ? <CoinBadge coins={coins} /> : <span />}
+        <button type="button" className={`btn-ghost ${styles.trades}`} onClick={onOpenTrades}>
+          Intercambios
+          {pendingTrades > 0 && (
+            <>
+              <span className={styles.count} aria-hidden="true">{pendingTrades}</span>
+              <span className="sr-only">{`, ${pendingTrades} pendientes`}</span>
+            </>
+          )}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function MatchAndMarket({ summary }: { summary: TeamsSummary }) {
   const windows = [
     { kind: 'steal', label: 'Robos', status: summary.steal },
     { kind: 'swap', label: 'Intercambios y banquillo', status: summary.swap },
   ];
 
   return (
-    <section className={styles.card} aria-label="Resumen de la jornada">
+    <>
       {(summary.roundNumber !== null || summary.last) && (
         <div className={styles.meta}>
           {summary.roundNumber !== null && <span>Jornada {summary.roundNumber}</span>}
@@ -41,19 +63,6 @@ export default function TeamsSummaryCard({ summary, coins, pendingTrades, onOpen
           </div>
         ))}
       </div>
-
-      <div className={styles.footer}>
-        {coins !== undefined ? <CoinBadge coins={coins} /> : <span />}
-        <button type="button" className={`btn-ghost ${styles.trades}`} onClick={onOpenTrades}>
-          Intercambios
-          {pendingTrades > 0 && (
-            <>
-              <span className={styles.count} aria-hidden="true">{pendingTrades}</span>
-              <span className="sr-only">{`, ${pendingTrades} pendientes`}</span>
-            </>
-          )}
-        </button>
-      </div>
-    </section>
+    </>
   );
 }

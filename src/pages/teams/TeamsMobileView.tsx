@@ -36,14 +36,12 @@ export default function TeamsMobileView({ model }: { model: TeamsPageModel }) {
     <main className={`page-content ${styles.page}`}>
       <h1 className="sr-only">Equipos</h1>
 
-      {summary && (
-        <TeamsSummaryCard
-          summary={summary}
-          coins={model.myCoins?.coins}
-          pendingTrades={model.pendingIncomingCount}
-          onOpenTrades={() => model.setShowTradesModal(true)}
-        />
-      )}
+      <TeamsSummaryCard
+        summary={summary}
+        coins={model.myCoins?.coins}
+        pendingTrades={model.pendingIncomingCount}
+        onOpenTrades={() => model.setShowTradesModal(true)}
+      />
 
       <SegmentedTabs
         label="Secciones de Equipos"

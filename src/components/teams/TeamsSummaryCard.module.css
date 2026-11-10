@@ -80,3 +80,9 @@ a.headline:focus-visible {
   line-height: 18px;
   text-align: center;
 }
+
+.footerOnly {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

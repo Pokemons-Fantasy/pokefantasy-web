@@ -145,6 +145,14 @@ describe('TeamsPage en móvil', () => {
     expect(screen.queryByText(/Tu partido/)).not.toBeInTheDocument();
   });
 
+  it('sin calendario sigue habiendo acceso a Intercambios y a tus monedas', async () => {
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue(null as unknown as ScheduleResponse);
+    renderAt('/leagues/league-1/teams');
+    expect(await screen.findByRole('button', { name: 'Intercambios' })).toBeInTheDocument();
+    expect(screen.queryByText(/Tu partido/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/1000/)).toBeInTheDocument();
+  });
+
   it('llegar con openTrades abre Intercambios', async () => {
     renderAt({ pathname: '/leagues/league-1/teams', state: { openTrades: true } });
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
