@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -83,7 +83,22 @@ describe('PageHeader', () => {
     it('"Volver" lleva a la última liga abierta', async () => {
       setLastLeague('l1');
       renderHeader('/profile');
-      expect(await screen.findByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues/l1');
+      await waitFor(() => expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues/l1'));
+    });
+
+    it('si ya no estás en la última liga, "Volver" lleva a Mis ligas', async () => {
+      setLastLeague('l9');
+      renderHeader('/profile');
+      await screen.findByRole('link', { name: 'Volver' });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues');
+    });
+
+    it('en Mis ligas no hay "Volver"', async () => {
+      setLastLeague('l1');
+      renderHeader('/leagues');
+      expect(await screen.findByRole('button', { name: /Tu cuenta/ })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Volver' })).not.toBeInTheDocument();
     });
 
     it('sin última liga, "Volver" lleva a Mis ligas', async () => {

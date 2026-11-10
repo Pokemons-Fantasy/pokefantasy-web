@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -7,6 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useLayoutMode } from '../hooks/useLayoutMode';
 import { useSectionTitle } from '../hooks/useSectionTitle';
 import { getMe } from '../api/auth';
+import { getMyLeagues } from '../api/leagues';
 import { getLastLeague } from '../utils/lastLeague';
 import UserAvatar from './avatar/UserAvatar';
 import AppBar from './shell/AppBar';
@@ -27,14 +28,21 @@ export default function PageHeader(props: PageHeaderProps) {
 
 function MobileHeader() {
   const title = useSectionTitle();
-  const lastLeague = getLastLeague();
+  const { pathname } = useLocation();
+  const signedIn = useAuthStore((s) => !!s.username);
+  const { data: leagues } = useQuery({
+    queryKey: ['my-leagues'], queryFn: getMyLeagues, staleTime: 60_000, enabled: signedIn,
+  });
+  // Solo a una liga en la que sigues; si no, a Mis ligas (donde ya no hay "Volver").
+  const last = getLastLeague();
+  const back = last && leagues?.some((l) => l.id === last) ? `/leagues/${last}` : '/leagues';
   return (
     <AppBar
-      left={
-        <Link className="btn-ghost" to={lastLeague ? `/leagues/${lastLeague}` : '/leagues'} aria-label="Volver">
+      left={pathname !== '/leagues' && (
+        <Link className="btn-ghost" to={back} aria-label="Volver">
           <ChevronLeft size={22} aria-hidden="true" />
         </Link>
-      }
+      )}
       title={title}
       right={<AccountButton />}
     />

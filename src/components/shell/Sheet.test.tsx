@@ -82,3 +82,20 @@ describe('Sheet', () => {
     expect(document.body.style.overflow).toBe('auto');
   });
 });
+
+describe('Sheet con un Modal encima', () => {
+  it('atrás cierra solo el modal, que es el de arriba', async () => {
+    const { default: Modal } = await import('../Modal');
+    const closeSheet = vi.fn();
+    const closeModal = vi.fn();
+    render(
+      <>
+        <Sheet labelledBy="s" onClose={closeSheet}><h2 id="s">Más</h2></Sheet>
+        <Modal labelledBy="m" onClose={closeModal}><h2 id="m">Confirmar</h2></Modal>
+      </>,
+    );
+    handleBack(true, vi.fn(), vi.fn());
+    expect(closeModal).toHaveBeenCalledTimes(1);
+    expect(closeSheet).not.toHaveBeenCalled();
+  });
+});

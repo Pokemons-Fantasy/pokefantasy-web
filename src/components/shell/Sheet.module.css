@@ -1,7 +1,8 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  /* Por debajo de los modales (.modal-overlay, 100): un Modal abierto sobre un Sheet se ve encima, como en la pila del atrás */
+  z-index: 90;
   display: flex;
   align-items: flex-end;
   background: rgba(0, 0, 0, 0.55);
