@@ -10,6 +10,8 @@ import { SkeletonTable } from '../components/SkeletonTable';
 import ActivityRow from '../components/activity/ActivityRow';
 import { ACTIVITY_FILTERS, firstSeenEventId, groupByDay } from '../utils/activity';
 import { spriteUrl } from '../utils/sprites';
+import { useLayoutMode } from '../hooks/useLayoutMode';
+import styles from './ActivityPage.module.css';
 
 export default function ActivityPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -19,6 +21,7 @@ export default function ActivityPage() {
 
 function LeagueActivity({ leagueId }: { leagueId: string }) {
   const username = useAuthStore((s) => s.username);
+  const mobile = useLayoutMode() === 'mobile';
   const [filterKey, setFilterKey] = useState(ACTIVITY_FILTERS[0].key);
   const [onlyMine, setOnlyMine] = useState(false);
   const filter = ACTIVITY_FILTERS.find((f) => f.key === filterKey) ?? ACTIVITY_FILTERS[0];
@@ -34,40 +37,57 @@ function LeagueActivity({ leagueId }: { leagueId: string }) {
     [pool],
   );
 
+  const typeButton = (f: (typeof ACTIVITY_FILTERS)[number]) => (
+    <button
+      key={f.key}
+      type="button"
+      className={`gen-tab${f.key === filterKey ? ' active' : ''}`}
+      aria-pressed={f.key === filterKey}
+      onClick={() => setFilterKey(f.key)}
+    >
+      {f.label}
+    </button>
+  );
+  const mineButton = username && (
+    <button
+      type="button"
+      className={`gen-tab${onlyMine ? ' active' : ''}`}
+      aria-pressed={onlyMine}
+      onClick={() => setOnlyMine((v) => !v)}
+    >
+      Solo lo mío
+    </button>
+  );
+
   return (
     <main className="page-content">
-      <div className="section-header">
-        <div>
-          <h1 className="page-title">Actividad</h1>
-          <p className="page-subtitle">Se actualiza cada 30 s</p>
-        </div>
-      </div>
+      {mobile ? (
+        // En móvil la barra inferior ya marca la sección, y los filtros van en una sola tira deslizable
+        <>
+          <h1 className="sr-only">Actividad</h1>
+          <div className={styles.strip} role="group" aria-label="Filtros de actividad">
+            {typeButton(ACTIVITY_FILTERS[0])}
+            {mineButton}
+            {ACTIVITY_FILTERS.slice(1).map(typeButton)}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="section-header">
+            <div>
+              <h1 className="page-title">Actividad</h1>
+              <p className="page-subtitle">Se actualiza cada 30 s</p>
+            </div>
+          </div>
 
-      <div className="activity-filters">
-        <div className="gen-tabs" role="group" aria-label="Tipo de evento">
-          {ACTIVITY_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              className={`gen-tab${f.key === filterKey ? ' active' : ''}`}
-              aria-pressed={f.key === filterKey}
-              onClick={() => setFilterKey(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-        {username && (
-          <button
-            type="button"
-            className={`gen-tab${onlyMine ? ' active' : ''}`}
-            aria-pressed={onlyMine}
-            onClick={() => setOnlyMine((v) => !v)}
-          >
-            Solo lo mío
-          </button>
-        )}
-      </div>
+          <div className="activity-filters">
+            <div className="gen-tabs" role="group" aria-label="Tipo de evento">
+              {ACTIVITY_FILTERS.map(typeButton)}
+            </div>
+            {mineButton}
+          </div>
+        </>
+      )}
 
       {/* Otra lista por filtro: la paginación acumulada empieza de cero */}
       <ActivityFeed
