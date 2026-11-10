@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SkeletonTable } from '../../components/SkeletonTable';
 import ChipTabs from '../../components/shell/ChipTabs';
@@ -19,8 +20,16 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
     return prev;
   }, { replace: true });
 
+  // "Ver" desmonta el aviso que tenía el foco: se lleva a la chip de la jornada elegida en cuanto se pinta
+  const focusOnSelect = useRef<number | null>(null);
+
   const selected = resolveJornada(jornadas, params.get('jornada'));
   const jornada = jornadas.find((j) => j.roundNumber === selected);
+  useEffect(() => {
+    if (focusOnSelect.current === null || focusOnSelect.current !== selected) return;
+    focusOnSelect.current = null;
+    document.getElementById(`jornadas-tab-${selected}`)?.focus();
+  }, [selected]);
   // Solo quien aparece en el calendario "juega" o "descansa"; un admin que no juega solo ve los partidos
   const plays = !!username && jornadas.some((j) => j.matches.some((m) => m.player1 === username || m.player2 === username));
 
@@ -72,7 +81,11 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
           {next && next.jornada.roundNumber !== jornada.roundNumber && (
             <p className={styles.notice}>
               <span>Tu próximo partido: J{next.jornada.roundNumber} vs {next.opponent}</span>
-              <button type="button" className="btn-ghost" onClick={() => selectJornada(next.jornada.roundNumber)}>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => { focusOnSelect.current = next.jornada.roundNumber; selectJornada(next.jornada.roundNumber); }}
+              >
                 Ver
               </button>
             </p>

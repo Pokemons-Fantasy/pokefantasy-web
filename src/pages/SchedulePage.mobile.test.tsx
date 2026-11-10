@@ -122,6 +122,8 @@ describe('SchedulePage en móvil', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ver' }));
     expect(router.state.location.search).toBe('?jornada=2');
     expect(screen.queryByText(/Tu próximo partido/)).not.toBeInTheDocument();
+    // El aviso desaparece: el foco pasa a la jornada elegida, no se pierde
+    expect(screen.getByRole('tab', { name: 'Jornada 2' })).toHaveFocus();
   });
 
   it('en la jornada de tu próximo partido no hay aviso', async () => {
