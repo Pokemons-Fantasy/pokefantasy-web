@@ -1,0 +1,167 @@
+/* ─── BADGES ─── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-yellow { background: var(--accent-dim); color: var(--accent); }
+.badge-green  { background: var(--success-bg);  color: var(--success); }
+.badge-red    { background: var(--danger-bg);  color: var(--danger); }
+.badge-gray   { background: var(--surface-2); color: var(--text-2); }
+.badge-info   { background: var(--info-bg);    color: var(--info); }
+
+/* ─── NOMINATION COUNTER ─── */
+
+.nom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.nom-label { font-size: 0.875rem; color: var(--text-2); }
+.nom-count { font-weight: 700; color: var(--text); }
+.nom-count.full { color: var(--success); }
+
+.nom-bar {
+  flex: 1;
+  max-width: 120px;
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.nom-bar-fill {
+  height: 100%;
+  background: var(--accent-fill);
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+.nom-bar-fill.full { background: var(--success); }
+
+/* ─── SEARCH ─── */
+
+.search-input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.925rem;
+  font-family: inherit;
+  margin-bottom: 1.25rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.search-input::placeholder { color: var(--text-3); }
+
+/* ─── POKEMON GRID ─── */
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.6rem;
+}
+
+.pokemon-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.4rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  position: relative;
+  user-select: none;
+}
+
+.pokemon-card:hover:not(.nominated) {
+  border-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-dim);
+  transform: translateY(-2px);
+}
+
+.pokemon-card.nominated { opacity: 0.35; cursor: default; }
+
+.pokemon-card.own {
+  border-color: var(--success);
+  background: var(--success-bg);
+  opacity: 1;
+}
+.pokemon-card.own:hover {
+  border-color: var(--success);
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.15);
+  transform: translateY(-2px);
+}
+
+.pokemon-sprite { width: 72px; height: 72px; image-rendering: pixelated; }
+
+.pokemon-name {
+  font-size: 0.68rem;
+  text-align: center;
+  text-transform: capitalize;
+  color: var(--text-2);
+  line-height: 1.2;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pokemon-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  /* "De <usuario>": sin pisar el badge de tier de la otra esquina */
+  max-width: calc(100% - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pokemon-tag-own   { background: var(--success-bg); color: var(--success); }
+.pokemon-tag-taken { background: var(--surface-2); color: var(--text-3); }
+
+/* ─── TIER BADGES ─── */
+.tier-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+.tier-badge-s { background: var(--tier-s-bg); color: var(--tier-s); border: 1px solid var(--tier-s-border); }
+.tier-badge-a { background: var(--tier-a-bg); color: var(--tier-a); border: 1px solid var(--tier-a-border); }
+.tier-badge-b { background: var(--tier-b-bg); color: var(--tier-b); border: 1px solid var(--tier-b-border); }
+.tier-badge-c { background: var(--tier-c-bg); color: var(--tier-c); border: 1px solid var(--tier-c-border); }
+.tier-badge-d { background: var(--tier-d-bg); color: var(--tier-d); border: 1px solid var(--tier-d-border); }
+

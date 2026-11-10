@@ -1,0 +1,232 @@
+/* ─── BUTTONS ─── */
+
+.btn-primary {
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent-fill);
+  color: #0a0a0f;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: box-shadow 0.15s, opacity 0.15s;
+}
+.btn-primary:hover { box-shadow: 0 0 18px var(--accent-glow); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.btn-ghost {
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btn-secondary {
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.btn-secondary:hover { border-color: var(--border-hover); }
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.btn-back:hover { color: var(--text-2); }
+
+.btn-danger {
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btn-danger:hover { border-color: var(--danger); background: var(--danger-bg); }
+.btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── CARDS ─── */
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-dim), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+a.card, a.nav-card, a.header-user { color: inherit; text-decoration: none; }
+a.btn-primary, a.btn-secondary, a.btn-ghost { display: inline-block; text-decoration: none; }
+
+.card-static { cursor: default; }
+.card-static:hover { border-color: var(--border); box-shadow: none; transform: none; }
+
+.card h3 { font-size: 1rem; font-weight: 600; }
+.card p { font-size: 0.85rem; color: var(--text-2); }
+.card-cta { font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-top: 0.5rem; }
+
+/* ─── MEMBER LIST ─── */
+
+.members-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.875rem 1.25rem;
+}
+
+.member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.member-avatar[data-initial]::before { content: attr(data-initial); }
+.member-avatar-img { object-fit: cover; padding: 0; }
+.member-avatar-hero {
+  background: var(--accent-dim);
+  border: 2px solid var(--accent);
+  font-weight: 800;
+}
+/* Avatar pequeño delante de un nombre en una línea de texto (tablas, marcadores, trades). */
+.avatar-inline {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  border-width: 0;
+}
+.avatar-editor { max-width: 420px; width: 100%; }
+.avatar-editor-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.avatar-editor-controls { display: flex; align-items: center; gap: 0.75rem; }
+.avatar-editor-controls input[type='range'] { flex: 1; accent-color: var(--accent); }
+.avatar-preview {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.avatar-preview img { position: absolute; top: 0; left: 0; max-width: none; }
+.avatar-editor-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+.profile-photo { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.profile-photo-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.profile-photo-confirm { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.member-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.member-menu-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.6rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+button.member-menu-item {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.member-menu-item.danger { color: var(--danger); }
+.member-menu-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.member-menu-note {
+  max-width: 230px;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.add-member { position: relative; }
+.invite-button { margin-top: 0.5rem; width: 100%; }
+
+.confirm-dialog { max-width: 420px; }
+.confirm-dialog-message { color: var(--text-2); font-size: 0.9rem; }
+/* Diálogos con un campo (borrar cuenta, renombrar liga) */
+.confirm-dialog form label { display: block; font-size: 0.8rem; color: var(--text-2); margin: 1rem 0 0.35rem; }
+.confirm-dialog form .search-input { margin-bottom: 0.4rem; }
+.confirm-dialog form .search-input[aria-invalid="true"] { border-color: var(--danger); }
+.confirm-dialog form .field-hint { margin: 0 0 0.25rem 0.25rem; }
+
+/* Ayuda bajo un campo fuera de los formularios que la colocan a su manera */
+.field-hint { margin: 0 0 0.75rem 0.25rem; font-size: 0.75rem; color: var(--text-3); }
+.field-hint-error { color: var(--danger); }
+
