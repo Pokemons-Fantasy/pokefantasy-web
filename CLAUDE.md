@@ -132,6 +132,7 @@ Flujos completos (robo, pick del draft, resultado): `vault/20 Arquitectura/Flujo
 | Estado global de cliente | Store Zustand en `src/store/` (solo si no es estado de servidor) |
 | Suscripción SSE nueva | Hook en `src/hooks/` que invalida queries |
 | Estilos | Globales en `src/styles/` (entrada `index.css`: el orden de los `@import` es la cascada, no reordenar; tokens en `tokens.css`); componentes nuevos del shell móvil con CSS Modules; breakpoint móvil `767px` (`hooks/useLayoutMode`); colores de tier en `utils/colors.ts` |
+| Shell móvil (app bar, barra inferior, sheets) | `src/components/shell/` con CSS Modules; paneles en móvil con `Sheet`, en escritorio con `Modal`; iconos con `lucide-react`; cualquier panel que deba cerrarse con el atrás de Android usa `useBackHandler` (`hooks/useBackButton`) |
 | Integración con Firebase en la web (avisos push) | `src/push/` (Firebase solo con `import()` dinámico) |
 | Plugin nativo | `@capacitor/*` + `npm run cap:sync` (ver `vault/40 Frontend/App Android.md`) |
 
