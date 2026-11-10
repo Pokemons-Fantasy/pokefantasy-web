@@ -1,0 +1,37 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(10, 10, 15, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+:global(.theme-light) .bar {
+  background: rgba(244, 244, 248, 0.88);
+}
+
+.inner {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+}
+
+.side {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
