@@ -1,0 +1,12 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  /* La barra de turno se pega arriba: sin hueco entre la app bar y ella */
+  padding-top: 0;
+}
+
+.cancel {
+  align-self: center;
+  margin-top: 1.5rem;
+}

@@ -1,0 +1,17 @@
+/* Filtros de actividad en móvil: una sola fila que se desliza, sin barra visible */
+.strip {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.strip > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
