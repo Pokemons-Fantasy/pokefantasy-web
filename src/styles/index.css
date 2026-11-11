@@ -1,0 +1,22 @@
+/* Entrada de estilos globales: el orden de los @import es el de la cascada, no reordenar. */
+@import './tokens.css';
+@import './base.css';
+@import './auth.css';
+@import './layout.css';
+@import './typography.css';
+@import './components.css';
+@import './showdown.css';
+@import './pokemon.css';
+@import './draft.css';
+@import './modal.css';
+@import './draft-board.css';
+@import './teams.css';
+@import './standings.css';
+@import './home.css';
+@import './league-layout.css';
+@import './schedule.css';
+@import './config.css';
+@import './responsive.css';
+@import './activity.css';
+@import './pool.css';
+@import './admin.css';

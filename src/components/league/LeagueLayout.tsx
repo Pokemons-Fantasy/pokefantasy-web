@@ -1,23 +1,25 @@
-import { useMemo } from 'react';
-import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
+import { useEffect, useMemo } from 'react';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getLeagueDetail } from '../../api/leagues';
 import { getDraftStatus } from '../../api/pokemons';
 import { useAuthStore } from '../../store/authStore';
 import { leaguePhase } from '../../utils/leaguePhase';
-import { activeSection, leagueMenu, leagueTabs } from '../../utils/leagueNav';
+import { activeSection } from '../../utils/leagueNav';
+import { setLastLeague } from '../../utils/lastLeague';
+import { useLayoutMode } from '../../hooks/useLayoutMode';
 import PageHeader from '../PageHeader';
-import LeaguePhaseBadge from '../LeaguePhaseBadge';
 import { SkeletonTable } from '../SkeletonTable';
-import LeagueTabs from './LeagueTabs';
-import LeagueMenu from './LeagueMenu';
+import DesktopLeagueShell from './DesktopLeagueShell';
+import MobileLeagueShell from '../shell/MobileLeagueShell';
 import { AvatarVersionsContext } from '../avatar/AvatarVersionsContext';
 
-/** Marco común de /leagues/:leagueId/*: cabecera, nombre y fase, pestañas y menú. */
+/** Marco común de /leagues/:leagueId/*: carga la liga y su fase y elige el marco de escritorio o el de móvil. */
 export default function LeagueLayout() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const { pathname } = useLocation();
   const username = useAuthStore((s) => s.username);
+  const layoutMode = useLayoutMode();
 
   // Mismas query keys que las páginas: la caché se comparte, no hay llamadas extra.
   const { data: league, isLoading } = useQuery({
@@ -42,42 +44,34 @@ export default function LeagueLayout() {
   const base = `/leagues/${leagueId}`;
   const section = activeSection(pathname.slice(base.length + 1));
 
+  useEffect(() => {
+    if (league) setLastLeague(league.id);
+  }, [league]);
+
+  if (!league) {
+    return (
+      <div className="page-wrapper league-page">
+        <PageHeader />
+        <main className="page-content">
+          {isLoading ? <SkeletonTable rows={4} /> : <p className="error">Liga no encontrada</p>}
+        </main>
+      </div>
+    );
+  }
+
+  const Shell = layoutMode === 'mobile' ? MobileLeagueShell : DesktopLeagueShell;
   return (
-    <div className="page-wrapper league-page">
-      <PageHeader left={
-        <div className="header-left">
-          <Link className="btn-back" to="/leagues">← Mis ligas</Link>
-          <Link className="logo" to="/">PokeFantasy</Link>
-        </div>
-      } />
-
-      {isLoading && (
-        <main className="page-content"><SkeletonTable rows={4} /></main>
-      )}
-
-      {!isLoading && !league && (
-        <main className="page-content"><p className="error">Liga no encontrada</p></main>
-      )}
-
-      {league && (
-        <>
-          <div className="league-bar">
-            <div className="league-bar-inner">
-              <div className="league-bar-title">
-                <span className="league-bar-name">{league.name}</span>
-                {!loadingDraft && <LeaguePhaseBadge draftStatus={draft?.status ?? null} />}
-              </div>
-              {!loadingDraft && <LeagueMenu items={leagueMenu(phase, isAdmin)} active={section} />}
-            </div>
-          </div>
-          <div className="league-tabs-bar">
-            {!loadingDraft && <LeagueTabs tabs={leagueTabs(phase)} active={section} />}
-          </div>
-          <AvatarVersionsContext.Provider value={avatarVersions}>
-            <Outlet />
-          </AvatarVersionsContext.Provider>
-        </>
-      )}
-    </div>
+    <Shell
+      league={league}
+      draftStatus={draft?.status ?? null}
+      phase={phase}
+      loadingDraft={loadingDraft}
+      isAdmin={isAdmin}
+      section={section}
+    >
+      <AvatarVersionsContext.Provider value={avatarVersions}>
+        <Outlet />
+      </AvatarVersionsContext.Provider>
+    </Shell>
   );
 }

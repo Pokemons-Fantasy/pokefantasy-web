@@ -131,7 +131,8 @@ Flujos completos (robo, pick del draft, resultado): `vault/20 Arquitectura/Flujo
 | Lógica pura (cálculos, formatos) | `src/utils/x.ts` + `x.test.ts` |
 | Estado global de cliente | Store Zustand en `src/store/` (solo si no es estado de servidor) |
 | Suscripción SSE nueva | Hook en `src/hooks/` que invalida queries |
-| Estilos | Tokens en `src/index.css`; colores de tier en `utils/colors.ts` |
+| Estilos | Globales en `src/styles/` (entrada `index.css`: el orden de los `@import` es la cascada, no reordenar; tokens en `tokens.css`); componentes nuevos del shell móvil con CSS Modules; breakpoint móvil `767px` (`hooks/useLayoutMode`); colores de tier en `utils/colors.ts` |
+| Shell móvil (app bar, barra inferior, sheets) | `src/components/shell/` con CSS Modules; paneles en móvil con `Sheet`, en escritorio con `Modal`; iconos con `lucide-react`; cualquier panel que deba cerrarse con el atrás de Android usa `useBackHandler` (`hooks/useBackButton`) |
 | Integración con Firebase en la web (avisos push) | `src/push/` (Firebase solo con `import()` dinámico) |
 | Plugin nativo | `@capacitor/*` + `npm run cap:sync` (ver `vault/40 Frontend/App Android.md`) |
 
@@ -153,5 +154,5 @@ También parar si el cambio necesita algo que el backend no expone todavía (ped
 - **Sesión**: `apiClient` (`src/api/client.ts`) y `EventSource` usan `withCredentials: true`.
 - **React Query**: `staleTime` en las queries que no cambian a menudo (Render free tier: minimizar llamadas). No pedir endpoints nuevos si los datos ya vienen en uno existente.
 - **Sprites**: CDN `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png` vía `src/utils/sprites.ts`.
-- **UI compartida**: `PageHeader`, `SkeletonTable` / `SkeletonGrid`, `PokemonCard` en `components/teams/`, tokens CSS en `src/index.css`.
+- **UI compartida**: `PageHeader`, `SkeletonTable` / `SkeletonGrid`, `PokemonCard` en `components/teams/`, tokens CSS en `src/styles/tokens.css`.
 - **Animaciones** con Motion respetando `useReducedMotion`; modales con roles, labels y gestión del foco.

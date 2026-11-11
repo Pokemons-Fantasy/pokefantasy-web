@@ -21,7 +21,7 @@ export const TYPE_COLORS: Record<string, { color: string; bg: string }> = {
   steel:    { color: '#94a3b8', bg: 'rgba(100,116,139,0.15)' },
 };
 
-// Los valores viven en los tokens --tier-* de index.css (uno por tema), igual que .tier-badge-*
+// Los valores viven en los tokens --tier-* de styles/tokens.css (uno por tema), igual que .tier-badge-*
 const tierColors = (t: string) => ({
   text: `var(--tier-${t})`,
   bg: `var(--tier-${t}-bg)`,

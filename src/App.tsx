@@ -34,6 +34,7 @@ import ToastContainer from './components/ToastContainer';
 import { useNotificationSse } from './hooks/useNotificationSse';
 import DocumentTitle, { type TitleHandle } from './components/DocumentTitle';
 import { resumeWebPush } from './push/webPush';
+import { AndroidBackButton } from './hooks/useBackButton';
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ function RootLayout() {
     <>
       <ToastContainer />
       <DeepLinkHandler />
+      <AndroidBackButton />
       <GlobalNotifications />
       <WebPushResume />
       <DocumentTitle />

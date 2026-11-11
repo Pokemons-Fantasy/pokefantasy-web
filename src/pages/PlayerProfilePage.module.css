@@ -1,0 +1,36 @@
+/* Estadísticas del perfil en móvil: cuatro columnas en una fila */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stats > li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.6rem 0.25rem;
+  border-right: 1px solid var(--border);
+}
+
+.stats > li:last-child {
+  border-right: none;
+}
+
+.value {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.label {
+  color: var(--text-3);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

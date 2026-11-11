@@ -1,0 +1,196 @@
+/* ─── RESPONSIVE ─── */
+
+@media (max-width: 767px) {
+  /* Layout */
+  .page-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  /* Header right: tighten gap and shrink buttons */
+  .header-right {
+    gap: 0.5rem;
+  }
+  .header-right .btn-ghost {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* Typography */
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  /* Section header stacks vertically */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Section action buttons fill row and wrap */
+  .section-actions {
+    width: 100%;
+  }
+
+  /* Cards grid: fit 2 columns on narrow screens */
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  /* Pokemon grid: tighter cards */
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.4rem;
+  }
+
+  .pokemon-sprite {
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Draft status bar: tighter gap */
+  .draft-status-bar {
+    gap: 1.25rem;
+    padding: 0.875rem 1rem;
+  }
+
+  /* Inline form stacks vertically */
+  .inline-form {
+    flex-direction: column;
+  }
+  .inline-form .btn-primary,
+  .inline-form .btn-ghost,
+  .inline-form .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Picks table: horizontal scroll instead of clipping */
+  .picks-table-container {
+    overflow-x: auto;
+  }
+  .picks-table {
+    min-width: 300px;
+  }
+
+  /* Clasificación: PJ fuera (es V + D) y columnas más estrechas */
+  .standings-table .col-played,
+  .standings-table .standing-played { display: none; }
+  .standings-table th,
+  .standings-table td { padding-left: 0.3rem; padding-right: 0.3rem; }
+  .standings-table .col-pos { width: 2.25rem; }
+  .standings-table .col-num { width: 2rem; }
+  .standings-table .col-diff { width: 2.6rem; }
+  .standings-table .col-coins { width: 3.75rem; }
+  .standings-table th { letter-spacing: 0.03em; }
+  .standings-table .th-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .standings-table .th-short { display: inline; }
+
+  /* Nomination counter row wraps */
+  .nom-row {
+    flex-wrap: wrap;
+  }
+
+  /* Modal fits small screens */
+  .modal {
+    padding: 1.5rem;
+  }
+
+  /* Modal actions: wrap on very narrow screens */
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+  .modal-actions .btn-primary,
+  .modal-actions .btn-ghost,
+  .modal-actions .btn-secondary,
+  .modal-actions .btn-danger {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Own-team panel: reduce sticky grid height on mobile */
+  .own-team-panel-grid {
+    max-height: 30vh;
+  }
+
+  /* Own-team header: actions always on their own line if needed */
+  .own-team-header-info {
+    flex: 1 1 auto;
+  }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ── Pokemon info button ── */
+.pokemon-info-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-3);
+  font-size: 0.65rem;
+  font-style: italic;
+  font-family: serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 0;
+  line-height: 1;
+  z-index: 1;
+}
+.pokemon-card:hover .pokemon-info-btn {
+  opacity: 1;
+}
+@media (hover: none) {
+  .pokemon-info-btn {
+    opacity: 1;
+  }
+}
+
+/* ── Autocomplete dropdown ───────────────────────────────── */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  list-style: none;
+  padding: 0.25rem 0;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.autocomplete-dropdown li {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.autocomplete-dropdown li:hover {
+  background: var(--surface-3);
+}
+

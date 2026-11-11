@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { getMyLeagues, getSchedule } from '../api/leagues';
@@ -10,11 +10,30 @@ import PushPrompt from '../components/push/PushPrompt';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import { leaguePhase } from '../utils/leaguePhase';
 import { leaguesByUrgency } from '../utils/home';
+import { useLayoutMode } from '../hooks/useLayoutMode';
+import { getLastLeague } from '../utils/lastLeague';
+import { SkeletonTable } from '../components/SkeletonTable';
 
 /** Ligas que caben en la home; el resto, en "Ver todas". */
 const HOME_LEAGUES = 4;
 
+/** Portada: en escritorio, tus ligas por urgencia; en móvil la app vive en la liga, así que lleva a la última abierta. */
 export default function HomePage() {
+  return useLayoutMode() === 'mobile' ? <MobileHome /> : <DesktopHome />;
+}
+
+function MobileHome() {
+  const { data: leagues, isLoading } = useQuery({ queryKey: ['my-leagues'], queryFn: getMyLeagues, staleTime: 60_000 });
+
+  if (isLoading) {
+    return <main className="page-content"><SkeletonTable rows={3} /></main>;
+  }
+  const last = getLastLeague();
+  const target = last && leagues?.some((l) => l.id === last) ? `/leagues/${last}` : '/leagues';
+  return <Navigate to={target} replace />;
+}
+
+function DesktopHome() {
   const username = useAuthStore((s) => s.username) ?? '';
 
   const { data: leagues = [], isLoading } = useQuery({

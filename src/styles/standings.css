@@ -1,0 +1,78 @@
+/* ─── CLASIFICACIÓN ─── */
+
+.standings-table { table-layout: fixed; }
+.standings-table .col-pos { width: 3.5rem; }
+.standings-table .col-num { width: 3rem; }
+.standings-table .col-diff { width: 3.5rem; }
+.standings-table .col-coins { width: 5.5rem; }
+.standings-table abbr { text-decoration: none; }
+.standings-table th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.th-short { display: none; }
+.standing-row { cursor: pointer; }
+.standing-row.me { outline: 1px solid var(--accent); outline-offset: -1px; }
+.standing-row.me td { background: var(--accent-dim); }
+.standing-pos-cell { text-align: center; }
+.standing-pos {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.standing-pos.top-1 { background: var(--accent-dim); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-glow); }
+.standing-pos.top-2 { background: var(--podium-silver-bg); color: var(--podium-silver); }
+.standing-pos.top-3 { background: var(--podium-bronze-bg); color: var(--podium-bronze); }
+.standing-player-inner { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+.standing-player-inner > .member-avatar { flex-shrink: 0; }
+.standing-player-text { flex: 1; min-width: 0; }
+.standing-name-line { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+.standing-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.standing-me {
+  flex-shrink: 0;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.standing-form { display: flex; gap: 3px; margin-top: 0.3rem; }
+.form-dot { width: 7px; height: 7px; border-radius: 50%; }
+.form-dot.win { background: var(--success); }
+.form-dot.loss { background: var(--danger); }
+.standing-num { text-align: center; font-variant-numeric: tabular-nums; }
+.picks-table th.standing-num { text-align: center; }
+.standing-played { color: var(--text-3); }
+.standing-wins { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+.standing-losses { color: var(--text-2); }
+.standing-diff { color: var(--text-3); }
+.standing-diff.positive { color: var(--success); }
+.standing-diff.negative { color: var(--danger); }
+.standing-coins { color: var(--text-2); font-size: 0.8rem; }
+.standing-decisive {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.standings-legend { margin-top: 0.75rem; font-size: 0.8rem; line-height: 1.45; color: var(--text-2); }
+
+.picks-table-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+

@@ -1,0 +1,89 @@
+/* Los controles de formulario no heredan la tipografía del body por defecto */
+button, input, select, textarea { font-family: inherit; }
+
+body {
+  font-family: 'Outfit Variable', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Android/iOS gesture nav bar safe area */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ─── ANIMATIONS ─── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.0); }
+  50%       { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.12); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-in {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-in-fast {
+  animation: fadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger children */
+.stagger > * { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.stagger > *:nth-child(n+6) { animation-delay: 0.34s; }
+
+/* ─── LOADING ─── */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--surface-2) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-3);
+  font-size: 0.875rem;
+}
+

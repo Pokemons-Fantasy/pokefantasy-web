@@ -1,0 +1,125 @@
+/* ─── LAYOUT ─── */
+
+.page-wrapper { min-height: 100vh; }
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 10, 15, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  /* Push header content below Android/iOS status bar */
+  padding-top: env(safe-area-inset-top);
+}
+
+.theme-light .page-header {
+  background: rgba(244, 244, 248, 0.88);
+}
+
+.page-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header-right { display: flex; align-items: center; gap: 1rem; }
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+.header-user strong { color: var(--text); font-weight: 600; }
+.header-theme-toggle { padding: 0.3rem 0.55rem; font-size: 1rem; line-height: 1; }
+
+/* Avatar de la cabecera; el punto avisa de intercambios pendientes */
+.header-avatar { position: relative; display: inline-flex; flex-shrink: 0; }
+.header-avatar-dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.page-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+/* Sticky own-team panel (TeamsPage) */
+.own-team-panel {
+  position: sticky;
+  top: calc(60px + var(--league-tabs-h, 0px) + env(safe-area-inset-top));  /* cabecera 60px + pestañas de liga + status bar */
+  z-index: 40;              /* below header (z-50), above rival teams */
+  background: var(--surface);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 0.9rem 1.1rem;
+}
+
+.own-team-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Left group: avatar + name + count + badges */
+.own-team-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* Right group: action buttons */
+.own-team-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.own-team-collapse-btn {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.own-team-panel-grid {
+  margin-top: 0.75rem;
+  max-height: 42vh;
+  overflow-y: auto;
+}
+
+/* Compact pokemon grid for use inside modals (avoids min-width overflow) */
+.pokemon-grid-modal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 0.5rem;
+}
+
