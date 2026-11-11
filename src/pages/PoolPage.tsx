@@ -18,6 +18,7 @@ import { extractErrorMessage } from '../utils/errorMessage';
 import { SkeletonGrid } from '../components/SkeletonGrid';
 import LeaguePhaseBadge from '../components/LeaguePhaseBadge';
 import Notice from '../components/Notice';
+import { useLayoutMode } from '../hooks/useLayoutMode';
 import { TYPE_COLORS } from '../utils/colors';
 import { typeLabel } from '../utils/pokemonTypes';
 import {
@@ -39,6 +40,7 @@ const MAX_NOMINATIONS = 16;
 
 export default function PoolPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
+  const mobile = useLayoutMode() === 'mobile';
   const username = useAuthStore((s) => s.username);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
@@ -109,8 +111,9 @@ export default function PoolPage() {
       <main className="page-content">
         <div className="section-header">
           <div>
-            <h1 className="page-title">Pool de nominaciones</h1>
-            <div className="nom-row" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
+            {/* En móvil la barra inferior marca la sección y la app bar la fase: solo queda el contador */}
+            <h1 className={mobile ? 'sr-only' : 'page-title'}>Pool de nominaciones</h1>
+            <div className="nom-row" style={{ marginTop: mobile ? 0 : '0.5rem', marginBottom: 0 }}>
               <span className="nom-label">Tus nominaciones</span>
               <span className={`nom-count ${myNominations.length >= MAX_NOMINATIONS ? 'full' : ''}`}>
                 {myNominations.length}/{MAX_NOMINATIONS}
@@ -123,7 +126,7 @@ export default function PoolPage() {
               </div>
             </div>
           </div>
-          <LeaguePhaseBadge draftStatus={phaseStatus} />
+          {!mobile && <LeaguePhaseBadge draftStatus={phaseStatus} />}
         </div>
 
         {phaseStatus === 'PENDING' && (

@@ -1,7 +1,6 @@
 import type { DraftPick, Tier } from '../../api/pokemons';
 import type { Team } from '../../utils/teams';
-import { isPickLocked } from '../../utils/teams';
-import PokemonCard from './PokemonCard';
+import OwnTeamGrid from './OwnTeamGrid';
 import CoinBadge from './CoinBadge';
 import UserAvatar from '../avatar/UserAvatar';
 
@@ -63,28 +62,17 @@ export default function OwnTeamPanel({
       </div>
       {!collapsed && (
         <div className="own-team-panel-grid">
-          {team.picks.length === 0 ? (
-            <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Sin picks aún</p>
-          ) : (
-            <div className="pokemon-grid">
-              {team.picks.map((pick) => (
-                <PokemonCard
-                  key={pick.pokemonName}
-                  pick={pick}
-                  tier={tierByName.get(pick.pokemonName)}
-                  isMine
-                  locked={isPickLocked(pick)}
-                  isDraftCompleted={isDraftCompleted}
-                  stealWindowOpen={stealWindowOpen}
-                  stealPrice={effectiveStealPrice(pick)}
-                  canAffordSteal={false}
-                  onInfo={() => onInfo(pick)}
-                  onRaisePrice={() => onRaisePrice(pick)}
-                  onRelease={!swapWindowClosed && !isPickLocked(pick) ? () => onRelease(pick) : undefined}
-                />
-              ))}
-            </div>
-          )}
+          <OwnTeamGrid
+            team={team}
+            tierByName={tierByName}
+            isDraftCompleted={isDraftCompleted}
+            stealWindowOpen={stealWindowOpen}
+            swapWindowClosed={swapWindowClosed}
+            effectiveStealPrice={effectiveStealPrice}
+            onRaisePrice={onRaisePrice}
+            onRelease={onRelease}
+            onInfo={onInfo}
+          />
         </div>
       )}
     </div>
