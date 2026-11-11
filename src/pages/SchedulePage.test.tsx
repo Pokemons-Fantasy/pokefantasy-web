@@ -25,6 +25,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
   getDraftStatus: vi.fn().mockResolvedValue(null),
+  getClosedList: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('@capacitor/clipboard', () => ({ Clipboard: { write: vi.fn().mockResolvedValue(undefined) } }));
 const api = vi.mocked(leaguesApi);
@@ -415,6 +416,24 @@ describe('SchedulePage — alineación', () => {
     await user.click(copy);
 
     expect(Clipboard.write).toHaveBeenCalledWith({ string: 'Starmie\n\nLapras' });
+  });
+
+  it('una alineación jugada con un Pokémon que ya no está en ningún equipo saca su sprite del pool', async () => {
+    vi.mocked(pokemonsApi.getClosedList).mockResolvedValue([
+      { id: 'e1', pokemonId: 18, pokemonName: 'pidgeot', nominatedBy: 'ash', sprite: '' },
+    ]);
+    api.getSchedule.mockResolvedValue(scheduleWith({
+      status: 'COMPLETED', winnerUsername: 'ash',
+      player1LineupSubmitted: true, player1Lineup: { pokemonNames: ['pidgeot'] },
+      player2LineupSubmitted: true, player2Lineup: { pokemonNames: ['starmie'] },
+    }));
+    renderPage();
+    await userEvent.setup().click(await screen.findByRole('button', { name: /Jornada 1/ }));
+
+    expect(await screen.findByRole('img', { name: 'starmie' })).toBeInTheDocument();
+    const pidgeot = await screen.findByRole('img', { name: 'pidgeot' });
+    expect(pidgeot).toHaveAttribute('src', expect.stringMatching(/\/18\.png$/));
+    expect(screen.getByRole('img', { name: 'starmie' })).toHaveAttribute('src', expect.stringMatching(/\/100\.png$/));
   });
 });
 

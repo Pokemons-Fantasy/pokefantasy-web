@@ -1,15 +1,14 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getActivityFeed } from '../api/activity';
 import type { ActivityEvent } from '../api/activity';
-import { getClosedList } from '../api/pokemons';
 import { useAuthStore } from '../store/authStore';
 import { useLastSeen } from '../hooks/useLastSeen';
+import { usePoolSprites } from '../hooks/usePoolSprites';
 import { SkeletonTable } from '../components/SkeletonTable';
 import ActivityRow from '../components/activity/ActivityRow';
 import { ACTIVITY_FILTERS, firstSeenEventId, groupByDay } from '../utils/activity';
-import { spriteUrl } from '../utils/sprites';
 import { useLayoutMode } from '../hooks/useLayoutMode';
 import styles from './ActivityPage.module.css';
 
@@ -26,16 +25,7 @@ function LeagueActivity({ leagueId }: { leagueId: string }) {
   const [onlyMine, setOnlyMine] = useState(false);
   const filter = ACTIVITY_FILTERS.find((f) => f.key === filterKey) ?? ACTIVITY_FILTERS[0];
 
-  // Sprites a partir del pool de la liga (misma caché que Pool y Equipos)
-  const { data: pool } = useQuery({
-    queryKey: ['closed-list', leagueId],
-    queryFn: () => getClosedList(leagueId),
-    staleTime: 5 * 60_000,
-  });
-  const spriteByName = useMemo(
-    () => new Map((pool ?? []).map((e) => [e.pokemonName, spriteUrl(e.pokemonId)])),
-    [pool],
-  );
+  const spriteByName = usePoolSprites(leagueId);
 
   const typeButton = (f: (typeof ACTIVITY_FILTERS)[number]) => (
     <button

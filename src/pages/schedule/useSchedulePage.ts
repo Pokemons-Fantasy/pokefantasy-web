@@ -14,6 +14,7 @@ import {
   type JornadaDto,
 } from '../../api/leagues';
 import { getDraftStatus } from '../../api/pokemons';
+import { usePoolSprites } from '../../hooks/usePoolSprites';
 import { deriveTeams } from '../../utils/teams';
 import { BATTLE_DEFAULTS } from '../../utils/showdown';
 import { useToastStore } from '../../store/toastStore';
@@ -97,7 +98,8 @@ export function useSchedulePage() {
     : settingsStatus === 'success' && draftStatus === 'success' ? 'ready' : 'loading';
   const showdownNameOf = (player: string) => league?.members.find((m) => m.username === player)?.showdownName;
   const myPicks = deriveTeams(draft).find((t) => t.username === username)?.picks ?? [];
-  const spriteIds = new Map((draft?.picks ?? []).map((p) => [p.pokemonName, p.pokemonId]));
+  // Las alineaciones jugadas pueden nombrar Pokémon que ya no están en ningún equipo: el pool los tiene todos
+  const spriteByName = usePoolSprites(leagueId, draft?.picks);
 
   // El modal de alineación necesita los ajustes (lista abierta o cerrada) y mi equipo: se cargan al pulsar,
   // y si fallan se avisa en vez de no hacer nada.
@@ -246,7 +248,7 @@ export function useSchedulePage() {
     playStatus,
     showdownNameOf,
     myPicks,
-    spriteIds,
+    spriteByName,
     openLineup,
     importMatch,
     setImportMatch,

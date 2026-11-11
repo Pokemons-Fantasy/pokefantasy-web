@@ -27,6 +27,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
   getDraftStatus: vi.fn().mockResolvedValue(null),
+  getClosedList: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('@capacitor/clipboard', () => ({ Clipboard: { write: vi.fn().mockResolvedValue(undefined) } }));
 const api = vi.mocked(leaguesApi);
