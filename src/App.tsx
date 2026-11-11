@@ -31,6 +31,7 @@ import InvitePage from './pages/InvitePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { RouteErrorBoundary } from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
+import AppUpdateNotice from './components/AppUpdateNotice';
 import { useNotificationSse } from './hooks/useNotificationSse';
 import DocumentTitle, { type TitleHandle } from './components/DocumentTitle';
 import { resumeWebPush } from './push/webPush';
@@ -86,6 +87,8 @@ function RootLayout() {
   return (
     <>
       <ToastContainer />
+      {/* La APK no se actualiza sola: avisa si hay release nueva (la web se actualiza al desplegar) */}
+      {Capacitor.isNativePlatform() && <AppUpdateNotice />}
       <DeepLinkHandler />
       <AndroidBackButton />
       <GlobalNotifications />
