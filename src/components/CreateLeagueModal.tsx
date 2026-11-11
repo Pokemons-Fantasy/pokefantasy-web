@@ -24,7 +24,7 @@ export default function CreateLeagueModal({ onConfirm, onClose }: Props) {
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) onConfirm(name.trim()); }}
       />
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+      <div className="modal-actions" style={{ marginTop: '1rem' }}>
         <button className="btn-secondary" onClick={onClose}>Cancelar</button>
         <button className="btn-primary" disabled={!name.trim()} onClick={() => onConfirm(name.trim())}>
           Crear

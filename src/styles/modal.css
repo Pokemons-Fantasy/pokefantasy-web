@@ -68,3 +68,38 @@
 .inline-form { display: flex; gap: 0.5rem; align-items: stretch; }
 .inline-form .search-input { flex: 1; margin-bottom: 0; }
 
+
+/* Modal dentro de un Sheet (móvil): sin cuadro centrado. Dos clases para ganar a .modal, a responsive.css
+   y a los anchos propios (.avatar-editor, .lineup-modal, .import-series, .play-showdown). */
+.modal.modal-in-sheet {
+  max-width: none;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* Botones siempre a la vista al final del sheet. Los márgenes negativos compensan el padding del contenido
+   del Sheet (1rem); abajo, margen y `bottom` van a juego para que pegados cubran ese padding (si no, asoma
+   el contenido por debajo) y no se monten sobre lo anterior cuando no hay scroll. El editor de foto tiene
+   su propia fila de botones. */
+.modal-in-sheet .modal-actions,
+.modal-in-sheet .avatar-editor-actions {
+  position: sticky;
+  bottom: -1rem;
+  margin: 0 -1rem -1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* Con tres botones repartidos, un texto largo parte línea en vez de cortarse (p. ej. "Abrir Showdown") */
+.modal-in-sheet .modal-actions > *,
+.modal-in-sheet .avatar-editor-actions > * {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}
