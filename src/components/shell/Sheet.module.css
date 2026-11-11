@@ -22,11 +22,18 @@
   touch-action: none;
 }
 
-.handle {
+/* Zona táctil del asa: la única desde la que se arrastra el panel */
+.handleArea {
   flex-shrink: 0;
+  padding: 0.6rem 0 0.5rem;
+  touch-action: none;
+  cursor: grab;
+}
+
+.handle {
   width: 40px;
   height: 4px;
-  margin: 0.6rem auto 0.25rem;
+  margin: 0 auto;
   border-radius: 2px;
   background: var(--border-hover);
 }
