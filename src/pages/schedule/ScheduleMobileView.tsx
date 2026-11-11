@@ -12,7 +12,7 @@ import styles from './ScheduleMobileView.module.css';
 export default function ScheduleMobileView({ model }: { model: SchedulePageModel }) {
   const {
     isLoading, schedule, jornadas, states, next, jornadaLabel, username, isAdmin,
-    openRecord, openEdit, setPlayingMatch, openLineup, openImport, spriteIds,
+    openRecord, openEdit, setPlayingMatch, openLineup, openImport, spriteByName,
   } = model;
   const [params, setParams] = useSearchParams();
   const selectJornada = (n: number) => setParams((prev) => {
@@ -41,7 +41,7 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
     onPlay: setPlayingMatch,
     onLineup: openLineup,
     onImport: openImport,
-    spriteIds,
+    spriteByName,
   };
 
   return (

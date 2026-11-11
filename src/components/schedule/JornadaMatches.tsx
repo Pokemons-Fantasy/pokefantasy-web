@@ -13,14 +13,14 @@ interface JornadaMatchesProps {
   onPlay: (match: MatchDto) => void;
   onLineup: (match: MatchDto) => void;
   onImport: (match: MatchDto) => void;
-  spriteIds: Map<string, number>;
+  spriteByName: Map<string, string>;
   /** Texto si no hay partidos; sin él, no se pinta nada. */
   emptyText?: string;
 }
 
 /** Lista de partidos de una jornada con sus acciones. La usan la tarjeta de escritorio y la vista móvil. */
 export default function JornadaMatches({
-  id, matches, jornada, username, isAdmin, onRecord, onEdit, onPlay, onLineup, onImport, spriteIds, emptyText,
+  id, matches, jornada, username, isAdmin, onRecord, onEdit, onPlay, onLineup, onImport, spriteByName, emptyText,
 }: JornadaMatchesProps) {
   return (
     <div id={id} className="jornada-matches">
@@ -37,7 +37,7 @@ export default function JornadaMatches({
           onLineup={() => onLineup(match)}
           onImport={() => onImport(match)}
           lineupOpensAt={jornada.lineupOpensAt}
-          spriteIds={spriteIds}
+          spriteByName={spriteByName}
         />
       ))}
     </div>

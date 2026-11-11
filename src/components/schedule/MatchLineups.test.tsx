@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import MatchLineups from './MatchLineups';
+import { spriteUrl } from '../../utils/sprites';
 import type { MatchDto } from '../../api/leagues';
 
-const SPRITES = new Map([['pikachu', 25], ['starmie', 121]]);
+const SPRITES = new Map([['pikachu', spriteUrl(25)], ['starmie', spriteUrl(121)]]);
 
 function match(extra: Partial<MatchDto>): MatchDto {
   return { id: 'm1', player1: 'ash', player2: 'misty', status: 'PENDING', ...extra };
@@ -11,7 +12,7 @@ function match(extra: Partial<MatchDto>): MatchDto {
 
 describe('MatchLineups', () => {
   it('reveladas: las dos con sprites, enlace al equipo y avisos del paste', () => {
-    render(<MatchLineups username="brock" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="brock" spriteByName={SPRITES} match={match({
       player1LineupSubmitted: true, player2LineupSubmitted: true,
       player1Lineup: { pokemonNames: ['pikachu'], pasteUrl: 'https://pokepast.es/abc', pasteWarnings: ['En el paste falta pikachu.'] },
       player2Lineup: { pokemonNames: ['starmie'] },
@@ -29,7 +30,7 @@ describe('MatchLineups', () => {
   });
 
   it('sin revelar: de la del rival no se ve ningún Pokémon', () => {
-    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="ash" spriteByName={SPRITES} match={match({
       player1LineupSubmitted: true, player1Lineup: { pokemonNames: ['pikachu'] },
     })} />);
 
@@ -38,7 +39,7 @@ describe('MatchLineups', () => {
   });
 
   it('sin alineaciones que mostrar no pinta nada', () => {
-    const { container } = render(<MatchLineups username="brock" spriteIds={SPRITES} match={match({})} />);
+    const { container } = render(<MatchLineups username="brock" spriteByName={SPRITES} match={match({})} />);
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -46,7 +47,7 @@ describe('MatchLineups', () => {
 
 describe('MatchLineups — enlaces', () => {
   it('solo enlaza pastes https', () => {
-    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="ash" spriteByName={SPRITES} match={match({
       player1LineupSubmitted: true, player1Lineup: { pokemonNames: ['pikachu'], pasteUrl: 'javascript:alert(1)' },
     })} />);
 
@@ -56,7 +57,7 @@ describe('MatchLineups — enlaces', () => {
 
 describe('MatchLineups — dos pisos y siluetas', () => {
   it('cada alineación va en su lado: player1 a la izquierda y player2 a la derecha', () => {
-    render(<MatchLineups username="brock" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="brock" spriteByName={SPRITES} match={match({
       player1LineupSubmitted: true, player2LineupSubmitted: true,
       player1Lineup: { pokemonNames: ['pikachu'] }, player2Lineup: { pokemonNames: ['starmie'] },
     })} />);
@@ -66,7 +67,7 @@ describe('MatchLineups — dos pisos y siluetas', () => {
   });
 
   it('antes de revelar, el rival que no ha enviado sale como siluetas "Pendiente" y yo con mis sprites', () => {
-    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="ash" spriteByName={SPRITES} match={match({
       lineupOpen: true, player1LineupSubmitted: true, player2LineupSubmitted: false,
       player1Lineup: { pokemonNames: ['pikachu'] },
     })} status="Esperando la alineación de misty" />);
@@ -81,7 +82,7 @@ describe('MatchLineups — dos pisos y siluetas', () => {
   });
 
   it('el rival ya la envió: siluetas con "Enviada ✓" y la mía pendiente', () => {
-    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({
+    render(<MatchLineups username="ash" spriteByName={SPRITES} match={match({
       lineupOpen: true, player2LineupSubmitted: true,
     })} />);
 
@@ -92,7 +93,7 @@ describe('MatchLineups — dos pisos y siluetas', () => {
   });
 
   it('solo con un texto de estado (mercado aún abierto) no pinta siluetas', () => {
-    render(<MatchLineups username="ash" spriteIds={SPRITES} match={match({ lineupPending: true })}
+    render(<MatchLineups username="ash" spriteByName={SPRITES} match={match({ lineupPending: true })}
       status="Podrás declarar tu alineación desde vie 5 jun, 16:00" />);
 
     expect(screen.getByText('Podrás declarar tu alineación desde vie 5 jun, 16:00')).toBeInTheDocument();

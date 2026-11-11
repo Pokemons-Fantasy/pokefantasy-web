@@ -12,7 +12,7 @@ interface MatchRowProps {
   isAdmin: boolean;
   /** Desde cuándo se puede declarar la alineación en esta jornada (del backend). */
   lineupOpensAt?: string | null;
-  spriteIds: Map<string, number>;
+  spriteByName: Map<string, string>;
   onRecord: () => void;
   onEdit: () => void;
   /** Abrir "Jugar en Showdown" (solo en mis partidos pendientes). */
@@ -28,7 +28,7 @@ function formatDayTime(iso: string): string {
 }
 
 export default function MatchRow({
-  match, username, isAdmin, lineupOpensAt, spriteIds, onRecord, onEdit, onPlay, onLineup, onImport,
+  match, username, isAdmin, lineupOpensAt, spriteByName, onRecord, onEdit, onPlay, onLineup, onImport,
 }: MatchRowProps) {
   const completed = match.status === 'COMPLETED';
   const mine = !!username && (match.player1 === username || match.player2 === username);
@@ -95,7 +95,7 @@ export default function MatchRow({
           )}
         </div>
       </div>
-      <MatchLineups match={match} username={username} spriteIds={spriteIds} status={status} />
+      <MatchLineups match={match} username={username} spriteByName={spriteByName} status={status} />
       {!!match.replayIds?.length && (
         <div className="match-replays">
           <span>Replays:</span>

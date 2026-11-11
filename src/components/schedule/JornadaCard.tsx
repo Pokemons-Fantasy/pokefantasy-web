@@ -19,7 +19,7 @@ interface JornadaCardProps {
   onPlay: (match: MatchDto) => void;
   onLineup: (match: MatchDto) => void;
   onImport: (match: MatchDto) => void;
-  spriteIds: Map<string, number>;
+  spriteByName: Map<string, string>;
   ref?: Ref<HTMLElement>;
 }
 
@@ -28,7 +28,7 @@ interface JornadaCardProps {
  * las próximas se muestran desplegadas.
  */
 export default function JornadaCard({
-  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, onImport, spriteIds, ref,
+  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, onImport, spriteByName, ref,
 }: JornadaCardProps) {
   const n = jornada.roundNumber;
   const titleId = `jornada-${n}-title`;
@@ -47,7 +47,7 @@ export default function JornadaCard({
       onPlay={onPlay}
       onLineup={onLineup}
       onImport={onImport}
-      spriteIds={spriteIds}
+      spriteByName={spriteByName}
       emptyText="Sin partidos esta jornada."
     />
   );

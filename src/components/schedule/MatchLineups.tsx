@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react';
 import type { Lineup, MatchDto } from '../../api/leagues';
-import { spriteUrl } from '../../utils/sprites';
 import { isHttpsUrl } from '../../utils/lineup';
 
 interface MatchLineupsProps {
   match: MatchDto;
   username: string | null;
-  /** Nombre del Pokémon → id de PokeAPI, para el sprite (de los picks del draft). */
-  spriteIds: Map<string, number>;
+  /** Nombre del Pokémon → URL del sprite (`usePoolSprites`); sin entrada, se muestra el nombre. */
+  spriteByName: Map<string, string>;
   /** Texto de estado de la alineación ("Esperando la alineación de…"), en el centro. */
   status?: ReactNode;
 }
@@ -19,7 +18,7 @@ const SILHOUETTES = 6;
  * player2 a la derecha) y el estado en el centro. Reveladas, las dos con sprites; antes, la mía y, en el lado
  * que no veo, siluetas con si ya la han enviado (el backend no manda la del rival).
  */
-export default function MatchLineups({ match, username, spriteIds, status }: MatchLineupsProps) {
+export default function MatchLineups({ match, username, spriteByName, status }: MatchLineupsProps) {
   const p1Sent = !!match.player1LineupSubmitted;
   const p2Sent = !!match.player2LineupSubmitted;
   const revealed = p1Sent && p2Sent;
@@ -39,9 +38,9 @@ export default function MatchLineups({ match, username, spriteIds, status }: Mat
         <section className={`match-lineup ${position}`} aria-label={`Alineación de ${owner}`}>
           <div className="match-lineup-sprites">
             {lineup.pokemonNames.map((name) => {
-              const id = spriteIds.get(name);
-              return id != null
-                ? <img key={name} src={spriteUrl(id)} alt={name} title={name} width={40} height={40} loading="lazy" />
+              const sprite = spriteByName.get(name);
+              return sprite
+                ? <img key={name} src={sprite} alt={name} title={name} width={40} height={40} loading="lazy" />
                 : <span key={name} className="match-lineup-name">{name}</span>;
             })}
           </div>

@@ -8,7 +8,7 @@ import type { SchedulePageModel } from './useSchedulePage';
 /** Calendario en escritorio: mercado, tu próximo partido y todas las jornadas en una columna. */
 export default function ScheduleDesktopView({ model }: { model: SchedulePageModel }) {
   const {
-    username, expanded, openRecord, openEdit, schedule, isLoading, myCoins, isAdmin, setPlayingMatch, spriteIds, openLineup, openImport, jornadas, states, currentIndex, next, jornadaLabel, toggleJornada, currentRef,
+    username, expanded, openRecord, openEdit, schedule, isLoading, myCoins, isAdmin, setPlayingMatch, spriteByName, openLineup, openImport, jornadas, states, currentIndex, next, jornadaLabel, toggleJornada, currentRef,
   } = model;
 
   return (
@@ -70,7 +70,7 @@ export default function ScheduleDesktopView({ model }: { model: SchedulePageMode
               onPlay={setPlayingMatch}
               onLineup={openLineup}
               onImport={openImport}
-              spriteIds={spriteIds}
+              spriteByName={spriteByName}
             />
           ))}
         </div>
