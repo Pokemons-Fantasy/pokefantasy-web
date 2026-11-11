@@ -2,7 +2,7 @@ import type { Ref } from 'react';
 import type { JornadaDto, MatchDto } from '../../api/leagues';
 import { formatDay } from '../../utils/dates';
 import { myResult, myResultText, type JornadaState } from '../../utils/schedule';
-import MatchRow from './MatchRow';
+import JornadaMatches from './JornadaMatches';
 
 interface JornadaCardProps {
   jornada: JornadaDto;
@@ -36,24 +36,20 @@ export default function JornadaCard({
   const date = jornada.startDate && <span className="jornada-date">{formatDay(jornada.startDate)}</span>;
 
   const matches = (
-    <div id={matchesId} className="jornada-matches">
-      {jornada.matches.length === 0 && <p className="jornada-empty">Sin partidos esta jornada.</p>}
-      {jornada.matches.map((match) => (
-        <MatchRow
-          key={match.id}
-          match={match}
-          username={username}
-          isAdmin={isAdmin}
-          onRecord={() => onRecord(match)}
-          onEdit={() => onEdit(match)}
-          onPlay={() => onPlay(match)}
-          onLineup={() => onLineup(match)}
-          onImport={() => onImport(match)}
-          lineupOpensAt={jornada.lineupOpensAt}
-          spriteIds={spriteIds}
-        />
-      ))}
-    </div>
+    <JornadaMatches
+      id={matchesId}
+      matches={jornada.matches}
+      jornada={jornada}
+      username={username}
+      isAdmin={isAdmin}
+      onRecord={onRecord}
+      onEdit={onEdit}
+      onPlay={onPlay}
+      onLineup={onLineup}
+      onImport={onImport}
+      spriteIds={spriteIds}
+      emptyText="Sin partidos esta jornada."
+    />
   );
 
   if (state === 'played') {
