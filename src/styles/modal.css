@@ -39,6 +39,17 @@
   margin-top: 0.25rem;
 }
 
+/* Novedades del aviso de nueva versión (AppUpdateNotice) */
+.update-notes {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
 /* ─── MISC ─── */
 
 .error   { color: var(--danger);   font-size: 0.875rem; }
