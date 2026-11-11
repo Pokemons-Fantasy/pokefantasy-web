@@ -1,7 +1,7 @@
 {
   "name": "fantasyweb",
   "private": true,
-  "version": "1.2.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "api:check": "openapi-typescript openapi.json -o src/api/schema.d.ts --check",
     "cap:sync": "tsc -b && vite build --mode android && npx cap sync android",
     "cap:open": "npx cap open android",
+    "release:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release-apk.ps1",
     "generate:assets": "node scripts/generate-assets.mjs && node scripts/generate-pwa-icons.mjs && npx @capacitor/assets generate --android"
   },
   "dependencies": {
