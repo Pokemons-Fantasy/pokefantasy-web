@@ -48,7 +48,7 @@ describe('AppUpdateNotice', () => {
 
     expect(await screen.findByRole('dialog', { name: 'Nueva versión 2.1.0' })).toBeInTheDocument();
     expect(screen.getAllByRole('listitem').map((li) => li.textContent))
-      .toEqual(['PokeFantasy 2.1.0', 'Arreglado', 'Calendario: sprites.']);
+      .toEqual(['Arreglado', 'Calendario: sprites.']);
     expect(screen.queryByText(/Descarga la APK/)).not.toBeInTheDocument();
     const download = screen.getByRole('link', { name: 'Descargar' });
     expect(download).toHaveAttribute('href', APK);

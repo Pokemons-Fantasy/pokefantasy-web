@@ -63,7 +63,7 @@ export default function AppUpdateNotice({ currentVersion = __APP_VERSION__ }: Ap
           {notes.map((line, i) => <li key={i}>{line}</li>)}
         </ul>
       )}
-      <p className="field-hint">
+      <p className="field-hint update-hint">
         Se descarga la APK: ábrela y se instala encima de la que tienes, sin perder la sesión.{' '}
         <a href={release.pageUrl} target="_blank" rel="noopener noreferrer">Ver en GitHub</a>
       </p>

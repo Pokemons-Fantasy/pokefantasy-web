@@ -16,15 +16,39 @@ export function isNewerVersion(latest: string, current: string): boolean {
   return false;
 }
 
+/** Una línea de markdown como texto plano: sin encabezado, viñeta, cita, enlace, código ni énfasis. */
+function plain(line: string): string {
+  return line
+    .replace(/^\s*#+\s*/, '')
+    .replace(/^\s*(?:[-*+]|\d+\.)\s+/, '')
+    .replace(/^\s*>\s?/, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/\*\*|__|`/g, '')
+    .replace(/\*(\S[^*]*?)\*/g, '$1')
+    .trim();
+}
+
 /**
- * Novedades de la release (markdown de GitHub) como líneas de texto: sin `#`, viñetas ni `**`, y sin la
- * sección "Instalar", que en la app no aplica (el botón ya descarga).
+ * Novedades de la release (markdown de GitHub) como líneas de texto plano. Fuera: el título si lleva la
+ * versión (ya la dice el aviso), la sección "Instalar" (el botón ya descarga), separadores y líneas con
+ * URLs sueltas (p. ej. el "Full Changelog" de GitHub), que en el aviso no se pueden pulsar.
  */
 export function releaseNoteLines(markdown: string): string[] {
   const lines: string[] = [];
+  let first = true;
+  let skipping = false;
   for (const raw of markdown.split(/\r?\n/)) {
-    if (/^#+\s*instalar\b/i.test(raw.trim())) break;
-    const line = raw.replace(/^\s*#+\s*/, '').replace(/^\s*[-*]\s+/, '').replaceAll('**', '').trim();
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const heading = /^#+\s/.test(trimmed);
+    const isFirst = first;
+    first = false;
+    if (heading) {
+      skipping = /^#+\s*instalar\b/i.test(trimmed);
+      if (skipping || (isFirst && /\d+\.\d+\.\d+/.test(trimmed))) continue;
+    }
+    if (skipping || /^[-*_]{3,}$/.test(trimmed) || /https?:\/\/\S+/.test(trimmed.replace(/\]\([^)]*\)/g, ']'))) continue;
+    const line = plain(raw);
     if (line) lines.push(line);
   }
   return lines;
