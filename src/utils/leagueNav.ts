@@ -41,3 +41,19 @@ export function activeSection(subpath: string): string {
   const first = subpath.split('/')[0];
   return first === 'players' ? STANDINGS.path : first;
 }
+
+/** Navegación de la liga en móvil: pestañas de la barra inferior y lo que va en "Más" (el botón lo pone el shell). */
+export interface MobileNav {
+  bar: LeagueNavItem[];
+  more: LeagueNavItem[];
+}
+
+export function mobileNav(phase: LeaguePhase, isAdmin: boolean): MobileNav {
+  if (phase === 'season') {
+    return {
+      bar: leagueTabs(phase).filter((tab) => tab !== DRAFT),
+      more: [DRAFT, ...leagueMenu(phase, isAdmin)],
+    };
+  }
+  return { bar: leagueTabs(phase), more: leagueMenu(phase, isAdmin) };
+}

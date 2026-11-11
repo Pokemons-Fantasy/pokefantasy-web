@@ -6,14 +6,6 @@
     padding: 1.5rem 1rem 3rem;
   }
 
-  /* Header: en móvil solo el avatar, que abre el panel de la cuenta */
-  .header-desktop {
-    display: none;
-  }
-  .header-avatar-button.header-mobile {
-    display: inline-flex;
-  }
-
   /* Header right: tighten gap and shrink buttons */
   .header-right {
     gap: 0.5rem;

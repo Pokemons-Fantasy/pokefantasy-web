@@ -1,5 +1,7 @@
 
 :root {
+  /* Alto de la barra inferior del shell móvil; 0 cuando no hay barra (escritorio, login) */
+  --bottom-nav-h: 0px;
   --bg: #0a0a0f;
   --surface: #111117;
   --surface-2: #1c1c24;
@@ -126,3 +128,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+
+/* Con la barra inferior en pantalla, lo fijo abajo (barra de guardar, toasts...) se coloca encima de ella */
+:root:has([data-bottom-nav]) {
+  --bottom-nav-h: calc(64px + env(safe-area-inset-bottom));
+}

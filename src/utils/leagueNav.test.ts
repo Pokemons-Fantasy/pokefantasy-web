@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { leagueTabs, leagueMenu, firstTab, activeSection } from './leagueNav';
+import { leagueTabs, leagueMenu, firstTab, activeSection, mobileNav } from './leagueNav';
 
 const labels = (items: { label: string }[]) => items.map((i) => i.label);
 
@@ -60,5 +60,31 @@ describe('fase de preparación del draft', () => {
   it('el draft va primero', () => {
     expect(leagueTabs('preparing').map((t) => t.path)).toEqual(['draft', 'pool', 'members']);
     expect(firstTab('preparing')).toBe('draft');
+  });
+});
+
+describe('mobileNav', () => {
+  const paths = (items: { path: string }[]) => items.map((i) => i.path);
+
+  it('en temporada (admin): cuatro pestañas y en Más el draft y el menú de admin', () => {
+    const nav = mobileNav('season', true);
+    expect(paths(nav.bar)).toEqual(['teams', 'schedule', 'standings', 'activity']);
+    expect(paths(nav.more)).toEqual(['draft', 'config', 'tiers', 'members']);
+  });
+
+  it('en temporada (jugador): sin Gestionar tiers', () => {
+    expect(paths(mobileNav('season', false).more)).toEqual(['draft', 'config', 'members']);
+  });
+
+  it.each(['draft', 'preparing'] as const)('con el draft %s: las pestañas de la fase y Configuración en Más', (phase) => {
+    const nav = mobileNav(phase, true);
+    expect(paths(nav.bar)).toEqual(['draft', 'pool', 'members']);
+    expect(paths(nav.more)).toEqual(['config']);
+  });
+
+  it.each(['setup', 'cancelled'] as const)('en %s: Miembros, Pool, Draft', (phase) => {
+    const nav = mobileNav(phase, false);
+    expect(paths(nav.bar)).toEqual(['members', 'pool', 'draft']);
+    expect(paths(nav.more)).toEqual(['config']);
   });
 });

@@ -61,3 +61,21 @@ describe('Modal', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 });
+
+describe('Modal y el botón atrás de Android', () => {
+  it('atrás cierra el modal si se puede cerrar', async () => {
+    const { handleBack } = await import('../hooks/useBackButton');
+    const onClose = renderModal();
+    handleBack(true, vi.fn(), vi.fn());
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('con una acción en curso, atrás no lo cierra', async () => {
+    const { handleBack } = await import('../hooks/useBackButton');
+    const onClose = renderModal({ canClose: false });
+    const goBack = vi.fn();
+    handleBack(true, goBack, vi.fn());
+    expect(onClose).not.toHaveBeenCalled();
+    expect(goBack).not.toHaveBeenCalled();
+  });
+});

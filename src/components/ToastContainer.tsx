@@ -140,7 +140,7 @@ export default function ToastContainer() {
     <div
       style={{
         position: 'fixed',
-        bottom: '1.5rem',
+        bottom: 'calc(1.5rem + var(--bottom-nav-h))',
         right: '1.5rem',
         zIndex: 9999,
         display: 'flex',

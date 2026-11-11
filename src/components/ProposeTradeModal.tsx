@@ -92,7 +92,7 @@ export default function ProposeTradeModal({
         </button>
       </div>
 
-      <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowX: 'hidden' }}>
+      <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowX: 'clip' }}>
         {!marketOpen && (
           <Notice variant="info">
             El mercado está cerrado: puedes enviar la propuesta, pero {responder} solo podrá aceptarla cuando abra el mercado.

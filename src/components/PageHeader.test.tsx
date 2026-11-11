@@ -1,14 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import PageHeader from './PageHeader';
 import { useAuthStore } from '../store/authStore';
 import * as authApi from '../api/auth';
 import * as leaguesApi from '../api/leagues';
 import * as tradesApi from '../api/trades';
 import type { Trade } from '../api/trades';
+import { useLayoutMode } from '../hooks/useLayoutMode';
+import { setLastLeague } from '../utils/lastLeague';
 
 vi.mock('../api/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof authApi>()),
@@ -22,27 +24,31 @@ vi.mock('../api/trades', async (importOriginal) => ({
   ...(await importOriginal<typeof tradesApi>()),
   getMyPendingTrades: vi.fn(),
 }));
+vi.mock('../hooks/useLayoutMode', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useLayoutMode')>()),
+  useLayoutMode: vi.fn(() => 'desktop'),
+}));
 
 const getMe = vi.mocked(authApi.getMe);
 const getMyLeagues = vi.mocked(leaguesApi.getMyLeagues);
 const getMyPendingTrades = vi.mocked(tradesApi.getMyPendingTrades);
+const layoutMode = vi.mocked(useLayoutMode);
 
 const trade = (leagueId: string) => ({ id: `t-${leagueId}-${Math.random()}`, leagueId }) as Trade;
 
 function renderHeader(path = '/') {
+  const router = createMemoryRouter([
+    { path: '/profile', handle: { title: 'Mi perfil' }, element: <><PageHeader /><p>Pantalla de perfil</p></> },
+    { path: '*', element: <><PageHeader /><p>Ruta actual</p></> },
+  ], { initialEntries: [path] });
   return render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="*" element={<><PageHeader /><p>Ruta actual</p></>} />
-          <Route path="/profile" element={<><PageHeader /><p>Pantalla de perfil</p></>} />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
   );
 }
 
-const openDrawer = async () => {
+const openAccount = async () => {
   await userEvent.click(await screen.findByRole('button', { name: /Tu cuenta/ }));
   return screen.getByRole('dialog', { name: 'ash' });
 };
@@ -50,6 +56,8 @@ const openDrawer = async () => {
 describe('PageHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    layoutMode.mockReturnValue('desktop');
     useAuthStore.setState({ username: 'ash' });
     getMe.mockResolvedValue({ username: 'ash', avatarVersion: null } as Awaited<ReturnType<typeof authApi.getMe>>);
     getMyLeagues.mockResolvedValue([
@@ -59,62 +67,101 @@ describe('PageHeader', () => {
     getMyPendingTrades.mockResolvedValue([]);
   });
 
-  it('el logo y el saludo son enlaces a la home y al perfil', () => {
-    renderHeader();
-    expect(screen.getByRole('link', { name: 'PokeFantasy' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: /Hola, ash/ })).toHaveAttribute('href', '/profile');
+  describe('en escritorio', () => {
+    it('el logo y el saludo son enlaces a la home y al perfil', async () => {
+      renderHeader();
+      expect(await screen.findByRole('link', { name: 'PokeFantasy' })).toHaveAttribute('href', '/');
+      expect(screen.getByRole('link', { name: /Hola, ash/ })).toHaveAttribute('href', '/profile');
+      expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Tu cuenta/ })).not.toBeInTheDocument();
+    });
   });
 
-  it('el avatar abre el panel con el perfil, tus ligas y la liga abierta marcada', async () => {
-    renderHeader('/leagues/l2/teams');
+  describe('en móvil', () => {
+    beforeEach(() => layoutMode.mockReturnValue('mobile'));
 
-    const drawer = await openDrawer();
-    expect(within(drawer).getByRole('link', { name: 'Mi perfil' })).toHaveAttribute('href', '/profile');
-    expect(await within(drawer).findByRole('link', { name: 'Kanto' })).toHaveAttribute('href', '/leagues/l1');
-    expect(within(drawer).getByRole('link', { name: 'Johto' })).toHaveAttribute('aria-current', 'page');
-  });
+    it('"Volver" lleva a la última liga abierta', async () => {
+      setLastLeague('l1');
+      renderHeader('/profile');
+      await waitFor(() => expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues/l1'));
+    });
 
-  it('ir a Mi perfil cierra el panel', async () => {
-    renderHeader();
+    it('si ya no estás en la última liga, "Volver" lleva a Mis ligas', async () => {
+      setLastLeague('l9');
+      renderHeader('/profile');
+      await screen.findByRole('link', { name: 'Volver' });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues');
+    });
 
-    const drawer = await openDrawer();
-    await userEvent.click(within(drawer).getByRole('link', { name: 'Mi perfil' }));
+    it('en Mis ligas no hay "Volver"', async () => {
+      setLastLeague('l1');
+      renderHeader('/leagues');
+      expect(await screen.findByRole('button', { name: /Tu cuenta/ })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Volver' })).not.toBeInTheDocument();
+    });
 
-    expect(await screen.findByText('Pantalla de perfil')).toBeInTheDocument();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
+    it('sin última liga, "Volver" lleva a Mis ligas', async () => {
+      renderHeader('/profile');
+      expect(await screen.findByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/leagues');
+    });
 
-  it('Escape cierra el panel y devuelve el foco al avatar', async () => {
-    renderHeader();
+    it('el título es la sección de la ruta', async () => {
+      renderHeader('/profile');
+      expect(await screen.findByRole('banner')).toHaveTextContent('Mi perfil');
+    });
 
-    const drawer = await openDrawer();
-    expect(within(drawer).getByRole('button', { name: 'Cerrar' })).toHaveFocus();
-    await userEvent.keyboard('{Escape}');
+    it('el avatar abre Tu cuenta con el perfil, tus ligas y la liga abierta marcada', async () => {
+      renderHeader('/leagues/l2/teams');
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Tu cuenta/ })).toHaveFocus();
-  });
+      const sheet = await openAccount();
+      expect(within(sheet).getByRole('link', { name: 'Mi perfil' })).toHaveAttribute('href', '/profile');
+      expect(await within(sheet).findByRole('link', { name: 'Kanto' })).toHaveAttribute('href', '/leagues/l1');
+      expect(within(sheet).getByRole('link', { name: 'Johto' })).toHaveAttribute('aria-current', 'page');
+    });
 
-  it('cerrar sesión desde el panel', async () => {
-    const logout = vi.fn();
-    useAuthStore.setState({ logout });
-    renderHeader();
+    it('ir a Mi perfil cierra Tu cuenta', async () => {
+      renderHeader();
 
-    const drawer = await openDrawer();
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Cerrar sesión' }));
+      const sheet = await openAccount();
+      await userEvent.click(within(sheet).getByRole('link', { name: 'Mi perfil' }));
 
-    expect(logout).toHaveBeenCalled();
-  });
+      expect(await screen.findByText('Pantalla de perfil')).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
 
-  it('avisa de los intercambios pendientes en el avatar y los lista por liga en el panel', async () => {
-    getMyPendingTrades.mockResolvedValue([trade('l1'), trade('l1'), trade('l2')]);
-    renderHeader();
+    it('Escape cierra Tu cuenta y devuelve el foco al avatar', async () => {
+      renderHeader();
 
-    expect(await screen.findByRole('button', { name: 'Tu cuenta, 3 intercambios pendientes' })).toBeInTheDocument();
-    const drawer = await openDrawer();
-    expect(within(drawer).getByText('3 intercambios pendientes')).toBeInTheDocument();
-    const kanto = within(drawer).getAllByRole('link', { name: /Kanto/ })[0];
-    expect(kanto).toHaveAttribute('href', '/leagues/l1/teams');
-    expect(within(kanto).getByText('2')).toBeInTheDocument();
+      const sheet = await openAccount();
+      expect(within(sheet).getByRole('button', { name: 'Cerrar' })).toHaveFocus();
+      await userEvent.keyboard('{Escape}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Tu cuenta/ })).toHaveFocus();
+    });
+
+    it('cerrar sesión desde Tu cuenta', async () => {
+      const logout = vi.fn();
+      useAuthStore.setState({ logout });
+      renderHeader();
+
+      const sheet = await openAccount();
+      await userEvent.click(within(sheet).getByRole('button', { name: 'Cerrar sesión' }));
+
+      expect(logout).toHaveBeenCalled();
+    });
+
+    it('avisa de los intercambios pendientes en el avatar y los lista por liga', async () => {
+      getMyPendingTrades.mockResolvedValue([trade('l1'), trade('l1'), trade('l2')]);
+      renderHeader();
+
+      expect(await screen.findByRole('button', { name: 'Tu cuenta, 3 intercambios pendientes' })).toBeInTheDocument();
+      const sheet = await openAccount();
+      expect(within(sheet).getByText('3 intercambios pendientes')).toBeInTheDocument();
+      const kanto = within(sheet).getAllByRole('link', { name: /Kanto/ })[0];
+      expect(kanto).toHaveAttribute('href', '/leagues/l1/teams');
+      expect(within(kanto).getByText('2')).toBeInTheDocument();
+    });
   });
 });

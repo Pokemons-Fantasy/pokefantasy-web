@@ -6,11 +6,13 @@ import { getSchedule, getStandings } from '../api/leagues';
 import { SkeletonTable } from '../components/SkeletonTable';
 import StandingRow from '../components/standings/StandingRow';
 import { recentForm, tiebreaks } from '../utils/standings';
+import { useLayoutMode } from '../hooks/useLayoutMode';
 
 export default function StandingsPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const username = useAuthStore((s) => s.username);
   const navigate = useNavigate();
+  const mobile = useLayoutMode() === 'mobile';
 
   const { data: standings, isLoading } = useQuery({
     queryKey: ['standings', leagueId],
@@ -34,11 +36,16 @@ export default function StandingsPage() {
 
   return (
     <main className="page-content">
-      <div className="section-header">
-        <div>
-          <h1 className="page-title">🏆 Clasificación</h1>
+      {/* En móvil la barra inferior ya marca la sección: el título queda para lectores de pantalla */}
+      {mobile ? (
+        <h1 className="sr-only">Clasificación</h1>
+      ) : (
+        <div className="section-header">
+          <div>
+            <h1 className="page-title">🏆 Clasificación</h1>
+          </div>
         </div>
-      </div>
+      )}
 
       {isLoading && <SkeletonTable rows={4} />}
 

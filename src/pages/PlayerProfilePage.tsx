@@ -11,6 +11,11 @@ import { SkeletonGrid } from '../components/SkeletonGrid';
 import UserAvatar from '../components/avatar/UserAvatar';
 import { spriteUrl } from '../utils/sprites';
 import { CLAUSE_RAISE_MULTIPLIER, victimCoins } from '../utils/clause';
+import { useLayoutMode } from '../hooks/useLayoutMode';
+import styles from './PlayerProfilePage.module.css';
+
+/** Movimientos de monedas que se ven en móvil antes de "Ver más movimientos". */
+const MOBILE_COIN_EVENTS = 5;
 
 function coinDelta(event: ActivityEvent, username: string): number {
   const a = event.coinsAmount ?? 0;
@@ -132,6 +137,12 @@ export default function PlayerProfilePage() {
     (e) => e.coinsAmount != null && e.coinsAmount > 0 && e.type !== 'MATCH_RESULT' && e.type !== 'TIER_CHANGE'
   );
 
+  // En móvil el historial empieza recortado: con la temporada avanzada no tiene fin
+  const mobile = useLayoutMode() === 'mobile';
+  const [showAllCoins, setShowAllCoins] = useState(false);
+  const collapsed = mobile && !showAllCoins && coinEvents.length > MOBILE_COIN_EVENTS;
+  const visibleCoinEvents = collapsed ? coinEvents.slice(0, MOBILE_COIN_EVENTS) : coinEvents;
+
   const tierByName = useMemo(
     () => new Map<string, Tier | null | undefined>(closedList?.map((e) => [e.pokemonName, e.tier])),
     [closedList]
@@ -162,7 +173,28 @@ export default function PlayerProfilePage() {
         </div>
 
         {/* ── Stats ── */}
-        {player && (
+        {/* En móvil, las cuatro en una fila: las tarjetas ocupaban dos filas */}
+        {player && mobile && (
+          <ul className={styles.stats} aria-label={`Estadísticas de ${username}`}>
+            <li aria-label={`${player.wins} victorias`}>
+              <span className={styles.value} style={{ color: 'var(--success)' }}>{player.wins}</span>
+              <span className={styles.label} aria-hidden="true">V</span>
+            </li>
+            <li aria-label={`${player.losses} derrotas`}>
+              <span className={styles.value} style={{ color: 'var(--danger)' }}>{player.losses}</span>
+              <span className={styles.label} aria-hidden="true">D</span>
+            </li>
+            <li aria-label={`${player.played} jugados`}>
+              <span className={styles.value}>{player.played}</span>
+              <span className={styles.label} aria-hidden="true">PJ</span>
+            </li>
+            <li aria-label={`${player.coins} monedas`}>
+              <span className={styles.value} style={{ color: 'var(--accent)' }}>{player.coins}</span>
+              <span className={styles.label} aria-hidden="true">Monedas</span>
+            </li>
+          </ul>
+        )}
+        {player && !mobile && (
           <div className="stat-pills animate-in" style={{ marginBottom: '2rem' }}>
             <div className="stat-pill">
               <span className="stat-pill-value" style={{ color: 'var(--success)' }}>{player.wins}</span>
@@ -228,7 +260,7 @@ export default function PlayerProfilePage() {
 
           {coinEvents.length > 0 && (
             <div className="animate-in" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {coinEvents.map((event) => {
+              {visibleCoinEvents.map((event) => {
                 const delta = coinDelta(event, username!);
                 const positive = delta >= 0;
                 return (
@@ -268,7 +300,19 @@ export default function PlayerProfilePage() {
             </div>
           )}
 
-          {coinFeed?.hasMore && (
+          {collapsed && (
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ marginTop: '0.75rem', width: '100%' }}
+              aria-expanded={false}
+              onClick={() => setShowAllCoins(true)}
+            >
+              Ver más movimientos
+            </button>
+          )}
+
+          {coinFeed?.hasMore && !collapsed && (
             <button
               className="btn-secondary"
               style={{ marginTop: '0.75rem', width: '100%' }}

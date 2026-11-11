@@ -1,0 +1,46 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  /* Por debajo de los modales (.modal-overlay, 100): un Modal abierto sobre un Sheet se ve encima, como en la pila del atrás */
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.panel {
+  width: 100%;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  outline: none;
+  touch-action: none;
+}
+
+/* Zona táctil del asa: la única desde la que se arrastra el panel */
+.handleArea {
+  flex-shrink: 0;
+  padding: 0.6rem 0 0.5rem;
+  touch-action: none;
+  cursor: grab;
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: var(--border-hover);
+}
+
+.content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.5rem 1rem 1rem;
+  touch-action: pan-y;
+}
