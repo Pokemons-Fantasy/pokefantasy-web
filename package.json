@@ -1,7 +1,7 @@
 {
   "name": "fantasyweb",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,7 @@
     "api:spec": "node scripts/fetch-openapi.mjs",
     "api:types": "openapi-typescript openapi.json -o src/api/schema.d.ts",
     "api:check": "openapi-typescript openapi.json -o src/api/schema.d.ts --check",
-    "cap:sync": "npm run build && npx cap sync android",
+    "cap:sync": "tsc -b && vite build --mode android && npx cap sync android",
     "cap:open": "npx cap open android",
     "generate:assets": "node scripts/generate-assets.mjs && node scripts/generate-pwa-icons.mjs && npx @capacitor/assets generate --android"
   },
