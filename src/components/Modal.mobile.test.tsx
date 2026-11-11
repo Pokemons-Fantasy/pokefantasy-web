@@ -46,6 +46,33 @@ describe('Modal en móvil', () => {
     expect(content.style.gap).toBe('0.75rem');
   });
 
+  it('ignora el overflow del style: rompería los botones fijos abajo', () => {
+    render(
+      <Modal labelledBy="t" onClose={vi.fn()} style={{ padding: 0, overflow: 'hidden' }}>
+        <h2 id="t">Título</h2>
+      </Modal>,
+    );
+    const content = document.querySelector<HTMLElement>('.modal-in-sheet')!;
+    expect(content.style.overflow).toBe('');
+    expect(content.style.padding).toBe('0px');
+  });
+
+  it('si cambia el modo con el modal abierto, no se remonta ni pierde lo escrito', async () => {
+    // Input no controlado: si el modal se remontara, perdería el texto
+    const Form = () => (
+      <Modal labelledBy="t" onClose={vi.fn()}>
+        <h2 id="t">Título</h2>
+        <input aria-label="Texto" />
+      </Modal>
+    );
+    const { rerender } = render(<Form />);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Texto' }), 'hola');
+    vi.mocked(useLayoutMode).mockReturnValue('desktop');
+    rerender(<Form />);
+    expect(screen.getByTestId('sheet-backdrop')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Texto' })).toHaveValue('hola');
+  });
+
   it('mantiene alertdialog', () => {
     renderModal({ role: 'alertdialog' });
     expect(screen.getByRole('alertdialog', { name: 'Título' })).toBeInTheDocument();

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useBackHandler } from '../hooks/useBackButton';
@@ -30,13 +30,17 @@ interface ModalProps {
  *
  * En móvil se pinta como `Sheet` (sube desde abajo) con las mismas props; el contenido conserva las clases
  * `modal` y `className` para que valgan sus estilos, y `modal-in-sheet` quita lo de cuadro centrado.
+ * El modo se fija al abrir: si cambia con el modal abierto (girar el móvil), remontarlo perdería lo escrito.
  */
 export default function Modal(props: ModalProps) {
-  const mode = useLayoutMode();
+  const currentMode = useLayoutMode();
+  const [mode] = useState(currentMode);
   if (mode === 'desktop') return <DesktopModal {...props} />;
 
   const { labelledBy, describedBy, role, onClose, canClose, initialFocusRef, className, style, children } = props;
-  const sheetStyle = style && { ...style, maxWidth: undefined };
+  // Sin el ancho máximo del cuadro ni su overflow: un overflow distinto de visible deja sin efecto los botones
+  // fijos abajo (sticky).
+  const sheetStyle = style && { ...style, maxWidth: undefined, overflow: undefined };
   return (
     <Sheet
       labelledBy={labelledBy} describedBy={describedBy} role={role}

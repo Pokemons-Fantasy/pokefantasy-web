@@ -80,14 +80,15 @@
   box-shadow: none;
 }
 
-/* Botones siempre a la vista al final del sheet; los márgenes laterales negativos compensan el padding del
-   contenido (abajo no: con sticky, un margen negativo lo monta sobre lo anterior). El editor de foto tiene
+/* Botones siempre a la vista al final del sheet. Los márgenes negativos compensan el padding del contenido
+   del Sheet (1rem); abajo, margen y `bottom` van a juego para que pegados cubran ese padding (si no, asoma
+   el contenido por debajo) y no se monten sobre lo anterior cuando no hay scroll. El editor de foto tiene
    su propia fila de botones. */
 .modal-in-sheet .modal-actions,
 .modal-in-sheet .avatar-editor-actions {
   position: sticky;
-  bottom: 0;
-  margin: 0 -1rem;
+  bottom: -1rem;
+  margin: 0 -1rem -1rem;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border-top: 1px solid var(--border);
