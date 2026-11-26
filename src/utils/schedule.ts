@@ -1,4 +1,5 @@
 import type { JornadaDto } from '../api/leagues';
+import { parseLocalDate } from './dates';
 
 export type JornadaState = 'played' | 'current' | 'upcoming';
 
@@ -54,4 +55,26 @@ export function nextMatchFor(
     if (match) return { jornada, opponent: match.player1 === username ? match.player2 : match.player1 };
   }
   return null;
+}
+
+/** Una jornada en la vista previa de "Aplazar": su fecha y la que tendría. */
+export interface ShiftPreviewRow {
+  roundNumber: number;
+  from: string;
+  to: string;
+}
+
+/** Fechas que tendrían `fromRound` y las siguientes movidas `weeks` semanas (las sin fecha no se mueven). */
+export function shiftPreview(jornadas: JornadaDto[], fromRound: number, weeks: number): ShiftPreviewRow[] {
+  return jornadas
+    .filter((j): j is JornadaDto & { startDate: string } => j.roundNumber >= fromRound && !!j.startDate)
+    .map((j) => ({ roundNumber: j.roundNumber, from: j.startDate, to: addWeeks(j.startDate, weeks) }));
+}
+
+/** "YYYY-MM-DD" + semanas, en fecha local (sin pasar por UTC, que movería el día con el cambio de hora). */
+function addWeeks(iso: string, weeks: number): string {
+  const d = parseLocalDate(iso);
+  d.setDate(d.getDate() + weeks * 7);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }

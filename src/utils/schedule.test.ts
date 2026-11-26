@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jornadaStates, myResult, myResultText, nextMatchFor } from './schedule';
+import { jornadaStates, myResult, myResultText, nextMatchFor, shiftPreview } from './schedule';
 import type { JornadaDto, MatchDto } from '../api/leagues';
 
 const done = (id: string, p1: string, p2: string, winner: string, score?: [number, number]): MatchDto => ({
@@ -64,5 +64,34 @@ describe('nextMatchFor', () => {
   it('null si no le quedan partidos o no hay usuario', () => {
     expect(nextMatchFor([J1, J2], 'ash')).toBeNull();
     expect(nextMatchFor([J1, J2, J3], null)).toBeNull();
+  });
+});
+
+describe('shiftPreview', () => {
+  const dated = (dates: string[]) => dates.map((d, i) => jornada(i + 1, [], d));
+
+  it('mueve la jornada elegida y las siguientes', () => {
+    expect(shiftPreview(dated(['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26']), 3, 2)).toEqual([
+      { roundNumber: 3, from: '2026-12-19', to: '2027-01-02' },
+      { roundNumber: 4, from: '2026-12-26', to: '2027-01-09' },
+    ]);
+  });
+
+  it('con semanas negativas adelanta', () => {
+    expect(shiftPreview(dated(['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26']), 4, -1)).toEqual([
+      { roundNumber: 4, from: '2026-12-26', to: '2026-12-19' },
+    ]);
+  });
+
+  it('no se desplaza un día al cruzar el cambio de hora', () => {
+    expect(shiftPreview(dated(['2027-03-27']), 1, 1)).toEqual([
+      { roundNumber: 1, from: '2027-03-27', to: '2027-04-03' },
+    ]);
+  });
+
+  it('las jornadas sin fecha no salen', () => {
+    expect(shiftPreview([jornada(1, []), jornada(2, [], '2026-12-12')], 1, 1)).toEqual([
+      { roundNumber: 2, from: '2026-12-12', to: '2026-12-19' },
+    ]);
   });
 });
