@@ -31,8 +31,8 @@
   gap: 0.5rem;
 }
 
-/* "Aplazar desde aquí" junto a la fecha de la jornada */
-.shift {
+/* "Aplazar desde aquí" junto a la fecha de la jornada; anidado para ganar a .btn-ghost sin depender del orden de carga */
+.metaRow .shift {
   flex-shrink: 0;
   padding: 0.2rem 0.6rem;
   font-size: 0.75rem;

@@ -32,6 +32,8 @@ export default function ShiftScheduleModal({
   const warningId = useId();
   const [weeks, setWeeks] = useState(1);
   const rows = shiftPreview(jornadas, fromRound, weeks);
+  // Al cruzar de año, sin el año "sáb 2 ene" sería ambiguo; se decide para toda la lista, con un solo formato
+  const withYear = new Set(rows.flatMap((r) => [r.from.slice(0, 4), r.to.slice(0, 4)])).size > 1;
 
   return (
     // El aviso de la jornada actual describe el diálogo: el lector de pantalla lo lee al abrirlo
@@ -51,19 +53,15 @@ export default function ShiftScheduleModal({
       </select>
 
       <ul className="shift-preview" aria-label="Fechas nuevas">
-        {rows.map((r) => {
-          // Al cruzar de año, sin el año "sáb 2 ene" sería ambiguo
-          const withYear = r.from.slice(0, 4) !== r.to.slice(0, 4);
-          return (
-            <li key={r.roundNumber}>
-              <span className="shift-preview-round">Jornada {r.roundNumber}</span>
-              <span className="shift-preview-from">{formatDate(parseLocalDate(r.from), withYear)}</span>
-              <span className="sr-only"> pasa a </span>
-              <span aria-hidden="true">→</span>
-              <span className="shift-preview-to">{formatDate(parseLocalDate(r.to), withYear)}</span>
-            </li>
-          );
-        })}
+        {rows.map((r) => (
+          <li key={r.roundNumber}>
+            <span className="shift-preview-round">Jornada {r.roundNumber}</span>
+            <span className="shift-preview-from">{formatDate(parseLocalDate(r.from), withYear)}</span>
+            <span className="sr-only"> pasa a </span>
+            <span aria-hidden="true">→</span>
+            <span className="shift-preview-to">{formatDate(parseLocalDate(r.to), withYear)}</span>
+          </li>
+        ))}
       </ul>
 
       {isCurrent && (

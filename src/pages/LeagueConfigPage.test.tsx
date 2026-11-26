@@ -264,6 +264,12 @@ describe('LeagueConfigPage', () => {
   });
 });
 
+/** Calendario empezado con alguna jornada que aún se puede mover. */
+const OPEN_JORNADAS: leaguesApi.JornadaDto[] = [
+  { roundNumber: 1, matches: [], startDate: '2026-12-05', shiftable: false },
+  { roundNumber: 2, matches: [], startDate: '2026-12-12', shiftable: true },
+];
+
 describe('LeagueConfigPage — fecha de inicio con la temporada empezada', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -279,7 +285,7 @@ describe('LeagueConfigPage — fecha de inicio con la temporada empezada', () =>
 
   it('con la temporada empezada la fecha de inicio no se puede cambiar', async () => {
     vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
-      leagueId: 'league-1', jornadas: [], stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+      leagueId: 'league-1', jornadas: OPEN_JORNADAS, stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
     });
     renderPage();
 
@@ -294,12 +300,25 @@ describe('LeagueConfigPage — fecha de inicio con la temporada empezada', () =>
     });
     useAuthStore.setState({ username: 'misty' });
     vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
-      leagueId: 'league-1', jornadas: [], stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+      leagueId: 'league-1', jornadas: OPEN_JORNADAS, stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
     });
     renderPage();
 
     expect(await screen.findByText('La temporada ya ha empezado: el admin mueve las jornadas desde el Calendario.'))
       .toBeInTheDocument();
+    expect(screen.queryByText(/Aplazar desde aquí/)).not.toBeInTheDocument();
+  });
+
+  it('sin jornadas que mover (temporada terminada) no manda a «Aplazar desde aquí»', async () => {
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+      jornadas: OPEN_JORNADAS.map((j) => ({ ...j, shiftable: false })),
+    });
+    renderPage();
+
+    expect(await screen.findByText('La temporada ya ha empezado y no quedan jornadas por mover.'))
+      .toBeInTheDocument();
+    expect(screen.getByLabelText('Fecha del primer fin de semana')).toBeDisabled();
     expect(screen.queryByText(/Aplazar desde aquí/)).not.toBeInTheDocument();
   });
 

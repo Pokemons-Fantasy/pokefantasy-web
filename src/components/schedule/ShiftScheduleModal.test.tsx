@@ -33,9 +33,9 @@ describe('ShiftScheduleModal', () => {
 
     const rows = () => within(within(dialog).getByRole('list', { name: 'Fechas nuevas' }))
       .getAllByRole('listitem').map((li) => li.textContent);
-    // Por defecto, una semana; al cruzar de año, las fechas llevan el año
+    // Por defecto, una semana; si alguna fila cruza de año, todas llevan el año (mismo formato en la lista)
     expect(rows()).toEqual([
-      'Jornada 3sáb 19 dic pasa a →sáb 26 dic',
+      'Jornada 3sáb 19 dic 2026 pasa a →sáb 26 dic 2026',
       'Jornada 4sáb 26 dic 2026 pasa a →sáb 2 ene 2027',
     ]);
     await userEvent.selectOptions(within(dialog).getByLabelText('Semanas'), 'Aplazar 2 semanas');
@@ -72,6 +72,7 @@ describe('ShiftScheduleModal', () => {
     const move = screen.getByRole('button', { name: 'Moviendo…' });
     expect(move).toHaveAttribute('aria-disabled', 'true');
     expect(move).toBeEnabled();
+    expect(screen.getByLabelText('Semanas')).toBeDisabled();
     await userEvent.click(move);
     expect(onConfirm).not.toHaveBeenCalled();
     await userEvent.keyboard('{Escape}');
