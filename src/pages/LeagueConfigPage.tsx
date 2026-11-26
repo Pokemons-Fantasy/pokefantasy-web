@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import {
   getLeagueDetail,
   getLeagueSettings,
+  getSchedule,
   updateLeagueSettings,
   type BattleGameType,
   type LeagueSettings,
@@ -166,6 +167,13 @@ export default function LeagueConfigPage() {
     enabled: !!leagueId && beforeDraft,
     staleTime: 60_000,
   });
+  // El calendario existe desde que se completa el draft; dice si la temporada ya empezó (fecha de inicio fija).
+  const { data: schedule } = useQuery({
+    queryKey: ['schedule', leagueId],
+    queryFn: () => getSchedule(leagueId!),
+    enabled: !!leagueId && draftCompleted,
+    staleTime: 60_000,
+  });
   const canEdit = isAdmin && !draftInProgress;
   const fieldsDisabled = !canEdit;
 
@@ -288,7 +296,8 @@ export default function LeagueConfigPage() {
                 poolSize={beforeDraft ? pool?.length : undefined}
                 seasonTiers={draftCompleted ? { manageHref: isAdmin ? `/leagues/${leagueId}/tiers` : undefined } : undefined}
               />
-              <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
+              <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving}
+                seasonStarted={schedule?.seasonStarted} />
               <BattleSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
             </form>
 

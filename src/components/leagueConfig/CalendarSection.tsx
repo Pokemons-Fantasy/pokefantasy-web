@@ -49,9 +49,12 @@ function WindowField({ form, setField, disabled, id, label, dayKey, timeKey, hin
   );
 }
 
-/** Fecha de la primera jornada y cierre semanal de las ventanas de mercado. */
-export default function CalendarSection(props: SectionProps) {
-  const { form, setField, disabled } = props;
+/**
+ * Fecha de la primera jornada y cierre semanal de las ventanas de mercado. Con la temporada empezada
+ * (`seasonStarted`, del calendario) la fecha de inicio ya no se cambia: las jornadas se mueven con "Aplazar".
+ */
+export default function CalendarSection(props: SectionProps & { seasonStarted?: boolean }) {
+  const { form, setField, disabled, seasonStarted } = props;
   return (
     <section className="config-section" aria-labelledby="config-calendar">
       <h2 id="config-calendar" className="config-section-title">Calendario y ventanas</h2>
@@ -64,11 +67,13 @@ export default function CalendarSection(props: SectionProps) {
           type="date"
           value={form.seasonStartDate}
           onChange={(e) => setField('seasonStartDate', e.target.value)}
-          disabled={disabled}
+          disabled={disabled || seasonStarted}
           aria-describedby="seasonStartDate-hint"
         />
         <span id="seasonStartDate-hint" className="config-hint">
-          Sábado de la jornada 1. Cada jornada dura una semana.
+          {seasonStarted
+            ? 'La temporada ya ha empezado: para mover jornadas usa «Aplazar desde aquí» en el Calendario.'
+            : 'Sábado de la jornada 1. Cada jornada dura una semana.'}
         </span>
       </div>
 
