@@ -288,6 +288,21 @@ describe('LeagueConfigPage — fecha de inicio con la temporada empezada', () =>
     expect(screen.getByText(/usa «Aplazar desde aquí» en el Calendario/)).toBeInTheDocument();
   });
 
+  it('a quien no es admin no le manda a un botón que no ve', async () => {
+    mockedLeagueDetail.mockResolvedValue({
+      ...LEAGUE, members: [...LEAGUE.members, { username: 'misty', leagueRole: 'USER' }],
+    });
+    useAuthStore.setState({ username: 'misty' });
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', jornadas: [], stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+    });
+    renderPage();
+
+    expect(await screen.findByText('La temporada ya ha empezado: el admin mueve las jornadas desde el Calendario.'))
+      .toBeInTheDocument();
+    expect(screen.queryByText(/Aplazar desde aquí/)).not.toBeInTheDocument();
+  });
+
   it('sin seasonStarted (back viejo o temporada sin empezar) la fecha se puede editar', async () => {
     vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
       leagueId: 'league-1', jornadas: [], stealWindowOpen: false, swapWindowOpen: false,

@@ -297,7 +297,7 @@ export default function LeagueConfigPage() {
                 seasonTiers={draftCompleted ? { manageHref: isAdmin ? `/leagues/${leagueId}/tiers` : undefined } : undefined}
               />
               <CalendarSection form={form} setField={setField} disabled={fieldsDisabled || saving}
-                seasonStarted={schedule?.seasonStarted} />
+                seasonStarted={schedule?.seasonStarted} canShift={!!isAdmin} />
               <BattleSection form={form} setField={setField} disabled={fieldsDisabled || saving} />
             </form>
 
