@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import Modal from '../Modal';
 import type { JornadaDto } from '../../api/leagues';
-import { formatDay } from '../../utils/dates';
+import { formatDate, parseLocalDate } from '../../utils/dates';
 import { shiftPreview } from '../../utils/schedule';
 
 /** Semanas que se pueden elegir: de -12 a 12, sin el 0 (lo valida también el back). */
@@ -51,14 +51,19 @@ export default function ShiftScheduleModal({
       </select>
 
       <ul className="shift-preview" aria-label="Fechas nuevas">
-        {rows.map((r) => (
-          <li key={r.roundNumber}>
-            <span className="shift-preview-round">Jornada {r.roundNumber}</span>
-            <span className="shift-preview-from">{formatDay(r.from)}</span>
-            <span aria-hidden="true">→</span>
-            <span className="shift-preview-to">{formatDay(r.to)}</span>
-          </li>
-        ))}
+        {rows.map((r) => {
+          // Al cruzar de año, sin el año "sáb 2 ene" sería ambiguo
+          const withYear = r.from.slice(0, 4) !== r.to.slice(0, 4);
+          return (
+            <li key={r.roundNumber}>
+              <span className="shift-preview-round">Jornada {r.roundNumber}</span>
+              <span className="shift-preview-from">{formatDate(parseLocalDate(r.from), withYear)}</span>
+              <span className="sr-only"> pasa a </span>
+              <span aria-hidden="true">→</span>
+              <span className="shift-preview-to">{formatDate(parseLocalDate(r.to), withYear)}</span>
+            </li>
+          );
+        })}
       </ul>
 
       {isCurrent && (
@@ -69,8 +74,14 @@ export default function ShiftScheduleModal({
 
       <div className="modal-actions">
         <button type="button" className="btn-ghost" onClick={onClose} disabled={pending}>Cancelar</button>
-        <button type="button" className="btn-primary" onClick={() => onConfirm(weeks)} disabled={pending}>
-          Mover
+        {/* aria-disabled y no disabled: el botón pulsado conserva el foco mientras se guarda */}
+        <button
+          type="button"
+          className="btn-primary"
+          aria-disabled={pending}
+          onClick={() => { if (!pending) onConfirm(weeks); }}
+        >
+          {pending ? 'Moviendo…' : 'Mover'}
         </button>
       </div>
     </Modal>

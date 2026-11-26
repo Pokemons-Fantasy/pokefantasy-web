@@ -33,11 +33,17 @@ describe('ShiftScheduleModal', () => {
 
     const rows = () => within(within(dialog).getByRole('list', { name: 'Fechas nuevas' }))
       .getAllByRole('listitem').map((li) => li.textContent);
-    // Por defecto, una semana
-    expect(rows()).toEqual(['Jornada 3sáb 19 dic→sáb 26 dic', 'Jornada 4sáb 26 dic→sáb 2 ene']);
+    // Por defecto, una semana; al cruzar de año, las fechas llevan el año
+    expect(rows()).toEqual([
+      'Jornada 3sáb 19 dic pasa a →sáb 26 dic',
+      'Jornada 4sáb 26 dic 2026 pasa a →sáb 2 ene 2027',
+    ]);
     await userEvent.selectOptions(within(dialog).getByLabelText('Semanas'), 'Aplazar 2 semanas');
 
-    expect(rows()).toEqual(['Jornada 3sáb 19 dic→sáb 2 ene', 'Jornada 4sáb 26 dic→sáb 9 ene']);
+    expect(rows()).toEqual([
+      'Jornada 3sáb 19 dic 2026 pasa a →sáb 2 ene 2027',
+      'Jornada 4sáb 26 dic 2026 pasa a →sáb 9 ene 2027',
+    ]);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Mover' }));
     expect(onConfirm).toHaveBeenCalledWith(2);
   });
@@ -46,7 +52,7 @@ describe('ShiftScheduleModal', () => {
     renderModal();
     await userEvent.selectOptions(screen.getByLabelText('Semanas'), 'Adelantar 1 semana');
 
-    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Jornada 3sáb 19 dic→sáb 12 dic');
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Jornada 3sáb 19 dic pasa a →sáb 12 dic');
   });
 
   it('avisa de que se reabre el mercado en la jornada actual, como descripción del diálogo', () => {
@@ -60,10 +66,14 @@ describe('ShiftScheduleModal', () => {
     expect(screen.queryByText(/Se reabrirá el mercado/)).not.toBeInTheDocument();
   });
 
-  it('pendiente: Mover deshabilitado y Escape no cierra', async () => {
-    const { onClose } = renderModal({ pending: true });
+  it('pendiente: Mover no se puede pulsar pero conserva el foco, y Escape no cierra', async () => {
+    const { onClose, onConfirm } = renderModal({ pending: true });
 
-    expect(screen.getByRole('button', { name: 'Mover' })).toBeDisabled();
+    const move = screen.getByRole('button', { name: 'Moviendo…' });
+    expect(move).toHaveAttribute('aria-disabled', 'true');
+    expect(move).toBeEnabled();
+    await userEvent.click(move);
+    expect(onConfirm).not.toHaveBeenCalled();
     await userEvent.keyboard('{Escape}');
     expect(onClose).not.toHaveBeenCalled();
   });

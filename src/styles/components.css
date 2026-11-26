@@ -14,7 +14,8 @@
   transition: box-shadow 0.15s, opacity 0.15s;
 }
 .btn-primary:hover { box-shadow: 0 0 18px var(--accent-glow); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
 .btn-ghost {
   padding: 0.45rem 1rem;
