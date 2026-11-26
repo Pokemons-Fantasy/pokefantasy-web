@@ -49,9 +49,10 @@ describe('ShiftScheduleModal', () => {
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Jornada 3sáb 19 dic→sáb 12 dic');
   });
 
-  it('avisa de que se reabre el mercado en la jornada actual', () => {
+  it('avisa de que se reabre el mercado en la jornada actual, como descripción del diálogo', () => {
     renderModal({ isCurrent: true });
-    expect(screen.getByText(/Se reabrirá el mercado de esta jornada/)).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Mover jornadas' }))
+      .toHaveAccessibleDescription(/Se reabrirá el mercado de esta jornada/);
   });
 
   it('en una jornada futura no hay aviso de mercado', () => {

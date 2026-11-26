@@ -29,11 +29,13 @@ export default function ShiftScheduleModal({
 }: ShiftScheduleModalProps) {
   const titleId = useId();
   const selectId = useId();
+  const warningId = useId();
   const [weeks, setWeeks] = useState(1);
   const rows = shiftPreview(jornadas, fromRound, weeks);
 
   return (
-    <Modal labelledBy={titleId} onClose={onClose} canClose={!pending}>
+    // El aviso de la jornada actual describe el diálogo: el lector de pantalla lo lee al abrirlo
+    <Modal labelledBy={titleId} describedBy={isCurrent ? warningId : undefined} onClose={onClose} canClose={!pending}>
       <h2 id={titleId}>Mover jornadas</h2>
       <p className="shift-intro">La jornada {fromRound} y todas las siguientes se mueven a la vez.</p>
 
@@ -60,7 +62,7 @@ export default function ShiftScheduleModal({
       </ul>
 
       {isCurrent && (
-        <p className="field-hint shift-warning" role="note">
+        <p id={warningId} className="field-hint shift-warning">
           Se reabrirá el mercado de esta jornada y se borrarán las alineaciones ya declaradas.
         </p>
       )}
