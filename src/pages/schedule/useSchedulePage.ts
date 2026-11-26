@@ -9,6 +9,7 @@ import {
   recordMatchResult,
   correctMatchResult,
   revertMatchResult,
+  shiftSchedule,
   getMyCoinBalance,
   type MatchDto,
   type JornadaDto,
@@ -178,6 +179,22 @@ export function useSchedulePage() {
 
   const editing = correcting || reverting;
 
+  // Aplazar (admin): jornada desde la que se mueve; el back decide cuáles se pueden (`shiftable`).
+  const [shiftingJornada, setShiftingJornada] = useState<JornadaDto | null>(null);
+  const { mutate: shiftJornadas, isPending: shifting } = useMutation({
+    mutationFn: (weeks: number) => shiftSchedule(leagueId!, shiftingJornada!.roundNumber, weeks),
+    onSuccess: () => {
+      setShiftingJornada(null);
+      addToast('success', 'Calendario actualizado');
+      queryClient.invalidateQueries({ queryKey: ['schedule', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['activity', leagueId] });
+      queryClient.invalidateQueries({ queryKey: ['league-settings', leagueId] });
+    },
+    onError: (err) => addToast('error', extractErrorMessage(err, 'No se pudo mover el calendario')),
+  });
+  /** Botón "Aplazar desde aquí" de la jornada: solo el admin y si el back la marca como aplazable. */
+  const onShiftFor = (j: JornadaDto) => (isAdmin && j.shiftable ? () => setShiftingJornada(j) : undefined);
+
   const jornadas = schedule?.jornadas ?? [];
   const states = jornadaStates(jornadas);
   const currentIndex = states.indexOf('current');
@@ -263,6 +280,11 @@ export function useSchedulePage() {
     revertResult,
     reverting,
     editing,
+    shiftingJornada,
+    setShiftingJornada,
+    shiftJornadas,
+    shifting,
+    onShiftFor,
     jornadas,
     states,
     currentIndex,

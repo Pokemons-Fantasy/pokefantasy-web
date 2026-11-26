@@ -58,6 +58,18 @@
   font-size: 0.75rem;
 }
 
+/* "Aplazar desde aquí" (admin): al final de la cabecera */
+.jornada-shift { margin-left: auto; padding: 0.2rem 0.6rem; font-size: 0.75rem; }
+
+/* Modal "Mover jornadas" */
+.shift-intro { color: var(--text-2); font-size: 0.9rem; margin-bottom: 0.75rem; }
+.shift-preview { list-style: none; margin: 0.75rem 0; padding: 0; display: grid; gap: 0.35rem; }
+.shift-preview li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.shift-preview-round { min-width: 5.5rem; color: var(--text-2); }
+.shift-preview-from { color: var(--text-3); }
+.shift-preview-to { font-weight: 600; }
+.shift-warning { color: var(--warning); margin-bottom: 0.5rem; }
+
 .jornada-toggle {
   width: 100%;
   display: flex;

@@ -19,8 +19,24 @@ interface JornadaCardProps {
   onPlay: (match: MatchDto) => void;
   onLineup: (match: MatchDto) => void;
   onImport: (match: MatchDto) => void;
+  /** Admin y jornada aplazable: abre "Mover jornadas". Sin él no hay botón. */
+  onShift?: () => void;
   spriteByName: Map<string, string>;
   ref?: Ref<HTMLElement>;
+}
+
+/** "Aplazar desde aquí" (admin), en la cabecera de la jornada; también lo usa la vista móvil. */
+export function ShiftButton({ roundNumber, onClick }: { roundNumber: number; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="btn-ghost jornada-shift"
+      aria-label={`Aplazar desde aquí: jornada ${roundNumber}`}
+      onClick={onClick}
+    >
+      Aplazar desde aquí
+    </button>
+  );
 }
 
 /**
@@ -28,7 +44,8 @@ interface JornadaCardProps {
  * las próximas se muestran desplegadas.
  */
 export default function JornadaCard({
-  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, onImport, spriteByName, ref,
+  jornada, state, label, username, isAdmin, expanded, onToggle, onRecord, onEdit, onPlay, onLineup, onImport, onShift,
+  spriteByName, ref,
 }: JornadaCardProps) {
   const n = jornada.roundNumber;
   const titleId = `jornada-${n}-title`;
@@ -84,6 +101,7 @@ export default function JornadaCard({
         <h2 id={titleId} className="jornada-heading jornada-title">{label}</h2>
         {state === 'current' && <span className="jornada-current-tag">Jornada actual</span>}
         {date}
+        {onShift && <ShiftButton roundNumber={n} onClick={onShift} />}
       </div>
       {matches}
     </section>
