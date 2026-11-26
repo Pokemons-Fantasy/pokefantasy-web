@@ -356,6 +356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leagues/{leagueId}/schedule/shift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["shiftSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leagues/{leagueId}/schedule/matches/{matchId}/import": {
         parameters: {
             query?: never;
@@ -1130,6 +1146,12 @@ export interface components {
         StealPokemonRequest: {
             targetPokemonName?: string;
         };
+        ShiftScheduleRequest: {
+            /** Format: int32 */
+            fromRound?: number;
+            /** Format: int32 */
+            weeks?: number;
+        };
         ImportSeriesRequest: {
             replayIds?: string[];
         };
@@ -1305,6 +1327,7 @@ export interface components {
             stealDeadline?: string;
             swapDeadline?: string;
             lineupOpensAt?: string;
+            shiftable?: boolean;
         };
         LineupResponse: {
             pokemonNames?: string[];
@@ -1336,6 +1359,7 @@ export interface components {
             jornadas?: components["schemas"]["JornadaResponse"][];
             stealWindowOpen?: boolean;
             swapWindowOpen?: boolean;
+            seasonStarted?: boolean;
         };
         ReplayCandidateResponse: {
             id?: string;
@@ -1450,7 +1474,7 @@ export interface components {
             id?: string;
             leagueId?: string;
             /** @enum {string} */
-            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED";
+            type?: "STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED" | "SCHEDULE_SHIFTED";
             actorUsername?: string;
             targetUsername?: string;
             pokemonName?: string;
@@ -1463,6 +1487,8 @@ export interface components {
             toTier?: string;
             /** Format: int32 */
             roundNumber?: number;
+            /** Format: int32 */
+            weeks?: number;
             /** Format: date-time */
             createdAt?: string;
         };
@@ -2183,6 +2209,30 @@ export interface operations {
             };
         };
     };
+    shiftSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leagueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShiftScheduleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     importSeries: {
         parameters: {
             query?: never;
@@ -2854,7 +2904,7 @@ export interface operations {
                 page?: number;
                 size?: number;
                 username?: string;
-                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED")[];
+                types?: ("STEAL" | "BENCH_SWAP" | "BENCH_PURCHASE" | "POKEMON_RELEASED" | "TRADE_COMPLETED" | "MATCH_RESULT" | "MATCH_RESULT_REVERTED" | "TIER_CHANGE" | "COIN_EARNED" | "COIN_REVOKED" | "DRAFT_COINS" | "CLAUSE_RAISED" | "SCHEDULE_SHIFTED")[];
             };
             header?: never;
             path: {

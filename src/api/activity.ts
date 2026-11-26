@@ -14,7 +14,8 @@ export interface ActivityEvent {
     | 'COIN_EARNED'
     | 'COIN_REVOKED'
     | 'DRAFT_COINS'
-    | 'CLAUSE_RAISED';
+    | 'CLAUSE_RAISED'
+    | 'SCHEDULE_SHIFTED';
   actorUsername: string;
   targetUsername?: string;
   pokemonName?: string;
@@ -25,6 +26,8 @@ export interface ActivityEvent {
   fromTier?: string;
   toTier?: string;
   roundNumber?: number;
+  /** SCHEDULE_SHIFTED: semanas que se movió el calendario (negativas si se adelantó). */
+  weeks?: number;
   createdAt: string;
 }
 
