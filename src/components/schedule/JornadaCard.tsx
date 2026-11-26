@@ -26,11 +26,16 @@ interface JornadaCardProps {
 }
 
 /** "Aplazar desde aquí" (admin), en la cabecera de la jornada; también lo usa la vista móvil. */
-export function ShiftButton({ roundNumber, onClick }: { roundNumber: number; onClick: () => void }) {
+export function ShiftButton({ roundNumber, onClick, className = 'jornada-shift' }: {
+  roundNumber: number;
+  onClick: () => void;
+  /** Por defecto, el estilo de la cabecera de escritorio. */
+  className?: string;
+}) {
   return (
     <button
       type="button"
-      className="btn-ghost jornada-shift"
+      className={`btn-ghost ${className}`}
       aria-label={`Aplazar desde aquí: jornada ${roundNumber}`}
       onClick={onClick}
     >

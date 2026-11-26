@@ -26,6 +26,7 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
 
   const selected = resolveJornada(jornadas, params.get('jornada'));
   const jornada = jornadas.find((j) => j.roundNumber === selected);
+  const onShift = jornada && onShiftFor(jornada);
   useEffect(() => {
     if (focusOnSelect.current === null || focusOnSelect.current !== selected) return;
     focusOnSelect.current = null;
@@ -98,14 +99,13 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
             aria-labelledby={`jornadas-tab-${jornada.roundNumber}`}
             className={styles.panel}
           >
-            <p className={styles.meta}>
-              {jornadaLabel(jornada)}
-              {jornada.startDate && ` · ${formatDay(jornada.startDate)}`}
-            </p>
-            {(() => {
-              const onShift = onShiftFor(jornada);
-              return onShift && <ShiftButton roundNumber={jornada.roundNumber} onClick={onShift} />;
-            })()}
+            <div className={styles.metaRow}>
+              <p className={styles.meta}>
+                {jornadaLabel(jornada)}
+                {jornada.startDate && ` · ${formatDay(jornada.startDate)}`}
+              </p>
+              {onShift && <ShiftButton roundNumber={jornada.roundNumber} onClick={onShift} className={styles.shift} />}
+            </div>
             <JornadaView jornada={jornada} plays={plays} matchProps={matchProps} />
           </section>
         </>

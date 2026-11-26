@@ -12,19 +12,19 @@ import type { SchedulePageModel } from './useSchedulePage';
 export default function ScheduleModals({ model }: { model: SchedulePageModel }) {
   const {
     leagueId, username, pendingMatch, setPendingMatch, editingMatch, setEditingMatch, recordTitleId, editTitleId, winnerScore, setWinnerScore, loserScore, setLoserScore, score, scoreError, playingMatch, setPlayingMatch, lineupMatch, setLineupMatch, leagueSettings, playStatus, showdownNameOf, myPicks, importMatch, setImportMatch, importBestOf, recordResult, recording, correctResult, correcting, revertResult, reverting, editing,
-    shiftingJornada, setShiftingJornada, shiftJornadas, shifting, jornadas, states,
+    shiftingRound, setShiftingRound, shiftJornadas, shifting, jornadas, states,
   } = model;
 
   return (
     <>
-    {shiftingJornada && (
+    {shiftingRound !== null && (
       <ShiftScheduleModal
         jornadas={jornadas}
-        fromRound={shiftingJornada.roundNumber}
-        isCurrent={states[jornadas.findIndex((j) => j.roundNumber === shiftingJornada.roundNumber)] === 'current'}
+        fromRound={shiftingRound}
+        isCurrent={states[jornadas.findIndex((j) => j.roundNumber === shiftingRound)] === 'current'}
         pending={shifting}
         onConfirm={(weeks) => shiftJornadas(weeks)}
-        onClose={() => setShiftingJornada(null)}
+        onClose={() => setShiftingRound(null)}
       />
     )}
 

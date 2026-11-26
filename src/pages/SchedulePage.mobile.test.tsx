@@ -185,3 +185,20 @@ describe('SchedulePage en móvil — aplazar', () => {
     expect(within(panel()).queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
   });
 });
+
+describe('SchedulePage en móvil — aplazar jornadas jugadas', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('una jornada jugada no ofrece aplazar aunque el back la marque', async () => {
+    api.getSchedule.mockResolvedValue({ ...EN_CURSO, jornadas: EN_CURSO.jornadas.map((j) => ({ ...j, shiftable: true })) });
+    renderAt(URL + '?jornada=1');
+
+    await tabs();
+    expect(within(panel()).queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
+  });
+});
