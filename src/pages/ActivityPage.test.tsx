@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,7 +20,9 @@ vi.mock('../api/pokemons', async (importOriginal) => ({
 const feed = vi.mocked(activityApi.getActivityFeed);
 const closedList = vi.mocked(pokemonsApi.getClosedList);
 
-const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
+// Reloj fijo: con la hora real, entre las 00:00 y las 00:12 los eventos de "hace unos minutos" caen en "Ayer"
+const NOW = new Date(2026, 5, 15, 12, 0);
+const hoursAgo = (h: number) => new Date(NOW.getTime() - h * 3_600_000).toISOString();
 const EVENTS: ActivityEvent[] = [
   { id: 'e1', type: 'STEAL', actorUsername: 'brock', targetUsername: 'misty', pokemonName: 'staryu',
     coinsAmount: 1, createdAt: hoursAgo(0.1) },
@@ -43,12 +45,19 @@ function renderPage() {
 describe('ActivityPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Solo Date: los temporizadores reales siguen, para findBy y userEvent
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
     localStorage.clear();
     useAuthStore.setState({ username: 'ash' });
     feed.mockResolvedValue({ events: EVENTS, page: 0, totalPages: 1, hasMore: false });
     closedList.mockResolvedValue([
       { id: 'c1', pokemonId: 121, pokemonName: 'staryu', nominatedBy: 'misty', sprite: '' },
     ]);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('pide el feed sin monedas y lo agrupa por día con los nombres resaltados', async () => {
