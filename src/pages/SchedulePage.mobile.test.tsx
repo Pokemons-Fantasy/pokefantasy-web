@@ -21,6 +21,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   correctMatchResult: vi.fn(),
   revertMatchResult: vi.fn(),
   recordMatchResult: vi.fn(),
+  shiftSchedule: vi.fn(),
   getLeagueSettings: vi.fn().mockResolvedValue({}),
   getReplayCandidates: vi.fn().mockResolvedValue([]),
 }));
@@ -162,5 +163,42 @@ describe('SchedulePage en móvil', () => {
     await tabs();
     await userEvent.click(within(screen.getByTestId('match-m3')).getByRole('button', { name: /Resultado/ }));
     expect(await screen.findByRole('dialog', { name: '¿Quién ganó?' })).toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage en móvil — aplazar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('admin ve "Aplazar desde aquí" en la jornada seleccionada si es aplazable', async () => {
+    const withShiftable = { ...EN_CURSO, jornadas: EN_CURSO.jornadas.map((j) => ({ ...j, shiftable: j.roundNumber === 2 })) };
+    api.getSchedule.mockResolvedValue(withShiftable);
+    renderAt(URL);
+
+    await tabs();
+    expect(within(panel()).getByRole('button', { name: 'Aplazar desde aquí: jornada 2' })).toBeInTheDocument();
+    await userEvent.click(within(await tabs()).getByRole('tab', { name: 'Jornada 1, jugada' }));
+    expect(within(panel()).queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage en móvil — aplazar jornadas jugadas', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+  });
+
+  it('una jornada jugada no ofrece aplazar aunque el back la marque', async () => {
+    api.getSchedule.mockResolvedValue({ ...EN_CURSO, jornadas: EN_CURSO.jornadas.map((j) => ({ ...j, shiftable: true })) });
+    renderAt(URL + '?jornada=1');
+
+    await tabs();
+    expect(within(panel()).queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
   });
 });

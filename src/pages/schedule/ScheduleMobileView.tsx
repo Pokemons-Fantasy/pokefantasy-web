@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { SkeletonTable } from '../../components/SkeletonTable';
 import ChipTabs from '../../components/shell/ChipTabs';
 import JornadaMatches from '../../components/schedule/JornadaMatches';
+import { ShiftButton } from '../../components/schedule/JornadaCard';
 import { formatDay } from '../../utils/dates';
 import { mineFirst, resolveJornada } from '../../utils/scheduleView';
 import type { SchedulePageModel } from './useSchedulePage';
@@ -12,7 +13,7 @@ import styles from './ScheduleMobileView.module.css';
 export default function ScheduleMobileView({ model }: { model: SchedulePageModel }) {
   const {
     isLoading, schedule, jornadas, states, next, jornadaLabel, username, isAdmin,
-    openRecord, openEdit, setPlayingMatch, openLineup, openImport, spriteByName,
+    openRecord, openEdit, setPlayingMatch, openLineup, openImport, spriteByName, onShiftFor,
   } = model;
   const [params, setParams] = useSearchParams();
   const selectJornada = (n: number) => setParams((prev) => {
@@ -25,6 +26,7 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
 
   const selected = resolveJornada(jornadas, params.get('jornada'));
   const jornada = jornadas.find((j) => j.roundNumber === selected);
+  const onShift = jornada && onShiftFor(jornada);
   useEffect(() => {
     if (focusOnSelect.current === null || focusOnSelect.current !== selected) return;
     focusOnSelect.current = null;
@@ -97,10 +99,13 @@ export default function ScheduleMobileView({ model }: { model: SchedulePageModel
             aria-labelledby={`jornadas-tab-${jornada.roundNumber}`}
             className={styles.panel}
           >
-            <p className={styles.meta}>
-              {jornadaLabel(jornada)}
-              {jornada.startDate && ` · ${formatDay(jornada.startDate)}`}
-            </p>
+            <div className={styles.metaRow}>
+              <p className={styles.meta}>
+                {jornadaLabel(jornada)}
+                {jornada.startDate && ` · ${formatDay(jornada.startDate)}`}
+              </p>
+              {onShift && <ShiftButton roundNumber={jornada.roundNumber} onClick={onShift} className={styles.shift} />}
+            </div>
             <JornadaView jornada={jornada} plays={plays} matchProps={matchProps} />
           </section>
         </>

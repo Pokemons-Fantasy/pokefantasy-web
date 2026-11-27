@@ -139,3 +139,17 @@ describe('CLAUSE_RAISED', () => {
     expect(ACTIVITY_FILTERS.find((f) => f.key === 'steal')?.types).toContain('CLAUSE_RAISED');
   });
 });
+
+describe('SCHEDULE_SHIFTED', () => {
+  it('aplazar y adelantar el calendario', () => {
+    expect(partsText(describeEvent(ev({ type: 'SCHEDULE_SHIFTED', actorUsername: 'ash', roundNumber: 6, weeks: 2 }))))
+      .toBe('ash aplazó el calendario 2 semanas desde la jornada 6');
+    expect(partsText(describeEvent(ev({ type: 'SCHEDULE_SHIFTED', actorUsername: 'ash', roundNumber: 6, weeks: -1 }))))
+      .toBe('ash adelantó el calendario 1 semana desde la jornada 6');
+  });
+
+  it('no entra en los filtros del feed hasta que el back desplegado conozca el tipo', () => {
+    // El back anterior responde 400 a un tipo desconocido en `types`.
+    for (const filter of ACTIVITY_FILTERS) expect(filter.types).not.toContain('SCHEDULE_SHIFTED');
+  });
+});

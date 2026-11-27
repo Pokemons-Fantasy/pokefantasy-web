@@ -19,6 +19,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   correctMatchResult: vi.fn(),
   revertMatchResult: vi.fn(),
   recordMatchResult: vi.fn(),
+  shiftSchedule: vi.fn(),
   getLeagueSettings: vi.fn().mockResolvedValue({}),
   getReplayCandidates: vi.fn().mockResolvedValue([]),
 }));
@@ -527,5 +528,77 @@ describe('SchedulePage — importar de Showdown', () => {
     expect(link).toHaveAttribute('href', 'https://replay.pokemonshowdown.com/g2');
     expect(link).toHaveAttribute('target', '_blank');
     expect(within(row).getByText('misty llevó Raichu, que no está en su alineación.')).toBeInTheDocument();
+  });
+});
+
+describe('SchedulePage — aplazar jornadas', () => {
+  const SHIFTABLE: ScheduleResponse = {
+    leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false,
+    jornadas: [
+      { roundNumber: 1, startDate: '2026-12-05', matches: [
+        { id: 'a1', player1: 'ash', player2: 'misty', winnerUsername: 'ash', status: 'COMPLETED' }] },
+      { roundNumber: 2, startDate: '2026-12-12', shiftable: true, matches: [
+        { id: 'a2', player1: 'misty', player2: 'ash', status: 'PENDING' }] },
+      { roundNumber: 3, startDate: '2026-12-19', shiftable: true, matches: [
+        { id: 'a3', player1: 'ash', player2: 'misty', status: 'PENDING' }] },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'ash' });
+    useToastStore.setState({ toasts: [] });
+    api.getLeagueDetail.mockResolvedValue(LEAGUE);
+    api.getMyCoinBalance.mockResolvedValue({ coins: 100 });
+    api.getSchedule.mockResolvedValue(SHIFTABLE);
+    api.shiftSchedule.mockResolvedValue(undefined);
+  });
+
+  it('admin aplaza desde una jornada aplazable', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const buttons = await screen.findAllByRole('button', { name: /Aplazar desde aquí/ });
+    expect(buttons).toHaveLength(2);
+    await user.click(screen.getByRole('button', { name: 'Aplazar desde aquí: jornada 2' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mover jornadas' });
+    expect(within(dialog).getByText(/Se reabrirá el mercado/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Mover' }));
+
+    await waitFor(() => expect(api.shiftSchedule).toHaveBeenCalledWith('league-1', 2, 1));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(useToastStore.getState().toasts.map((t) => t.message)).toContain('Calendario actualizado');
+  });
+
+  it('sin shiftable (back viejo) no hay botón de aplazar', async () => {
+    api.getSchedule.mockResolvedValue(SCHEDULE);
+    renderPage();
+
+    await screen.findAllByText('brock');
+    expect(screen.queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
+  });
+
+  it('un jugador no admin no ve el botón', async () => {
+    useAuthStore.setState({ username: 'misty' });
+    renderPage();
+
+    await screen.findByTestId('match-a3');
+    expect(screen.queryByRole('button', { name: /Aplazar desde aquí/ })).not.toBeInTheDocument();
+  });
+
+  it('si el back rechaza el aplazamiento, el modal sigue abierto con el error', async () => {
+    api.shiftSchedule.mockRejectedValue(Object.assign(new Error('400'), {
+      isAxiosError: true,
+      response: { status: 400, data: { code: 'BAD_REQUEST', message: 'No se puede mover una jornada a una semana ya pasada.' } },
+    }));
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Aplazar desde aquí: jornada 3' }));
+    await user.click(screen.getByRole('button', { name: 'Mover' }));
+
+    await waitFor(() => expect(useToastStore.getState().toasts.map((t) => t.message))
+      .toContain('No se puede mover una jornada a una semana ya pasada.'));
+    expect(screen.getByRole('dialog', { name: 'Mover jornadas' })).toBeInTheDocument();
   });
 });

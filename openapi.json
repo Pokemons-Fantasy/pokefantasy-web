@@ -919,6 +919,39 @@
                 }
             }
         },
+        "/v1/leagues/{leagueId}/schedule/shift": {
+            "post": {
+                "tags": [
+                    "schedule-controller"
+                ],
+                "operationId": "shiftSchedule",
+                "parameters": [
+                    {
+                        "name": "leagueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShiftScheduleRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1/leagues/{leagueId}/schedule/matches/{matchId}/import": {
             "post": {
                 "tags": [
@@ -1886,7 +1919,8 @@
                                     "COIN_EARNED",
                                     "COIN_REVOKED",
                                     "DRAFT_COINS",
-                                    "CLAUSE_RAISED"
+                                    "CLAUSE_RAISED",
+                                    "SCHEDULE_SHIFTED"
                                 ]
                             },
                             "uniqueItems": true
@@ -2554,6 +2588,19 @@
                     }
                 }
             },
+            "ShiftScheduleRequest": {
+                "type": "object",
+                "properties": {
+                    "fromRound": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "weeks": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
             "ImportSeriesRequest": {
                 "type": "object",
                 "properties": {
@@ -3009,6 +3056,9 @@
                     },
                     "lineupOpensAt": {
                         "type": "string"
+                    },
+                    "shiftable": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -3110,6 +3160,9 @@
                         "type": "boolean"
                     },
                     "swapWindowOpen": {
+                        "type": "boolean"
+                    },
+                    "seasonStarted": {
                         "type": "boolean"
                     }
                 }
@@ -3452,7 +3505,8 @@
                             "COIN_EARNED",
                             "COIN_REVOKED",
                             "DRAFT_COINS",
-                            "CLAUSE_RAISED"
+                            "CLAUSE_RAISED",
+                            "SCHEDULE_SHIFTED"
                         ]
                     },
                     "actorUsername": {
@@ -3482,6 +3536,10 @@
                         "type": "string"
                     },
                     "roundNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "weeks": {
                         "type": "integer",
                         "format": "int32"
                     },

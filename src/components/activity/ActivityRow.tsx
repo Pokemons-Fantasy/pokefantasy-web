@@ -15,6 +15,7 @@ const ICON: Record<ActivityEvent['type'], string> = {
   COIN_EARNED: '●',
   COIN_REVOKED: '●',
   DRAFT_COINS: '●',
+  SCHEDULE_SHIFTED: '📅',
 };
 
 interface ActivityRowProps {

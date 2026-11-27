@@ -192,6 +192,8 @@ export interface JornadaDto {
   swapDeadline?: string;    // ISO datetime "YYYY-MM-DDTHH:mm:ss"
   /** Desde cuándo se puede declarar la alineación (cierre del mercado); null sin fecha. */
   lineupOpensAt?: string | null;
+  /** El admin puede mover esta jornada y las siguientes; lo decide el back (falta en el back anterior). */
+  shiftable?: boolean;
 }
 
 export const declareLineup = async (
@@ -209,7 +211,14 @@ export interface ScheduleResponse {
   /** Estado de las ventanas calculado por el backend (única fuente de verdad). */
   stealWindowOpen: boolean;
   swapWindowOpen: boolean;
+  /** La jornada 1 tiene resultados o cerró su mercado: la fecha de inicio ya no se cambia (falta en el back anterior). */
+  seasonStarted?: boolean;
 }
+
+/** Admin: mueve la jornada `fromRound` y las siguientes `weeks` semanas (negativas para adelantar). */
+export const shiftSchedule = async (leagueId: string, fromRound: number, weeks: number): Promise<void> => {
+  await apiClient.post(`/v1/leagues/${leagueId}/schedule/shift`, { fromRound, weeks });
+};
 
 export const getSchedule = async (leagueId: string): Promise<ScheduleResponse | null> => {
   const { data, status } = await apiClient.get<ScheduleResponse>(`/v1/leagues/${leagueId}/schedule`, {

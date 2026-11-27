@@ -14,6 +14,7 @@ vi.mock('../api/leagues', async (importOriginal) => ({
   getLeagueDetail: vi.fn(),
   getLeagueSettings: vi.fn(),
   updateLeagueSettings: vi.fn(),
+  getSchedule: vi.fn().mockResolvedValue(null),
 }));
 vi.mock('../api/pokemons', async (importOriginal) => ({
   ...(await importOriginal<typeof pokemonsApi>()),
@@ -260,5 +261,76 @@ describe('LeagueConfigPage', () => {
     await waitFor(() => expect(mockedUpdateSettings).toHaveBeenCalledWith('league-1', expect.objectContaining({
       battleGameType: 'SINGLES', pickedTeamSize: 6, teamSheet: 'OPEN', bestOf: 1,
     })));
+  });
+});
+
+/** Calendario empezado con alguna jornada que aún se puede mover. */
+const OPEN_JORNADAS: leaguesApi.JornadaDto[] = [
+  { roundNumber: 1, matches: [], startDate: '2026-12-05', shiftable: false },
+  { roundNumber: 2, matches: [], startDate: '2026-12-12', shiftable: true },
+];
+
+describe('LeagueConfigPage — fecha de inicio con la temporada empezada', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ username: 'admin1' });
+    mockedLeagueDetail.mockResolvedValue(LEAGUE);
+    // El calendario solo existe (y solo se pide) con el draft completado
+    mockedDraftStatus.mockResolvedValue({
+      id: 'd1', status: 'COMPLETED', turnOrder: ['admin1'], currentTurn: null, currentRound: 1, picks: [],
+    });
+    mockedLeagueSettings.mockResolvedValue({ ...SETTINGS, seasonStartDate: '2026-12-05' });
+    mockedClosedList.mockResolvedValue([]);
+  });
+
+  it('con la temporada empezada la fecha de inicio no se puede cambiar', async () => {
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', jornadas: OPEN_JORNADAS, stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+    });
+    renderPage();
+
+    const date = await screen.findByLabelText('Fecha del primer fin de semana');
+    await waitFor(() => expect(date).toBeDisabled());
+    expect(screen.getByText(/usa «Aplazar desde aquí» en el Calendario/)).toBeInTheDocument();
+  });
+
+  it('a quien no es admin no le manda a un botón que no ve', async () => {
+    mockedLeagueDetail.mockResolvedValue({
+      ...LEAGUE, members: [...LEAGUE.members, { username: 'misty', leagueRole: 'USER' }],
+    });
+    useAuthStore.setState({ username: 'misty' });
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', jornadas: OPEN_JORNADAS, stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+    });
+    renderPage();
+
+    expect(await screen.findByText('La temporada ya ha empezado: el admin mueve las jornadas desde el Calendario.'))
+      .toBeInTheDocument();
+    expect(screen.queryByText(/Aplazar desde aquí/)).not.toBeInTheDocument();
+  });
+
+  it('sin jornadas que mover (temporada terminada) no manda a «Aplazar desde aquí»', async () => {
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', stealWindowOpen: false, swapWindowOpen: false, seasonStarted: true,
+      jornadas: OPEN_JORNADAS.map((j) => ({ ...j, shiftable: false })),
+    });
+    renderPage();
+
+    expect(await screen.findByText('La temporada ya ha empezado y no quedan jornadas por mover.'))
+      .toBeInTheDocument();
+    expect(screen.getByLabelText('Fecha del primer fin de semana')).toBeDisabled();
+    expect(screen.queryByText(/Aplazar desde aquí/)).not.toBeInTheDocument();
+  });
+
+  it('sin seasonStarted (back viejo o temporada sin empezar) la fecha se puede editar', async () => {
+    vi.mocked(leaguesApi.getSchedule).mockResolvedValue({
+      leagueId: 'league-1', jornadas: [], stealWindowOpen: false, swapWindowOpen: false,
+    });
+    renderPage();
+
+    const date = await screen.findByLabelText('Fecha del primer fin de semana');
+    await waitFor(() => expect(vi.mocked(leaguesApi.getSchedule)).toHaveBeenCalled());
+    expect(date).toBeEnabled();
+    expect(screen.getByText('Sábado de la jornada 1. Cada jornada dura una semana.')).toBeInTheDocument();
   });
 });

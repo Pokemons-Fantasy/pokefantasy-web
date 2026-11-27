@@ -4,7 +4,11 @@ import { coinsLabel } from './coins';
 import { formatDayLabel } from './dates';
 
 export type ActivityType = ActivityEvent['type'];
-export type ActivityCategory = 'steal' | 'trade' | 'bench' | 'match' | 'tier' | 'coins';
+/**
+ * `calendar`: aplazamientos. No entra en `ACTIVITY_FILTERS` hasta que el back desplegado conozca
+ * `SCHEDULE_SHIFTED` (un tipo desconocido en `types` da 400); entonces pasa a `match`.
+ */
+export type ActivityCategory = 'steal' | 'trade' | 'bench' | 'match' | 'tier' | 'coins' | 'calendar';
 
 const CATEGORY: Record<ActivityType, ActivityCategory> = {
   STEAL: 'steal',
@@ -19,6 +23,7 @@ const CATEGORY: Record<ActivityType, ActivityCategory> = {
   COIN_EARNED: 'coins',
   COIN_REVOKED: 'coins',
   DRAFT_COINS: 'coins',
+  SCHEDULE_SHIFTED: 'calendar',
 };
 
 export function eventCategory(type: ActivityType): ActivityCategory {
@@ -85,6 +90,11 @@ export function describeEvent(e: ActivityEvent): EventPart[] {
       return [user(e.actorUsername), txt(` devolvió ${coinsLabel(coins)} · jornada ${round}`)];
     case 'DRAFT_COINS':
       return [user(e.actorUsername), txt(` recibió ${coinsLabel(coins)} que le sobraron del draft`)];
+    case 'SCHEDULE_SHIFTED': {
+      const weeks = Math.abs(e.weeks ?? 0);
+      return [user(e.actorUsername), txt(` ${(e.weeks ?? 0) < 0 ? 'adelantó' : 'aplazó'} el calendario ${weeks} `
+        + `${weeks === 1 ? 'semana' : 'semanas'} desde la jornada ${round}`)];
+    }
     default:
       return [txt('Evento desconocido')];
   }

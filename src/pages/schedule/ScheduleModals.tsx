@@ -2,6 +2,7 @@ import Modal from '../../components/Modal';
 import PlayShowdownModal from '../../components/schedule/PlayShowdownModal';
 import LineupModal from '../../components/schedule/LineupModal';
 import ImportSeriesModal from '../../components/schedule/ImportSeriesModal';
+import ShiftScheduleModal from '../../components/schedule/ShiftScheduleModal';
 import { myLineup } from '../../utils/lineup';
 import { BATTLE_DEFAULTS } from '../../utils/showdown';
 import { scoreLabel, SCORE_MAX } from '../../utils/score';
@@ -11,10 +12,22 @@ import type { SchedulePageModel } from './useSchedulePage';
 export default function ScheduleModals({ model }: { model: SchedulePageModel }) {
   const {
     leagueId, username, pendingMatch, setPendingMatch, editingMatch, setEditingMatch, recordTitleId, editTitleId, winnerScore, setWinnerScore, loserScore, setLoserScore, score, scoreError, playingMatch, setPlayingMatch, lineupMatch, setLineupMatch, leagueSettings, playStatus, showdownNameOf, myPicks, importMatch, setImportMatch, importBestOf, recordResult, recording, correctResult, correcting, revertResult, reverting, editing,
+    shiftingRound, setShiftingRound, shiftJornadas, shifting, jornadas, states,
   } = model;
 
   return (
     <>
+    {shiftingRound !== null && (
+      <ShiftScheduleModal
+        jornadas={jornadas}
+        fromRound={shiftingRound}
+        isCurrent={states[jornadas.findIndex((j) => j.roundNumber === shiftingRound)] === 'current'}
+        pending={shifting}
+        onConfirm={(weeks) => shiftJornadas(weeks)}
+        onClose={() => setShiftingRound(null)}
+      />
+    )}
+
     {playingMatch && (() => {
       const rival = playingMatch.player1 === username ? playingMatch.player2 : playingMatch.player1;
       return (
