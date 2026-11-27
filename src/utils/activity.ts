@@ -4,11 +4,7 @@ import { coinsLabel } from './coins';
 import { formatDayLabel } from './dates';
 
 export type ActivityType = ActivityEvent['type'];
-/**
- * `calendar`: aplazamientos. No entra en `ACTIVITY_FILTERS` hasta que el back desplegado conozca
- * `SCHEDULE_SHIFTED` (un tipo desconocido en `types` da 400); entonces pasa a `match`.
- */
-export type ActivityCategory = 'steal' | 'trade' | 'bench' | 'match' | 'tier' | 'coins' | 'calendar';
+export type ActivityCategory = 'steal' | 'trade' | 'bench' | 'match' | 'tier' | 'coins';
 
 const CATEGORY: Record<ActivityType, ActivityCategory> = {
   STEAL: 'steal',
@@ -23,7 +19,7 @@ const CATEGORY: Record<ActivityType, ActivityCategory> = {
   COIN_EARNED: 'coins',
   COIN_REVOKED: 'coins',
   DRAFT_COINS: 'coins',
-  SCHEDULE_SHIFTED: 'calendar',
+  SCHEDULE_SHIFTED: 'match',
 };
 
 export function eventCategory(type: ActivityType): ActivityCategory {
