@@ -148,8 +148,12 @@ describe('SCHEDULE_SHIFTED', () => {
       .toBe('ash adelantó el calendario 1 semana desde la jornada 6');
   });
 
-  it('no entra en los filtros del feed hasta que el back desplegado conozca el tipo', () => {
-    // El back anterior responde 400 a un tipo desconocido en `types`.
-    for (const filter of ACTIVITY_FILTERS) expect(filter.types).not.toContain('SCHEDULE_SHIFTED');
+  it('es de la categoría de partidos y sale en "Todo" y en "Partidos"', () => {
+    // El back lo conoce desde la 1.9.0: ya se puede pedir en `types`
+    expect(eventCategory('SCHEDULE_SHIFTED')).toBe('match');
+    const typesOf = (key: string) => ACTIVITY_FILTERS.find((f) => f.key === key)!.types;
+    expect(typesOf('all')).toContain('SCHEDULE_SHIFTED');
+    expect(typesOf('match')).toContain('SCHEDULE_SHIFTED');
+    expect(typesOf('steal')).not.toContain('SCHEDULE_SHIFTED');
   });
 });
